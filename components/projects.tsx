@@ -102,7 +102,7 @@ export default function Projects() {
               viewport={{ once: true }}
               className="mt-12 flex justify-center"
             >
-              <Link href="/proyectos" className="group">
+              <Link href="/projects" className="group">
                 <Button
                   variant="outline"
                   className="border-blue-700/50 text-blue-500 hover:bg-blue-700/10 group-hover:border-blue-500 transition-all duration-300"
@@ -130,7 +130,7 @@ export default function Projects() {
               viewport={{ once: true }}
               className="mt-12 flex justify-center"
             >
-              <Link href="/proyectos" className="group">
+              <Link href="/projects" className="group">
                 <Button
                   variant="outline"
                   className="border-blue-700/50 text-blue-500 hover:bg-blue-700/10 group-hover:border-blue-500 transition-all duration-300"
