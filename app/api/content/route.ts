@@ -52,14 +52,14 @@ export async function POST(request: Request) {
   }
 }
 
-// PATCH: Actualizar contenido parcialmente
+// PATCH: Actualizar contenido parcialmente de forma dinámica
 export async function PATCH(request: Request) {
   await dbConnect();
   
   try {
     const body = await request.json();
     
-    // Buscar contenido existente
+    // Buscar contenido existente (siempre trabajamos con un solo registro)
     const existingContent = await Content.findOne();
     
     if (!existingContent) {
@@ -73,10 +73,22 @@ export async function PATCH(request: Request) {
       }, { status: 201 });
     }
     
-    // Actualizar solo los campos proporcionados
-    Object.keys(body).forEach(key => {
-      (existingContent as any)[key] = body[key];
-    });
+    // Función recursiva para actualizar campos anidados
+    const updateNestedFields = (source: any, target: any) => {
+      Object.keys(source).forEach(key => {
+        // Si es un objeto y no un array, actualiza recursivamente
+        if (source[key] && typeof source[key] === 'object' && !Array.isArray(source[key])) {
+          if (!target[key]) target[key] = {};
+          updateNestedFields(source[key], target[key]);
+        } else {
+          // Actualiza el valor
+          target[key] = source[key];
+        }
+      });
+    };
+    
+    // Actualizar campos de manera dinámica
+    updateNestedFields(body, existingContent);
     
     await existingContent.save();
     

@@ -1,8 +1,0 @@
-PATCH http://localhost:3000/api/auth/update-admin
-Content-Type: application/json
-
-{
-  "username": "admin",
-  "currentPassword": "admin123",
-  "newPassword": "nueva_contraseña"
-}

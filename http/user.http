@@ -1,7 +1,0 @@
-POST http://localhost:3000/api/auth/create-admin
-Content-Type: application/json
-
-{
-  "username": "admin",
-  "password": "admin123"
-}
