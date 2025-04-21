@@ -34,26 +34,17 @@ export default function ProjectsPage() {
     setIsLoading(false)
   }, [content.projects])
 
-  // Recuperar la pestaña activa de localStorage
+  // Usar el parámetro de consulta para determinar la pestaña activa
   useEffect(() => {
-    try {
-      const savedTab = localStorage.getItem("activeProjectTab")
-      if (savedTab) {
-        setActiveTab(savedTab)
+    // Verificar si estamos en el navegador
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search)
+      const tabParam = params.get("tab")
+      if (tabParam && (tabParam === "fullstack" || tabParam === "backend")) {
+        setActiveTab(tabParam)
       }
-    } catch (error) {
-      console.error("Error loading active tab from localStorage:", error)
     }
   }, [])
-
-  // Guardar la pestaña activa en localStorage
-  useEffect(() => {
-    try {
-      localStorage.setItem("activeProjectTab", activeTab)
-    } catch (error) {
-      console.error("Error saving to localStorage:", error)
-    }
-  }, [activeTab])
 
   return (
     <main className="min-h-screen bg-black flex flex-col">

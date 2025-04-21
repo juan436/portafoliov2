@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
+const dbUri = process.env.MONGODB_URI;
 
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/portfolioNew';
+const MONGODB_URI = dbUri || 'mongodb://localhost:27017/portfolio';
 
 // Definir la interfaz para el caché
 interface MongooseCache {

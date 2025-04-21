@@ -15,7 +15,7 @@ import type { Project } from "@/contexts/content-context"
 export default function Projects() {
   const [activeTab, setActiveTab] = useState("fullstack")
   const { t } = useLanguage()
-  const { content } = useContent()
+  const { content, isLoading } = useContent()
   const [localProjects, setLocalProjects] = useState(content.projects)
 
   // Actualizar proyectos cuando cambia el contenido global
@@ -23,27 +23,6 @@ export default function Projects() {
     console.log("Actualizando proyectos en componente Projects:", content.projects)
     setLocalProjects(content.projects)
   }, [content.projects])
-
-  // Recuperar la pestaña activa de localStorage
-  useEffect(() => {
-    try {
-      const savedTab = localStorage.getItem("activeProjectTab")
-      if (savedTab) {
-        setActiveTab(savedTab)
-      }
-    } catch (error) {
-      console.error("Error loading active tab from localStorage:", error)
-    }
-  }, [])
-
-  // Guardar la pestaña activa en localStorage
-  useEffect(() => {
-    try {
-      localStorage.setItem("activeProjectTab", activeTab)
-    } catch (error) {
-      console.error("Error saving to localStorage:", error)
-    }
-  }, [activeTab])
 
   return (
     <section id="projects" className="py-20 relative">
@@ -86,32 +65,41 @@ export default function Projects() {
           </div>
 
           <TabsContent value="fullstack" className="mt-0">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {localProjects.fullstack
-                .sort((a, b) => b.id - a.id)
-                .slice(0, 3)
-                .map((project, index) => (
-                  <FullStackProjectCard key={project.id} project={project} index={index} />
-                ))}
-            </div>
+            {isLoading ? (
+              <div className="text-center py-12">
+                <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-blue-500 border-r-transparent"></div>
+                <p className="mt-4 text-slate-400">Cargando proyectos...</p>
+              </div>
+            ) : (
+              <>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                  {localProjects.fullstack
+                    .sort((a, b) => b.id - a.id)
+                    .slice(0, 3)
+                    .map((project, index) => (
+                      <FullStackProjectCard key={project.id} project={project} index={index} />
+                    ))}
+                </div>
 
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-              viewport={{ once: true }}
-              className="mt-12 flex justify-center"
-            >
-              <Link href="/projects" className="group">
-                <Button
-                  variant="outline"
-                  className="border-blue-700/50 text-blue-500 hover:bg-blue-700/10 group-hover:border-blue-500 transition-all duration-300"
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: 0.2 }}
+                  viewport={{ once: true }}
+                  className="mt-12 flex justify-center"
                 >
-                  <Plus className="mr-2 h-4 w-4" />
-                  {t("projects.viewMore")}
-                </Button>
-              </Link>
-            </motion.div>
+                  <Link href={`/projects?tab=${activeTab}`} className="group">
+                    <Button
+                      variant="outline"
+                      className="border-blue-700/50 text-blue-500 hover:bg-blue-700/10 group-hover:border-blue-500 transition-all duration-300"
+                    >
+                      <Plus className="mr-2 h-4 w-4" />
+                      {t("projects.viewMore")}
+                    </Button>
+                  </Link>
+                </motion.div>
+              </>
+            )}
           </TabsContent>
 
           <TabsContent value="backend" className="mt-0">
@@ -130,7 +118,7 @@ export default function Projects() {
               viewport={{ once: true }}
               className="mt-12 flex justify-center"
             >
-              <Link href="/projects" className="group">
+              <Link href={`/projects?tab=${activeTab}`} className="group">
                 <Button
                   variant="outline"
                   className="border-blue-700/50 text-blue-500 hover:bg-blue-700/10 group-hover:border-blue-500 transition-all duration-300"

@@ -8,6 +8,7 @@ import { useLanguage } from "@/contexts/language-context"
 import { useContent } from "@/contexts/content-context"
 import Script from "next/script"
 
+
 export default function Skills() {
   const { t } = useLanguage()
   const { content } = useContent()
@@ -245,14 +246,14 @@ export default function Skills() {
           <div className="flex flex-wrap justify-center gap-2">
             {otherSkills.map((skill, index) => (
               <motion.span
-                key={index}
+                key={skill.id}
                 initial={{ opacity: 0, scale: 0.9 }}
                 whileInView={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.3, delay: index * 0.05 }}
                 viewport={{ once: true }}
                 className="px-3 py-1 bg-blue-700/20 text-blue-400 rounded-full text-sm border border-blue-700/30 hover:bg-blue-700/30 transition-colors"
               >
-                {skill}
+                {skill.name}
               </motion.span>
             ))}
           </div>
