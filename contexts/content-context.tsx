@@ -1,7 +1,18 @@
 "use client"
 
 import { createContext, useState, useContext, type ReactNode, useEffect } from "react"
-import { fetchContent, fetchProjects, fetchExperiences, fetchSkills, fetchOtherSkills, createOtherSkill, updateOtherSkill, deleteOtherSkill, updateContent } from "@/services/api"
+import { 
+  fetchContent, fetchProjects, fetchExperiences, fetchSkills, fetchOtherSkills, 
+  createOtherSkill, updateOtherSkill, deleteOtherSkill, updateContent,
+  // Importar funciones específicas para proyectos
+  createProject as createProjectApi,
+  updateProject as updateProjectApi,
+  deleteProject as deleteProjectApi,
+  // Importar funciones específicas para skills
+  createSkill as createSkillApi,
+  updateSkill as updateSkillApi,
+  deleteSkill as deleteSkillApi
+} from "@/services/api"
 
 // Definir el tipo para el contexto de contenido
 type ContentContextType = {
@@ -20,6 +31,14 @@ type ContentContextType = {
   addOtherSkill: (skill: OtherSkill) => void
   editOtherSkill: (id: string, updatedSkill: OtherSkill) => void
   removeOtherSkill: (id: string) => void
+  // Añadir nuevos métodos para proyectos
+  createProjectItem: (project: Omit<Project, "id">, category: 'fullstack' | 'backend') => Promise<Project | null>
+  updateProjectItem: (id: string, project: Project, category: 'fullstack' | 'backend') => Promise<boolean>
+  deleteProjectItem: (id: string, category: 'fullstack' | 'backend') => Promise<boolean>
+  // Añadir nuevos métodos para skills
+  createSkillItem: (skill: Omit<Skill, "id">, category: string) => Promise<Skill | null>
+  updateSkillItem: (id: string, skill: Skill) => Promise<boolean>
+  deleteSkillItem: (id: string) => Promise<boolean>
 }
 
 // Definir los tipos para las secciones del contenido
@@ -60,9 +79,11 @@ export type Projects = {
 
 // Definir el tipo para Skill
 export type Skill = {
+  id: string
   name: string
   icon: string
-  colored?: boolean
+  level: number
+  category: string
 }
 
 export type Skills = {
@@ -209,40 +230,17 @@ export const ContentProvider = ({ children }: { children: ReactNode }) => {
     loadOtherSkills()
   }, [])
 
-  // Función para guardar todo el contenido
+  // Función para guardar todo el contenido - Ya no usa localStorage
   const saveAllContent = (): boolean => {
     try {
-      // NOTA: Este bloque se puede reemplazar con una llamada a tu API/base de datos
-      // Por ahora, guardamos en localStorage para mantener la funcionalidad del panel admin
-      localStorage.setItem("portfolioContent", JSON.stringify(content))
-
       // Disparar un evento para notificar a otros componentes sobre la actualización
       if (typeof window !== "undefined") {
         const event = new CustomEvent("contentUpdated", { detail: content })
         window.dispatchEvent(event)
       }
-
-      // En el futuro, aquí irá tu llamada a la API:
-      // async function saveContent() {
-      //   try {
-      //     const response = await fetch('/api/content', {
-      //       method: 'POST',
-      //       headers: {
-      //         'Content-Type': 'application/json',
-      //       },
-      //       body: JSON.stringify(content),
-      //     });
-      //     return response.ok;
-      //   } catch (error) {
-      //     console.error('Error saving content:', error);
-      //     return false;
-      //   }
-      // }
-      // return saveContent();
-
       return true
     } catch (error) {
-      console.error("Error saving content to localStorage:", error)
+      console.error("Error dispatching content update event:", error)
       return false
     }
   }
@@ -300,6 +298,164 @@ export const ContentProvider = ({ children }: { children: ReactNode }) => {
     setIsLoading(false)
   }
 
+  // Añadir nuevos métodos específicos para proyectos
+  const createProjectItem = async (projectData: Omit<Project, "id">, category: 'fullstack' | 'backend'): Promise<Project | null> => {
+    setIsLoading(true)
+    try {
+      // Preparar el proyecto para la API
+      const projectToCreate = {
+        ...projectData,
+        category
+      }
+      
+      // Llamar a la API para crear el proyecto
+      const response = await createProjectApi(projectToCreate)
+      
+      if (response.success && response.data) {
+        // Formatear el proyecto creado
+        const newProject: Project = {
+          id: response.data._id,
+          title: response.data.title,
+          description: response.data.description,
+          image: response.data.image,
+          tags: response.data.tags || [],
+          github: response.data.github || "#",
+          demo: response.data.demo || "#",
+          createdAt: response.data.createdAt
+        }
+        
+        // Actualizar el estado local
+        if (category === 'fullstack') {
+          setContent(prev => ({
+            ...prev,
+            projects: {
+              ...prev.projects,
+              fullstack: [...prev.projects.fullstack, newProject]
+            }
+          }))
+        } else {
+          setContent(prev => ({
+            ...prev,
+            projects: {
+              ...prev.projects,
+              backend: [...prev.projects.backend, newProject]
+            }
+          }))
+        }
+        
+        setIsLoading(false)
+        return newProject
+      }
+      
+      setIsLoading(false)
+      return null
+    } catch (error) {
+      console.error("Error creando proyecto:", error)
+      setIsLoading(false)
+      return null
+    }
+  }
+
+  const updateProjectItem = async (id: string, project: Project, category: 'fullstack' | 'backend'): Promise<boolean> => {
+    setIsLoading(true)
+    try {
+      // Preparar proyecto para la API
+      const projectToUpdate = {
+        ...project,
+        category
+      }
+      
+      // Llamar a la API para actualizar el proyecto
+      const response = await updateProjectApi(id, projectToUpdate)
+      
+      if (response.success) {
+        // Actualizar el estado local
+        if (category === 'fullstack') {
+          const updatedProjects = content.projects.fullstack.map(p => 
+            p.id.toString() === id ? project : p
+          )
+          
+          setContent(prev => ({
+            ...prev,
+            projects: {
+              ...prev.projects,
+              fullstack: updatedProjects
+            }
+          }))
+        } else {
+          const updatedProjects = content.projects.backend.map(p => 
+            p.id.toString() === id ? project : p
+          )
+          
+          setContent(prev => ({
+            ...prev,
+            projects: {
+              ...prev.projects,
+              backend: updatedProjects
+            }
+          }))
+        }
+        
+        setIsLoading(false)
+        return true
+      }
+      
+      setIsLoading(false)
+      return false
+    } catch (error) {
+      console.error("Error actualizando proyecto:", error)
+      setIsLoading(false)
+      return false
+    }
+  }
+
+  const deleteProjectItem = async (id: string, category: 'fullstack' | 'backend'): Promise<boolean> => {
+    setIsLoading(true)
+    try {
+      // Llamar a la API para eliminar el proyecto
+      const response = await deleteProjectApi(id)
+      
+      if (response.success) {
+        // Actualizar el estado local
+        if (category === 'fullstack') {
+          const filteredProjects = content.projects.fullstack.filter(
+            p => p.id.toString() !== id
+          )
+          
+          setContent(prev => ({
+            ...prev,
+            projects: {
+              ...prev.projects,
+              fullstack: filteredProjects
+            }
+          }))
+        } else {
+          const filteredProjects = content.projects.backend.filter(
+            p => p.id.toString() !== id
+          )
+          
+          setContent(prev => ({
+            ...prev,
+            projects: {
+              ...prev.projects,
+              backend: filteredProjects
+            }
+          }))
+        }
+        
+        setIsLoading(false)
+        return true
+      }
+      
+      setIsLoading(false)
+      return false
+    } catch (error) {
+      console.error("Error eliminando proyecto:", error)
+      setIsLoading(false)
+      return false
+    }
+  }
+
   const updateSkills = async (skills: Skills) => {
     setIsLoading(true)
     try {
@@ -311,6 +467,174 @@ export const ContentProvider = ({ children }: { children: ReactNode }) => {
       console.error("Error actualizando skills:", error)
     }
     setIsLoading(false)
+  }
+
+  // Añadir nuevos métodos específicos para skills
+  const createSkillItem = async (skillData: Omit<Skill, "id">, category: string): Promise<Skill | null> => {
+    setIsLoading(true)
+    try {
+      // Preparar la skill para la API
+      const skillToCreate = {
+        ...skillData,
+        category
+      }
+      
+      // Llamar a la API para crear la skill
+      const response = await createSkillApi(skillToCreate)
+      
+      if (response.success && response.data) {
+        // Formatear la skill creada
+        const newSkill: Skill = {
+          id: response.data._id,
+          name: response.data.name,
+          icon: response.data.icon,
+          level: response.data.level || 0,
+          category: response.data.category
+        }
+        
+        // Actualizar el estado local según la categoría
+        setContent(prev => {
+          const updatedSkills = { ...prev.skills };
+          
+          // Añadir la nueva skill a la categoría correspondiente
+          if (category === 'frontend') {
+            updatedSkills.frontend = [...updatedSkills.frontend, newSkill];
+          } else if (category === 'backend') {
+            updatedSkills.backend = [...updatedSkills.backend, newSkill];
+          } else if (category === 'database') {
+            updatedSkills.database = [...updatedSkills.database, newSkill];
+          } else if (category === 'devops') {
+            updatedSkills.devops = [...updatedSkills.devops, newSkill];
+          }
+          
+          return {
+            ...prev,
+            skills: updatedSkills
+          };
+        });
+        
+        setIsLoading(false)
+        return newSkill
+      }
+      
+      setIsLoading(false)
+      return null
+    } catch (error) {
+      console.error("Error creando skill:", error)
+      setIsLoading(false)
+      return null
+    }
+  }
+
+  const updateSkillItem = async (id: string, skill: Skill): Promise<boolean> => {
+    setIsLoading(true)
+    try {
+      // Llamar a la API para actualizar la skill
+      const response = await updateSkillApi(id, skill)
+      
+      if (response.success) {
+        // Actualizar el estado local según la categoría
+        setContent(prev => {
+          const updatedSkills = { ...prev.skills };
+          const category = skill.category;
+          
+          // Actualizar la skill en la categoría correspondiente
+          if (category === 'frontend') {
+            updatedSkills.frontend = updatedSkills.frontend.map(s => 
+              s.id.toString() === id ? skill : s
+            );
+          } else if (category === 'backend') {
+            updatedSkills.backend = updatedSkills.backend.map(s => 
+              s.id.toString() === id ? skill : s
+            );
+          } else if (category === 'database') {
+            updatedSkills.database = updatedSkills.database.map(s => 
+              s.id.toString() === id ? skill : s
+            );
+          } else if (category === 'devops') {
+            updatedSkills.devops = updatedSkills.devops.map(s => 
+              s.id.toString() === id ? skill : s
+            );
+          }
+          
+          return {
+            ...prev,
+            skills: updatedSkills
+          };
+        });
+        
+        setIsLoading(false)
+        return true
+      }
+      
+      setIsLoading(false)
+      return false
+    } catch (error) {
+      console.error("Error actualizando skill:", error)
+      setIsLoading(false)
+      return false
+    }
+  }
+
+  const deleteSkillItem = async (id: string): Promise<boolean> => {
+    setIsLoading(true)
+    try {
+      // Primero necesitamos encontrar la skill para saber su categoría
+      let skillCategory = '';
+      let skillFound = false;
+      
+      // Buscar en todas las categorías
+      for (const category of ['frontend', 'backend', 'database', 'devops'] as const) {
+        const found = content.skills[category].find(s => s.id.toString() === id);
+        if (found) {
+          skillCategory = category;
+          skillFound = true;
+          break;
+        }
+      }
+      
+      if (!skillFound) {
+        console.error('No se encontró la skill con ID:', id);
+        setIsLoading(false);
+        return false;
+      }
+      
+      // Llamar a la API para eliminar la skill
+      const response = await deleteSkillApi(id)
+      
+      if (response.success) {
+        // Actualizar el estado local según la categoría
+        setContent(prev => {
+          const updatedSkills = { ...prev.skills };
+          
+          // Filtrar la skill de la categoría correspondiente
+          if (skillCategory === 'frontend') {
+            updatedSkills.frontend = updatedSkills.frontend.filter(s => s.id.toString() !== id);
+          } else if (skillCategory === 'backend') {
+            updatedSkills.backend = updatedSkills.backend.filter(s => s.id.toString() !== id);
+          } else if (skillCategory === 'database') {
+            updatedSkills.database = updatedSkills.database.filter(s => s.id.toString() !== id);
+          } else if (skillCategory === 'devops') {
+            updatedSkills.devops = updatedSkills.devops.filter(s => s.id.toString() !== id);
+          }
+          
+          return {
+            ...prev,
+            skills: updatedSkills
+          };
+        });
+        
+        setIsLoading(false)
+        return true
+      }
+      
+      setIsLoading(false)
+      return false
+    } catch (error) {
+      console.error("Error eliminando skill:", error)
+      setIsLoading(false)
+      return false
+    }
   }
 
   const updateOtherSkills = async (otherSkills: OtherSkill[]) => {
@@ -352,26 +676,61 @@ export const ContentProvider = ({ children }: { children: ReactNode }) => {
     setIsLoading(false)
   }
 
+  // Operaciones para OtherSkills
   const addOtherSkill = async (skill: OtherSkill) => {
-    const response = await createOtherSkill(skill)
-    if (response.success) {
-      setOtherSkills((prev) => [...prev, response.data])
+    try {
+      const response = await createOtherSkill(skill)
+      if (response.success) {
+        setOtherSkills(prev => [...prev, response.data])
+        
+        // Actualizar también el contenido global
+        setContent(prev => ({
+          ...prev,
+          otherSkills: [...prev.otherSkills, response.data]
+        }))
+      }
+    } catch (error) {
+      console.error("Error añadiendo habilidad:", error)
     }
   }
-
+  
   const editOtherSkill = async (id: string, updatedSkill: OtherSkill) => {
-    const response = await updateOtherSkill(id, updatedSkill)
-    if (response.success) {
-      setOtherSkills((prev) =>
-        prev.map((skill) => (skill.id === id ? response.data : skill))
-      )
+    try {
+      const response = await updateOtherSkill(id, updatedSkill)
+      if (response.success) {
+        // Actualizar el estado local de otherSkills
+        setOtherSkills(prev => 
+          prev.map(skill => skill.id === id ? updatedSkill : skill)
+        )
+        
+        // Actualizar también el contenido global
+        setContent(prev => ({
+          ...prev,
+          otherSkills: prev.otherSkills.map(
+            skill => skill.id === id ? updatedSkill : skill
+          )
+        }))
+      }
+    } catch (error) {
+      console.error("Error editando habilidad:", error)
     }
   }
-
+  
   const removeOtherSkill = async (id: string) => {
-    const response = await deleteOtherSkill(id)
-    if (response.success) {
-      setOtherSkills((prev) => prev.filter((skill) => skill.id !== id))
+    try {
+      const response = await deleteOtherSkill(id)
+      if (response.success) {
+        // Actualizar el estado local de otherSkills
+        setOtherSkills(prev => prev.filter(skill => skill.id !== id))
+        
+        // Actualizar también el contenido global
+        setContent(prev => ({
+          ...prev,
+          otherSkills: prev.otherSkills.filter(skill => skill.id !== id)
+        }))
+      }
+    } catch (error) {
+      console.error("Error eliminando habilidad:", error)
     }
   }
 
@@ -393,6 +752,14 @@ export const ContentProvider = ({ children }: { children: ReactNode }) => {
         addOtherSkill,
         editOtherSkill,
         removeOtherSkill,
+        // Nuevos métodos para proyectos
+        createProjectItem,
+        updateProjectItem,
+        deleteProjectItem,
+        // Nuevos métodos para skills
+        createSkillItem,
+        updateSkillItem,
+        deleteSkillItem
       }}
     >
       {children}

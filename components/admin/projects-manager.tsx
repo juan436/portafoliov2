@@ -16,7 +16,15 @@ import { useToast } from "@/hooks/use-toast"
 import type { Project } from "@/contexts/content-context"
 
 export default function ProjectsManager() {
-  const { content, updateProjects, saveAllContent } = useContent()
+  const {
+    content,
+    isLoading,
+    // Usar los nuevos métodos específicos para proyectos
+    createProjectItem,
+    updateProjectItem,
+    deleteProjectItem
+  } = useContent()
+
   const { toast } = useToast()
   const [activeTab, setActiveTab] = useState("fullstack")
   const [fullstackProjects, setFullstackProjects] = useState<Project[]>(content.projects.fullstack || [])
@@ -39,88 +47,73 @@ export default function ProjectsManager() {
     }
   }, [activeTab, fullstackProjects, backendProjects, selectedProject])
 
-  // Función para generar un nuevo ID único
-  const generateNewId = (): number => {
-    const now = new Date()
-    return now.getTime()
-  }
-
-  // Función para añadir un nuevo proyecto
-  const addNewProject = () => {
-    const newId = generateNewId()
+  // Función para añadir un nuevo proyecto - Actualizada para usar createProjectItem
+  const addNewProject = async () => {
     const currentDate = new Date().toISOString().split("T")[0]
 
-    const newProject: Project = {
-      id: newId,
+    // Preparar datos del nuevo proyecto
+    const newProjectData = {
       title: activeTab === "fullstack" ? "Nuevo Proyecto Full Stack" : "Nuevo Proyecto Backend",
       description: "Descripción del proyecto",
       tags: ["Tag 1", "Tag 2"],
       github: "#",
       demo: "#",
       createdAt: currentDate,
+      image: activeTab === "fullstack" ? "/placeholder.svg?height=400&width=600" : undefined
     }
 
-    if (activeTab === "fullstack") {
-      newProject.image = "/placeholder.svg?height=400&width=600"
-      const updatedProjects = [...fullstackProjects, newProject]
-      setFullstackProjects(updatedProjects)
-      updateProjects({
-        fullstack: updatedProjects,
-        backend: backendProjects,
+    const category = activeTab as 'fullstack' | 'backend'
+
+    // Llamar al método del contexto para crear el proyecto
+    const newProject = await createProjectItem(newProjectData, category)
+
+    if (newProject) {
+      setSelectedProject(newProject)
+      setEditMode(true)
+
+      toast({
+        title: "Proyecto añadido",
+        description: "Se ha añadido un nuevo proyecto. Edítalo para personalizarlo.",
+        variant: "default",
       })
     } else {
-      const updatedProjects = [...backendProjects, newProject]
-      setBackendProjects(updatedProjects)
-      updateProjects({
-        fullstack: fullstackProjects,
-        backend: updatedProjects,
+      toast({
+        title: "Error",
+        description: "No se pudo crear el proyecto. Intenta de nuevo.",
+        variant: "destructive",
       })
     }
-
-    setSelectedProject(newProject)
-    setEditMode(true)
-    saveAllContent()
-
-    toast({
-      title: "Proyecto añadido",
-      description: "Se ha añadido un nuevo proyecto. Edítalo para personalizarlo.",
-      variant: "default",
-    })
   }
 
-  // Función para eliminar un proyecto
-  const deleteProject = (id: number) => {
-    if (activeTab === "fullstack") {
-      const updatedProjects = fullstackProjects.filter((project) => project.id !== id)
-      setFullstackProjects(updatedProjects)
-      updateProjects({
-        fullstack: updatedProjects,
-        backend: backendProjects,
-      })
+  // Función para eliminar un proyecto - Actualizada para usar deleteProjectItem
+  const deleteProject = async (id: number) => {
+    const category = activeTab as 'fullstack' | 'backend'
+    const success = await deleteProjectItem(id.toString(), category)
 
+    if (success) {
+      // Actualizar la selección si el proyecto eliminado era el seleccionado
       if (selectedProject && selectedProject.id === id) {
-        setSelectedProject(updatedProjects.length > 0 ? updatedProjects[0] : null)
+        // Determinar qué proyectos quedan después de la eliminación
+        const remainingProjects = category === 'fullstack'
+          ? fullstackProjects.filter(p => p.id !== id)
+          : backendProjects.filter(p => p.id !== id)
+
+        // Seleccionar otro proyecto o establecer a null
+        setSelectedProject(remainingProjects.length > 0 ? remainingProjects[0] : null)
       }
+
+      toast({
+        title: "Proyecto eliminado",
+        description: "El proyecto ha sido eliminado correctamente.",
+        variant: "default",
+      })
     } else {
-      const updatedProjects = backendProjects.filter((project) => project.id !== id)
-      setBackendProjects(updatedProjects)
-      updateProjects({
-        fullstack: fullstackProjects,
-        backend: updatedProjects,
+      toast({
+        title: "Error",
+        description: "No se pudo eliminar el proyecto. Intenta de nuevo.",
+        variant: "destructive",
       })
-
-      if (selectedProject && selectedProject.id === id) {
-        setSelectedProject(updatedProjects.length > 0 ? updatedProjects[0] : null)
-      }
     }
-
-    saveAllContent()
-
-    toast({
-      title: "Proyecto eliminado",
-      description: "El proyecto ha sido eliminado correctamente.",
-      variant: "default",
-    })
   }
 
   // Función para actualizar un proyecto
@@ -130,23 +123,14 @@ export default function ProjectsManager() {
         project.id === updatedProject.id ? updatedProject : project,
       )
       setFullstackProjects(updatedProjects)
-      updateProjects({
-        fullstack: updatedProjects,
-        backend: backendProjects,
-      })
     } else {
       const updatedProjects = backendProjects.map((project) =>
         project.id === updatedProject.id ? updatedProject : project,
       )
       setBackendProjects(updatedProjects)
-      updateProjects({
-        fullstack: fullstackProjects,
-        backend: updatedProjects,
-      })
     }
 
     setSelectedProject(updatedProject)
-    saveAllContent()
   }
 
   // Función para manejar cambios en el formulario
@@ -170,27 +154,39 @@ export default function ProjectsManager() {
     }
   }
 
-  // Función para guardar al salir del modo edición
-  const handleSaveEdit = () => {
+  // Función para guardar al salir del modo edición - Actualizada para usar updateProjectItem
+  const handleSaveEdit = async () => {
+    if (!selectedProject) return
+
+    const category = activeTab as 'fullstack' | 'backend'
+    const success = await updateProjectItem(selectedProject.id.toString(), selectedProject, category)
+
     setEditMode(false)
-    saveAllContent()
 
-    // Disparar un evento específico para proyectos
-    if (typeof window !== "undefined") {
-      const event = new CustomEvent("projectsUpdated", {
-        detail: {
-          fullstack: fullstackProjects,
-          backend: backendProjects,
-        },
+    if (success) {
+      // Disparar un evento específico para proyectos
+      if (typeof window !== "undefined") {
+        const event = new CustomEvent("projectsUpdated", {
+          detail: {
+            fullstack: content.projects.fullstack,
+            backend: content.projects.backend,
+          },
+        })
+        window.dispatchEvent(event)
+      }
+
+      toast({
+        title: "Cambios guardados",
+        description: "Los cambios han sido guardados correctamente.",
+        variant: "default",
       })
-      window.dispatchEvent(event)
+    } else {
+      toast({
+        title: "Error",
+        description: "No se pudieron guardar los cambios. Intenta de nuevo.",
+        variant: "destructive",
+      })
     }
-
-    toast({
-      title: "Cambios guardados",
-      description: "Los cambios han sido guardados correctamente.",
-      variant: "default",
-    })
   }
 
   return (
@@ -236,11 +232,10 @@ export default function ProjectsManager() {
                         .map((project) => (
                           <div
                             key={project.id}
-                            className={`p-3 rounded-md cursor-pointer relative group ${
-                              selectedProject?.id === project.id
+                            className={`p-3 rounded-md cursor-pointer relative group ${selectedProject?.id === project.id
                                 ? "bg-blue-900/30 border border-blue-500"
                                 : "bg-black/20 border border-blue-700/20 hover:border-blue-700/50"
-                            }`}
+                              }`}
                             onClick={() => {
                               setSelectedProject(project)
                               setEditMode(false)
@@ -432,15 +427,14 @@ export default function ProjectsManager() {
                   <div className="space-y-2 max-h-[500px] overflow-y-auto pr-2">
                     {backendProjects.length > 0 ? (
                       backendProjects
-                        .sort((a, b) => b.id - a.id) // Ordenar por ID descendente
+                        .sort((a, b) => parseInt(b.id.toString()) - parseInt(a.id.toString())) // Ordenar por ID descendente
                         .map((project) => (
                           <div
                             key={project.id}
-                            className={`p-3 rounded-md cursor-pointer relative group ${
-                              selectedProject?.id === project.id
+                            className={`p-3 rounded-md cursor-pointer relative group ${selectedProject?.id === project.id
                                 ? "bg-blue-900/30 border border-blue-500"
                                 : "bg-black/20 border border-blue-700/20 hover:border-blue-700/50"
-                            }`}
+                              }`}
                             onClick={() => {
                               setSelectedProject(project)
                               setEditMode(false)

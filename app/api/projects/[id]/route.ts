@@ -10,7 +10,8 @@ export async function GET(
   await dbConnect();
   
   try {
-    const project = await Project.findById(params.id);
+    const { id } = await params;
+    const project = await Project.findById(id);
     
     if (!project) {
       return NextResponse.json({ 
@@ -40,7 +41,8 @@ export async function DELETE(
   await dbConnect();
   
   try {
-    const project = await Project.findByIdAndDelete(params.id);
+    const { id } = await params;
+    const project = await Project.findByIdAndDelete(id);
     
     if (!project) {
       return NextResponse.json({ 
@@ -70,9 +72,11 @@ export async function PATCH(
   await dbConnect();
   
   try {
+    // Esperar a que params esté disponible y extraer el id
+    const { id } = await params;
     const body = await request.json();
     
-    const project = await Project.findById(params.id);
+    const project = await Project.findById(id);
     
     if (!project) {
       return NextResponse.json({ 
