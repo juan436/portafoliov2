@@ -27,6 +27,7 @@ export default function ProjectsManager() {
   const [lastSelectedFullstack, setLastSelectedFullstack] = useState<Project | null>(null)
   const [lastSelectedBackend, setLastSelectedBackend] = useState<Project | null>(null)
   const [isTabChanging, setIsTabChanging] = useState(false)
+  const [isCreatingNewProject, setIsCreatingNewProject] = useState(false)
 
   const currentProjects = activeTab === "fullstack" ? fullstackProjects : backendProjects;
   const lastSelected = activeTab === "fullstack" ? lastSelectedFullstack : lastSelectedBackend;
@@ -72,29 +73,70 @@ export default function ProjectsManager() {
     });
   }, [toast]);
 
-  const addNewProject = useCallback(async () => {
+  const addNewProject = useCallback(() => {
     const currentDate = new Date().toISOString().split("T")[0];
     
-    const newProjectData = {
-      title: activeTab === "fullstack" ? "Nuevo Proyecto Full Stack" : "Nuevo Proyecto Backend",
-      description: "Descripción del proyecto",
-      tags: ["Tag 1", "Tag 2"],
-      github: "#",
-      demo: "#",
+    // Crear un objeto de proyecto temporal mínimo
+    // Los valores predeterminados se manejan en el ProjectForm
+    const newProjectTemplate: Project = {
+      id: -1, // ID temporal negativo para indicar que es un proyecto nuevo
       createdAt: currentDate,
+      // Solo definimos la imagen para proyectos fullstack para mantener la consistencia visual
       image: activeTab === "fullstack" ? "/placeholder.svg?height=400&width=600" : undefined
     };
 
-    const newProject = await createProjectItem(newProjectData, activeTab);
+    // Establecer el modo de creación
+    setIsCreatingNewProject(true);
+    
+    // Seleccionar el proyecto temporal y activar el modo de edición
+    setSelectedProject(newProjectTemplate);
+    setEditMode(true);
+  }, [activeTab]);
 
-    if (newProject) {
-      setSelectedProject(newProject);
-      setEditMode(true);
-      showToast("Proyecto añadido", "Se ha añadido un nuevo proyecto. Edítalo para personalizarlo.");
-    } else {
-      showToast("Error", "No se pudo crear el proyecto. Intenta de nuevo.", true);
+  const handleSaveEdit = useCallback(async (updatedProject: Project) => {
+    // Si estamos creando un nuevo proyecto
+    if (isCreatingNewProject) {
+      const newProject = await createProjectItem(updatedProject, activeTab);
+      
+      if (newProject) {
+        setSelectedProject(newProject);
+        setEditMode(false);
+        setIsCreatingNewProject(false);
+        showToast("Proyecto creado", "El proyecto ha sido creado correctamente.");
+        
+        // Actualizar la lista de proyectos correspondiente
+        if (activeTab === "fullstack") {
+          setFullstackProjects(prev => [...prev, newProject]);
+        } else {
+          setBackendProjects(prev => [...prev, newProject]);
+        }
+      } else {
+        showToast("Error", "No se pudo crear el proyecto. Intenta de nuevo.", true);
+      }
+    } 
+    // Si estamos editando un proyecto existente
+    else {
+      const success = await updateProjectItem(updatedProject.id.toString(), updatedProject, activeTab);
+
+      if (success) {
+        setSelectedProject(updatedProject);
+        setEditMode(false);
+        showToast("Proyecto actualizado", "El proyecto ha sido actualizado correctamente.");
+      } else {
+        showToast("Error", "No se pudo actualizar el proyecto. Intenta de nuevo.", true);
+      }
     }
-  }, [activeTab, createProjectItem, showToast]);
+  }, [activeTab, createProjectItem, updateProjectItem, showToast, isCreatingNewProject]);
+
+  const handleCancelEdit = useCallback(() => {
+    if (isCreatingNewProject) {
+      // Si estamos creando un nuevo proyecto, simplemente descartamos el proyecto temporal
+      setSelectedProject(null);
+      setIsCreatingNewProject(false);
+    }
+    
+    setEditMode(false);
+  }, [isCreatingNewProject]);
 
   const deleteProject = useCallback(async (id: number) => {
     const success = await deleteProjectItem(id.toString(), activeTab);
@@ -110,18 +152,6 @@ export default function ProjectsManager() {
       showToast("Error", "No se pudo eliminar el proyecto. Intenta de nuevo.", true);
     }
   }, [activeTab, currentProjects, deleteProjectItem, selectedProject, showToast]);
-
-  const handleSaveEdit = useCallback(async (updatedProject: Project) => {
-    const success = await updateProjectItem(updatedProject.id.toString(), updatedProject, activeTab);
-
-    if (success) {
-      setSelectedProject(updatedProject);
-      setEditMode(false);
-      showToast("Proyecto actualizado", "El proyecto ha sido actualizado correctamente.");
-    } else {
-      showToast("Error", "No se pudo actualizar el proyecto. Intenta de nuevo.", true);
-    }
-  }, [activeTab, updateProjectItem, showToast]);
 
   const renderProjectContent = (category: ProjectCategory, title: string, description: string) => (
     <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -141,6 +171,8 @@ export default function ProjectsManager() {
           editMode={editMode}
           setEditMode={setEditMode}
           onSave={handleSaveEdit}
+          onCancel={handleCancelEdit}
+          isNewProject={isCreatingNewProject}
         />
       </div>
     </div>

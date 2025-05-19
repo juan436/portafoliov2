@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
-import { ImageIcon } from "lucide-react"
+import { ImageIcon, X } from "lucide-react"
 import type { Project } from "@/contexts/content-context"
 
 interface ProjectFormProps {
@@ -15,15 +15,120 @@ interface ProjectFormProps {
   editMode: boolean
   setEditMode: (value: boolean) => void
   onSave: (project: Project) => void
+  onCancel?: () => void
+  isNewProject?: boolean
 }
 
-export default function ProjectForm({ project, editMode, setEditMode, onSave }: ProjectFormProps) {
+export default function ProjectForm({ 
+  project, 
+  editMode, 
+  setEditMode, 
+  onSave,
+  onCancel,
+  isNewProject = false
+}: ProjectFormProps) {
   const [formData, setFormData] = useState<Project | null>(project)
+  const [emptyFields, setEmptyFields] = useState<Record<string, boolean>>({})
 
   // Actualizar el formData cuando cambia el proyecto seleccionado
   useEffect(() => {
-    setFormData(project)
-  }, [project])
+    if (isNewProject && project) {
+      const emptyProject = { ...project };
+      emptyProject.title = '';
+      emptyProject.description = '';
+      emptyProject.github = '';
+      emptyProject.demo = '';
+      emptyProject.tags = [];
+      setFormData(emptyProject);
+    } else {
+      setFormData(project);
+    }
+    
+    // Resetear los campos vacíos cuando cambia el proyecto
+    setEmptyFields({});
+  }, [project, isNewProject]);
+
+  // Manejar cambios en los inputs
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target
+    
+    setEmptyFields(prev => ({
+      ...prev,
+      [name]: value.trim() === ''
+    }))
+    
+    if (name === "tags") {
+      setFormData((prev) => prev ? { ...prev, [name]: value } : null)
+    } else {
+      setFormData((prev) => prev ? { ...prev, [name]: value } : null)
+    }
+  }
+
+  // Guardar los cambios
+  const handleSave = () => {
+    if (formData) {
+      const processedData = { ...formData };
+      
+      if (typeof processedData.tags === 'string') {
+        processedData.tags = processedData.tags.split(',')
+          .map(tag => tag.trim())
+          .filter(Boolean)
+      }
+      
+      if (isNewProject) {
+        const currentDate = new Date().toISOString().split("T")[0];
+        
+        if (!processedData.title) {
+          processedData.title = project?.title || "Nuevo Proyecto";
+        }
+        if (!processedData.description) {
+          processedData.description = project?.description || "Descripción del proyecto";
+        }
+        if (!processedData.github) {
+          processedData.github = project?.github || "#";
+        }
+        if (!processedData.demo) {
+          processedData.demo = project?.demo || "#";
+        }
+        if (!processedData.tags || processedData.tags.length === 0) {
+          processedData.tags = project?.tags || ["Tag 1", "Tag 2"];
+        }
+        if (!processedData.createdAt) {
+          processedData.createdAt = currentDate;
+        }
+        if (!processedData.image) {
+          processedData.image = project?.image;
+        }
+      }
+      
+      onSave(processedData);
+    }
+  }
+
+  // Cancelar la edición
+  const handleCancel = () => {
+    if (onCancel) {
+      onCancel()
+    } else {
+      setEditMode(false)
+    }
+  }
+
+  // Determinar los placeholders según si es un nuevo proyecto o no
+  const getPlaceholder = (field: string) => {
+    if (isNewProject) {
+      switch (field) {
+        case 'title': return 'Título del proyecto (ej. Mi Aplicación Web)'
+        case 'description': return 'Descripción detallada del proyecto'
+        case 'github': return 'https://github.com/usuario/proyecto'
+        case 'demo': return 'https://demo.ejemplo.com'
+        case 'tags': return 'React, Node.js, MongoDB'
+        case 'image': return 'https://ejemplo.com/imagen.jpg'
+        default: return ''
+      }
+    }
+    return ''
+  }
 
   // Si no hay proyecto seleccionado, mostrar mensaje
   if (!formData) {
@@ -42,53 +147,27 @@ export default function ProjectForm({ project, editMode, setEditMode, onSave }: 
     )
   }
 
-  // Manejar cambios en los inputs
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target
-    
-    // Manejar tags especialmente (separados por comas)
-    if (name === "tags") {
-      // Simplemente actualizar el valor tal cual, sin procesar las comas todavía
-      setFormData((prev) => prev ? { ...prev, [name]: value } : null)
-    } else {
-      setFormData((prev) => prev ? { ...prev, [name]: value } : null)
-    }
-  }
-
-  // Guardar los cambios
-  const handleSave = () => {
-    if (formData) {
-      // Procesar las etiquetas al guardar
-      const processedData = { ...formData }
-      
-      // Si tags es un string (cuando el usuario ha editado), procesarlo
-      if (typeof processedData.tags === 'string') {
-        processedData.tags = processedData.tags.split(',')
-          .map(tag => tag.trim())
-          .filter(Boolean)
-      }
-      
-      onSave(processedData)
-    }
-  }
-
   return (
     <Card className="bg-black/40 border-blue-700/20">
       <CardHeader>
         <CardTitle>
-          {editMode
-            ? "Editar Proyecto"
-            : "Detalles del Proyecto"}
+          {isNewProject 
+            ? "Crear Nuevo Proyecto"
+            : editMode
+              ? "Editar Proyecto"
+              : "Detalles del Proyecto"}
         </CardTitle>
         <CardDescription>
-          {editMode
-            ? "Modifica los detalles del proyecto seleccionado."
-            : "Visualiza los detalles del proyecto o haz clic en editar."}
+          {isNewProject
+            ? "Ingresa los detalles para crear un nuevo proyecto."
+            : editMode
+              ? "Modifica los detalles del proyecto seleccionado."
+              : "Visualiza los detalles del proyecto o haz clic en editar."}
         </CardDescription>
       </CardHeader>
       <CardContent className="p-6">
         <div className="space-y-4">
-          {!editMode && (
+          {!editMode && !isNewProject && (
             <div className="flex justify-end">
               <Button
                 onClick={() => setEditMode(true)}
@@ -106,10 +185,11 @@ export default function ProjectForm({ project, editMode, setEditMode, onSave }: 
               <Input
                 id="title"
                 name="title"
-                value={formData.title}
+                value={emptyFields.title ? '' : formData.title}
                 onChange={handleInputChange}
                 disabled={!editMode}
                 className="bg-black/40 border-blue-700/20"
+                placeholder={getPlaceholder('title')}
               />
             </div>
 
@@ -118,10 +198,11 @@ export default function ProjectForm({ project, editMode, setEditMode, onSave }: 
               <Textarea
                 id="description"
                 name="description"
-                value={formData.description}
+                value={emptyFields.description ? '' : formData.description}
                 onChange={handleInputChange}
                 disabled={!editMode}
                 className="min-h-[100px] bg-black/40 border-blue-700/20"
+                placeholder={getPlaceholder('description')}
               />
             </div>
 
@@ -131,13 +212,13 @@ export default function ProjectForm({ project, editMode, setEditMode, onSave }: 
                 <Input
                   id="image"
                   name="image"
-                  value={formData.image || ""}
+                  value={emptyFields.image ? '' : (formData.image || "")}
                   onChange={handleInputChange}
                   disabled={!editMode}
                   className="bg-black/40 border-blue-700/20"
-                  placeholder="https://ejemplo.com/imagen.jpg"
+                  placeholder={getPlaceholder('image')}
                 />
-                {formData.image && (
+                {formData.image && !emptyFields.image && (
                   <Button
                     variant="outline"
                     size="icon"
@@ -158,11 +239,11 @@ export default function ProjectForm({ project, editMode, setEditMode, onSave }: 
               <Input
                 id="tags"
                 name="tags"
-                value={typeof formData.tags === 'string' ? formData.tags : formData.tags.join(', ')}
+                value={emptyFields.tags ? '' : (typeof formData.tags === 'string' ? formData.tags : formData.tags.join(', '))}
                 onChange={handleInputChange}
                 disabled={!editMode}
                 className="bg-black/40 border-blue-700/20"
-                placeholder="React, Node.js, MongoDB"
+                placeholder={getPlaceholder('tags')}
               />
             </div>
 
@@ -172,11 +253,11 @@ export default function ProjectForm({ project, editMode, setEditMode, onSave }: 
                 <Input
                   id="github"
                   name="github"
-                  value={formData.github}
+                  value={emptyFields.github ? '' : formData.github}
                   onChange={handleInputChange}
                   disabled={!editMode}
                   className="bg-black/40 border-blue-700/20"
-                  placeholder="https://github.com/usuario/proyecto"
+                  placeholder={getPlaceholder('github')}
                 />
               </div>
 
@@ -185,19 +266,26 @@ export default function ProjectForm({ project, editMode, setEditMode, onSave }: 
                 <Input
                   id="demo"
                   name="demo"
-                  value={formData.demo}
+                  value={emptyFields.demo ? '' : formData.demo}
                   onChange={handleInputChange}
                   disabled={!editMode}
                   className="bg-black/40 border-blue-700/20"
-                  placeholder="https://demo.ejemplo.com"
+                  placeholder={getPlaceholder('demo')}
                 />
               </div>
             </div>
 
             {editMode && (
-              <div className="flex justify-end pt-4">
+              <div className="flex justify-end gap-2 pt-4">
+                <Button 
+                  onClick={handleCancel} 
+                  variant="outline"
+                  className="border-red-700/50 text-red-500 hover:bg-red-700/10"
+                >
+                  Cancelar
+                </Button>
                 <Button onClick={handleSave} className="bg-blue-700 hover:bg-blue-800">
-                  Guardar
+                  {isNewProject ? "Crear Proyecto" : "Guardar"}
                 </Button>
               </div>
             )}
