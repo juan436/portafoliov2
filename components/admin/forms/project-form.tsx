@@ -48,8 +48,8 @@ export default function ProjectForm({ project, editMode, setEditMode, onSave }: 
     
     // Manejar tags especialmente (separados por comas)
     if (name === "tags") {
-      const tagsArray = value.split(",").map((tag) => tag.trim()).filter(Boolean)
-      setFormData((prev) => prev ? { ...prev, [name]: tagsArray } : null)
+      // Simplemente actualizar el valor tal cual, sin procesar las comas todavía
+      setFormData((prev) => prev ? { ...prev, [name]: value } : null)
     } else {
       setFormData((prev) => prev ? { ...prev, [name]: value } : null)
     }
@@ -58,7 +58,17 @@ export default function ProjectForm({ project, editMode, setEditMode, onSave }: 
   // Guardar los cambios
   const handleSave = () => {
     if (formData) {
-      onSave(formData)
+      // Procesar las etiquetas al guardar
+      const processedData = { ...formData }
+      
+      // Si tags es un string (cuando el usuario ha editado), procesarlo
+      if (typeof processedData.tags === 'string') {
+        processedData.tags = processedData.tags.split(',')
+          .map(tag => tag.trim())
+          .filter(Boolean)
+      }
+      
+      onSave(processedData)
     }
   }
 
@@ -148,7 +158,7 @@ export default function ProjectForm({ project, editMode, setEditMode, onSave }: 
               <Input
                 id="tags"
                 name="tags"
-                value={formData.tags.join(", ")}
+                value={typeof formData.tags === 'string' ? formData.tags : formData.tags.join(', ')}
                 onChange={handleInputChange}
                 disabled={!editMode}
                 className="bg-black/40 border-blue-700/20"
