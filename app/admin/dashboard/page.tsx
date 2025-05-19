@@ -3,12 +3,14 @@
 import { useEffect, useState } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import AdminLayout from "@/components/admin/admin-layout"
-import ProjectsManager from "@/components/admin/projects-manager"
-import ContentEditor from "@/components/admin/content-editor"
-import SettingsPanel from "@/components/admin/settings-panel"
-import ImageManager from "@/components/admin/image-manager"
-import EnhancedSkillsManager from "@/components/admin/enhanced-skills-manager"
+
+// Actualizar rutas de importación a la nueva estructura de carpetas
+import AdminLayout from "@/components/admin/layout/admin-layout"
+import ProjectsManager from "@/components/admin/managers/projects-manager"
+import ContentEditor from "@/components/admin/managers/content-editor"
+import SettingsPanel from "@/components/admin/managers/settings-panel"
+import ImageManager from "@/components/admin/managers/image-manager"
+import SkillsManager from "@/components/admin/managers/skills-manager"
 import { Code, FileText, FileImage, Settings, User } from "lucide-react"
 
 export default function DashboardPage() {
@@ -182,7 +184,7 @@ export default function DashboardPage() {
         {/* Contenido principal */}
         <div className="bg-black/20 border border-blue-700/20 rounded-lg p-6">
           {activeTab === "projects" && <ProjectsManager />}
-          {activeTab === "skills" && <EnhancedSkillsManager />}
+          {activeTab === "skills" && <SkillsManager />}
           {activeTab === "content" && <ContentEditor />}
           {activeTab === "images" && <ImageManager />}
           {activeTab === "settings" && <SettingsPanel section={activeSettingsSection} />}

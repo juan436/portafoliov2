@@ -10,7 +10,10 @@ export async function GET(
   await dbConnect();
   
   try {
-    const skill = await Skill.findById(params.id);
+    // Esperar a que params esté disponible y extraer el id
+    const { id } = await params;
+    
+    const skill = await Skill.findById(id);
     
     if (!skill) {
       return NextResponse.json({ 
@@ -40,7 +43,10 @@ export async function DELETE(
   await dbConnect();
   
   try {
-    const skill = await Skill.findByIdAndDelete(params.id);
+    // Esperar a que params esté disponible y extraer el id
+    const { id } = await params;
+    
+    const skill = await Skill.findByIdAndDelete(id);
     
     if (!skill) {
       return NextResponse.json({ 
@@ -70,9 +76,12 @@ export async function PATCH(
   await dbConnect();
   
   try {
+    // Esperar a que params esté disponible y extraer el id
+    const { id } = await params;
+    
     const body = await request.json();
     
-    const skill = await Skill.findById(params.id);
+    const skill = await Skill.findById(id);
     
     if (!skill) {
       return NextResponse.json({ 
