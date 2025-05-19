@@ -10,41 +10,27 @@ import { useContent } from "@/contexts/content-context"
 import { useToast } from "@/hooks/use-toast"
 import type { Project } from "@/contexts/content-context"
 
-// Importar los componentes extraídos
 import ProjectForm from "@/components/admin/forms/project-form"
 import ProjectsTable from "@/components/admin/tables/projects-table"
 
-// Tipos de categorías de proyectos
 type ProjectCategory = 'fullstack' | 'backend';
 
 export default function ProjectsManager() {
-  const {
-    content,
-    isLoading,
-    createProjectItem,
-    updateProjectItem,
-    deleteProjectItem
-  } = useContent()
-
+  const { content, createProjectItem, updateProjectItem, deleteProjectItem } = useContent()
   const { toast } = useToast()
+  
   const [activeTab, setActiveTab] = useState<ProjectCategory>("fullstack")
   const [fullstackProjects, setFullstackProjects] = useState<Project[]>(content.projects.fullstack || [])
   const [backendProjects, setBackendProjects] = useState<Project[]>(content.projects.backend || [])
   const [selectedProject, setSelectedProject] = useState<Project | null>(null)
   const [editMode, setEditMode] = useState(false)
-  
-  // Guardar el último proyecto seleccionado para cada categoría
   const [lastSelectedFullstack, setLastSelectedFullstack] = useState<Project | null>(null)
   const [lastSelectedBackend, setLastSelectedBackend] = useState<Project | null>(null)
   const [isTabChanging, setIsTabChanging] = useState(false)
 
-  // Obtener los proyectos actuales según la categoría activa
   const currentProjects = activeTab === "fullstack" ? fullstackProjects : backendProjects;
-  
-  // Obtener el último proyecto seleccionado según la categoría activa
   const lastSelected = activeTab === "fullstack" ? lastSelectedFullstack : lastSelectedBackend;
   
-  // Función para establecer el último proyecto seleccionado según la categoría
   const setLastSelected = useCallback((project: Project | null) => {
     if (activeTab === "fullstack") {
       setLastSelectedFullstack(project);
@@ -53,50 +39,31 @@ export default function ProjectsManager() {
     }
   }, [activeTab]);
 
-  // Cargar proyectos desde el contexto
   useEffect(() => {
-    setFullstackProjects(content.projects.fullstack || [])
-    setBackendProjects(content.projects.backend || [])
-  }, [content.projects])
+    setFullstackProjects(content.projects.fullstack || []);
+    setBackendProjects(content.projects.backend || []);
+  }, [content.projects]);
 
-  // Efecto para manejar la selección de proyectos y cambios de pestaña
   useEffect(() => {
-    // Si el proyecto seleccionado cambia (no por cambio de pestaña), actualizar el último seleccionado
     if (selectedProject && !isTabChanging) {
       setLastSelected(selectedProject);
     }
 
-    // Si estamos cambiando de pestaña, restaurar el proyecto guardado o seleccionar el primero
     if (isTabChanging) {
-      // Verificar si el último proyecto seleccionado todavía existe en la lista
       const lastProjectExists = lastSelected && 
         currentProjects.some(p => p.id === lastSelected.id);
       
-      if (lastProjectExists) {
-        // Restaurar el último proyecto seleccionado
-        setSelectedProject(lastSelected);
-      } else if (currentProjects.length > 0) {
-        // Si no hay último proyecto o ya no existe, seleccionar el primero
-        setSelectedProject(currentProjects[0]);
-      } else {
-        setSelectedProject(null);
-      }
-      
-      // Resetear el modo de edición al cambiar de pestaña
+      setSelectedProject(lastProjectExists ? lastSelected : null);
       setEditMode(false);
-      
-      // Resetear la bandera después de procesar el cambio de pestaña
       setIsTabChanging(false);
     }
   }, [activeTab, selectedProject, isTabChanging, currentProjects, lastSelected, setLastSelected]);
 
-  // Función personalizada para cambiar de pestaña
   const handleTabChange = useCallback((value: string) => {
     setIsTabChanging(true);
     setActiveTab(value as ProjectCategory);
   }, []);
 
-  // Función para mostrar notificaciones toast
   const showToast = useCallback((title: string, description: string, isError = false) => {
     toast({
       title,
@@ -105,11 +72,9 @@ export default function ProjectsManager() {
     });
   }, [toast]);
 
-  // Función para añadir un nuevo proyecto
   const addNewProject = useCallback(async () => {
     const currentDate = new Date().toISOString().split("T")[0];
     
-    // Preparar datos del nuevo proyecto
     const newProjectData = {
       title: activeTab === "fullstack" ? "Nuevo Proyecto Full Stack" : "Nuevo Proyecto Backend",
       description: "Descripción del proyecto",
@@ -120,72 +85,44 @@ export default function ProjectsManager() {
       image: activeTab === "fullstack" ? "/placeholder.svg?height=400&width=600" : undefined
     };
 
-    // Llamar al método del contexto para crear el proyecto
     const newProject = await createProjectItem(newProjectData, activeTab);
 
     if (newProject) {
       setSelectedProject(newProject);
       setEditMode(true);
-      showToast(
-        "Proyecto añadido",
-        "Se ha añadido un nuevo proyecto. Edítalo para personalizarlo."
-      );
+      showToast("Proyecto añadido", "Se ha añadido un nuevo proyecto. Edítalo para personalizarlo.");
     } else {
-      showToast(
-        "Error",
-        "No se pudo crear el proyecto. Intenta de nuevo.",
-        true
-      );
+      showToast("Error", "No se pudo crear el proyecto. Intenta de nuevo.", true);
     }
   }, [activeTab, createProjectItem, showToast]);
 
-  // Función para eliminar un proyecto
   const deleteProject = useCallback(async (id: number) => {
     const success = await deleteProjectItem(id.toString(), activeTab);
 
     if (success) {
-      // Actualizar la selección si el proyecto eliminado era el seleccionado
       if (selectedProject && selectedProject.id === id) {
-        // Determinar qué proyectos quedan después de la eliminación
         const remainingProjects = currentProjects.filter(p => p.id !== id);
-        // Seleccionar otro proyecto o establecer a null
         setSelectedProject(remainingProjects.length > 0 ? remainingProjects[0] : null);
       }
       
-      showToast(
-        "Proyecto eliminado",
-        "El proyecto ha sido eliminado correctamente."
-      );
+      showToast("Proyecto eliminado", "El proyecto ha sido eliminado correctamente.");
     } else {
-      showToast(
-        "Error",
-        "No se pudo eliminar el proyecto. Intenta de nuevo.",
-        true
-      );
+      showToast("Error", "No se pudo eliminar el proyecto. Intenta de nuevo.", true);
     }
   }, [activeTab, currentProjects, deleteProjectItem, selectedProject, showToast]);
 
-  // Función para manejar el guardado de la edición
   const handleSaveEdit = useCallback(async (updatedProject: Project) => {
     const success = await updateProjectItem(updatedProject.id.toString(), updatedProject, activeTab);
 
     if (success) {
       setSelectedProject(updatedProject);
       setEditMode(false);
-      showToast(
-        "Proyecto actualizado",
-        "El proyecto ha sido actualizado correctamente."
-      );
+      showToast("Proyecto actualizado", "El proyecto ha sido actualizado correctamente.");
     } else {
-      showToast(
-        "Error",
-        "No se pudo actualizar el proyecto. Intenta de nuevo.",
-        true
-      );
+      showToast("Error", "No se pudo actualizar el proyecto. Intenta de nuevo.", true);
     }
   }, [activeTab, updateProjectItem, showToast]);
 
-  // Renderizar los componentes de tabla y formulario para la pestaña actual
   const renderProjectContent = (category: ProjectCategory, title: string, description: string) => (
     <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
       <div className="md:col-span-1">
