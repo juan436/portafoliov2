@@ -49,7 +49,7 @@ export default function ProjectsManager() {
   // Función para añadir un nuevo proyecto - Actualizada para usar createProjectItem
   const addNewProject = async () => {
     const currentDate = new Date().toISOString().split("T")[0]
-
+    
     // Preparar datos del nuevo proyecto
     const newProjectData = {
       title: activeTab === "fullstack" ? "Nuevo Proyecto Full Stack" : "Nuevo Proyecto Backend",
@@ -69,7 +69,7 @@ export default function ProjectsManager() {
     if (newProject) {
       setSelectedProject(newProject)
       setEditMode(true)
-
+      
       toast({
         title: "Proyecto añadido",
         description: "Se ha añadido un nuevo proyecto. Edítalo para personalizarlo.",
@@ -100,7 +100,7 @@ export default function ProjectsManager() {
         // Seleccionar otro proyecto o establecer a null
         setSelectedProject(remainingProjects.length > 0 ? remainingProjects[0] : null)
       }
-
+      
       toast({
         title: "Proyecto eliminado",
         description: "El proyecto ha sido eliminado correctamente.",
@@ -196,13 +196,13 @@ export default function ProjectsManager() {
           </div>
 
           <div className="md:col-span-4">
-            <ProjectForm
-              project={selectedProject}
+                <ProjectForm
+                  project={selectedProject}
               editMode={editMode}
               setEditMode={setEditMode}
-              onSave={handleSaveEdit}
-            />
-          </div>
+                  onSave={handleSaveEdit}
+                />
+            </div>
         </div>
       </Tabs>
     </motion.div>
