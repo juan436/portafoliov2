@@ -42,7 +42,7 @@ export default function SkillsManager() {
   const [skills, setSkills] = useState(content.skills)
   const [otherSkillsState, setOtherSkills] = useState(content.otherSkills)
   const [currentSkill, setCurrentSkill] = useState<Skill | null>(null)
-  const [currentOtherSkill, setCurrentOtherSkill] = useState("")
+  const [currentOtherSkill, setCurrentOtherSkill] = useState<any>(null)
   const [isSkillFormOpen, setIsSkillFormOpen] = useState(false)
   const [isOtherSkillDialogOpen, setIsOtherSkillDialogOpen] = useState(false)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
@@ -50,15 +50,6 @@ export default function SkillsManager() {
   const [activeTab, setActiveTab] = useState<string>("frontend")
   const [newOtherSkill, setNewOtherSkill] = useState("")
   const [isCreatingNewSkill, setIsCreatingNewSkill] = useState(false)
-
-  // Datos de ejemplo para el renderizador de iconos
-  const devIcons = [
-    "react", "nodejs", "javascript", "typescript", "html5", "css3", 
-    "bootstrap", "tailwindcss", "sass", "webpack", "nextjs", "git", 
-    "github", "mongodb", "postgresql", "mysql", "express", "nestjs",
-    "docker", "kubernetes", "jenkins", "nginx", "linux", "aws",
-    "firebase", "heroku", "vercel", "figma", "photoshop", "illustrator"
-  ]
 
   useEffect(() => {
     setSkills(content.skills)
@@ -74,6 +65,14 @@ export default function SkillsManager() {
       return (
         <i
           className={`devicon-nextjs-original-wordmark ${colored ? "colored" : ""}`}
+          style={{ fontSize: "2rem", color: !colored ? "white" : undefined }}
+        ></i>
+      )
+    }
+    if (iconName === "amazonwebservices") {
+      return (
+        <i
+          className={`devicon-amazonwebservices-plain-wordmark ${colored ? "colored" : ""}`}
           style={{ fontSize: "2rem", color: !colored ? "white" : undefined }}
         ></i>
       )
@@ -101,11 +100,7 @@ export default function SkillsManager() {
   // Crear una nueva skill técnica
   const handleCreateSkill = () => {
     // Crear un objeto de habilidad temporal (no se guarda en la base de datos todavía)
-    const tempSkill: Skill = {
-      name: "",
-      icon: "",
-      category: activeTab
-    };
+    const tempSkill: Skill = { name: "", icon: "", category: activeTab, colored: false};
     
     setIsCreatingNewSkill(true);
     setCurrentSkill(tempSkill);
@@ -183,7 +178,7 @@ export default function SkillsManager() {
     setCurrentSkill(null);
   }
 
-  // Guardar una skill (nueva o editada)
+  // Guardar una skill
   const handleSkillFormSubmit = async (skill: Skill) => {
     if (isCreatingNewSkill) {
       // Es una nueva habilidad
@@ -257,20 +252,23 @@ export default function SkillsManager() {
   // Crear una nueva habilidad adicional
   const handleCreateOtherSkill = () => {
     setNewOtherSkill("");
-    setCurrentOtherSkill("");
+    setCurrentOtherSkill(null);
     setIsOtherSkillDialogOpen(true);
   }
 
   // Editar una habilidad adicional existente
-  const handleEditOtherSkill = (skill: string) => {
-    setNewOtherSkill(skill);
-    setCurrentOtherSkill(skill);
+  const handleEditOtherSkill = (skill: any) => {
+    // Siempre trabajamos con el nombre para el formulario
+    const skillName = typeof skill === 'string' ? skill : skill.name;
+    setNewOtherSkill(skillName);
+    // Pero guardamos el objeto completo (o convertimos la cadena a un objeto simple)
+    setCurrentOtherSkill(typeof skill === 'string' ? { name: skill } : skill);
     setIsOtherSkillDialogOpen(true);
   }
 
   // Confirmar eliminación de una habilidad adicional
-  const handleDeleteOtherSkillConfirm = (skill: string) => {
-    setCurrentOtherSkill(skill);
+  const handleDeleteOtherSkillConfirm = (skill: any) => {
+    setCurrentOtherSkill(typeof skill === 'string' ? { name: skill } : skill);
     setIsDeleteOtherSkillDialogOpen(true);
   }
 
@@ -278,80 +276,133 @@ export default function SkillsManager() {
   const handleSaveOtherSkill = async () => {
     if (!newOtherSkill.trim()) {
       toast({
-        title: "Campo requerido",
-        description: "El nombre de la habilidad es obligatorio.",
+        title: "Error",
+        description: "El nombre de la habilidad no puede estar vacío.",
         variant: "destructive",
       });
       return;
     }
 
-    if (currentOtherSkill) {
+    if (currentOtherSkill && currentOtherSkill._id) {
       // Editar habilidad existente
-      const index = otherSkillsState.findIndex(s => s.name === currentOtherSkill);
+      const skillId = currentOtherSkill._id;
       
-      if (index !== -1) {
-        const skillObj = otherSkillsState[index];
-        await editOtherSkill(skillObj._id, { _id: skillObj._id, name: newOtherSkill });
+      if (skillId) {
+        console.log("Actualizando habilidad adicional:", skillId, newOtherSkill);
+        const result = await editOtherSkill(skillId, { name: newOtherSkill });
         
-        // Actualizar estado local
-        const updatedSkills = [...otherSkillsState];
-        updatedSkills[index].name = newOtherSkill;
-        
-        setOtherSkills(updatedSkills);
-        
+        if (result && result.success) {
+          // Actualizar estado local con la respuesta del servidor
+          const updatedSkills = [...otherSkillsState];
+          const index = updatedSkills.findIndex(s => s._id === skillId);
+          if (index !== -1) {
+            updatedSkills[index] = result.data;
+          }
+          
+          setOtherSkills(updatedSkills);
+          
+          // Actualizar currentOtherSkill con el objeto actualizado del servidor
+          setCurrentOtherSkill(result.data);
+          
+          toast({
+            title: "Habilidad actualizada",
+            description: "La habilidad adicional ha sido actualizada correctamente.",
+            variant: "default",
+          });
+        } else {
+          toast({
+            title: "Error al actualizar",
+            description: "Hubo un problema al actualizar la habilidad. Inténtalo de nuevo.",
+            variant: "destructive",
+          });
+        }
+      } else {
+        console.error("Error: No se encontró el ID de la habilidad a editar");
         toast({
-          title: "Habilidad actualizada",
-          description: "La habilidad adicional ha sido actualizada correctamente.",
-          variant: "default",
+          title: "Error al actualizar",
+          description: "No se pudo identificar la habilidad a actualizar.",
+          variant: "destructive",
         });
+        return;
       }
     } else {
       // Crear nueva habilidad
-      const newSkillObj = { _id: Date.now().toString(), name: newOtherSkill };
-      await addOtherSkill(newSkillObj);
+      console.log("Creando nueva habilidad adicional:", newOtherSkill);
+      const result = await addOtherSkill({ name: newOtherSkill });
       
-      // Actualizar estado local
-      setOtherSkills([...otherSkillsState, newSkillObj]);
-      
-      toast({
-        title: "Habilidad creada",
-        description: "La habilidad adicional ha sido creada correctamente.",
-        variant: "default",
-      });
+      if (result && result.success) {
+        // Asegurarnos de que el objeto retornado tenga un _id
+        const newSkill = result.data;
+        console.log("Nueva habilidad creada con ID:", newSkill._id);
+        
+        // Actualizar estado local con la respuesta del servidor
+        setOtherSkills([...otherSkillsState, newSkill]);
+        
+        // Actualizar currentOtherSkill con el objeto creado
+        setCurrentOtherSkill(newSkill);
+        
+        toast({
+          title: "Habilidad creada",
+          description: "La habilidad adicional ha sido creada correctamente.",
+          variant: "default",
+        });
+      } else {
+        toast({
+          title: "Error al crear",
+          description: "Hubo un problema al crear la habilidad. Inténtalo de nuevo.",
+          variant: "destructive",
+        });
+      }
     }
 
     setIsOtherSkillDialogOpen(false);
     setNewOtherSkill("");
-    setCurrentOtherSkill("");
+    // No reseteamos currentOtherSkill aquí para mantener la referencia actualizada
   }
 
   // Eliminar una habilidad adicional
   const handleDeleteOtherSkill = async () => {
-    if (!currentOtherSkill) return;
+    if (!currentOtherSkill) {
+      console.error("Error: No hay habilidad seleccionada para eliminar");
+      return;
+    }
     
-    // Buscar la habilidad a eliminar
-    const skillToDelete = otherSkillsState.find(s => s.name === currentOtherSkill);
+    // Ahora currentOtherSkill siempre es un objeto
+    const skillId = currentOtherSkill._id;
+    console.log("Intentando eliminar habilidad con ID:", skillId);
     
-    if (skillToDelete) {
-      await removeOtherSkill(skillToDelete._id);
+    if (skillId) {
+      console.log("Enviando solicitud de eliminación para ID:", skillId);
+      const success = await removeOtherSkill(skillId);
+      console.log("Resultado de la eliminación:", success);
       
-      // Actualizar estado local
-      setOtherSkills(otherSkillsState.filter(s => s.name !== currentOtherSkill));
-      
-      toast({
-        title: "Habilidad eliminada",
-        description: "La habilidad adicional ha sido eliminada correctamente.",
-        variant: "default",
-      });
+      if (success) {
+        // No necesitamos actualizar el estado local aquí porque
+        // removeOtherSkill ya actualiza el estado en el contexto
+        toast({
+          title: "Habilidad eliminada",
+          description: "La habilidad adicional ha sido eliminada correctamente.",
+          variant: "default",
+        });
+      } else {
+        console.error("Error al eliminar la habilidad");
+        toast({
+          title: "Error al eliminar",
+          description: "Hubo un problema al eliminar la habilidad. Inténtalo de nuevo.",
+          variant: "destructive",
+        });
+      }
     } else {
+      console.error("Error: No se encontró el ID de la habilidad a eliminar");
       toast({
         title: "Error al eliminar",
-        description: "Hubo un problema al eliminar la habilidad. Inténtalo de nuevo.",
+        description: "No se pudo identificar la habilidad a eliminar.",
         variant: "destructive",
       });
     }
-
+    
     setIsDeleteOtherSkillDialogOpen(false);
+    setCurrentOtherSkill(null);
   }
 
   return (
@@ -534,7 +585,7 @@ export default function SkillsManager() {
           <DialogHeader>
             <DialogTitle>Confirmar eliminación</DialogTitle>
             <DialogDescription>
-              ¿Estás seguro de que deseas eliminar la habilidad "{currentOtherSkill}"? Esta acción no se puede deshacer.
+              ¿Estás seguro de que deseas eliminar la habilidad "{currentOtherSkill?.name}"? Esta acción no se puede deshacer.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>

@@ -113,19 +113,31 @@ export const fetchOtherSkills = async () => {
 
 export const createOtherSkill = async (skill: any) => {
   try {
+    console.log('Intentando crear habilidad adicional:', skill);
+    
+    // Crear un objeto con solo los campos que el modelo espera
+    // No incluimos _id para que MongoDB genere uno automáticamente
+    const skillToCreate = {
+      name: skill.name
+    };
+    
+    console.log('Datos a enviar:', skillToCreate);
+    
     const response = await fetch(`${API_URL}/other-skills`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(skill),
+      body: JSON.stringify(skillToCreate),
     });
     
     if (!response.ok) {
       throw new Error('Error creando habilidad adicional');
     }
     
-    return await response.json();
+    const data = await response.json();
+    console.log('Respuesta del servidor:', data);
+    return data;
   } catch (error) {
     console.error('Error creating other skill:', error);
     return { success: false, message: error.message };

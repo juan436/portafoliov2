@@ -1,8 +1,8 @@
 "use client"
 
 import { createContext, useState, useContext, type ReactNode, useEffect } from "react"
-import { 
-  fetchContent, fetchProjects, fetchExperiences, fetchSkills, fetchOtherSkills, 
+import {
+  fetchContent, fetchProjects, fetchExperiences, fetchSkills, fetchOtherSkills,
   createOtherSkill, updateOtherSkill, deleteOtherSkill, updateContent,
   // Importar funciones específicas para proyectos
   createProject as createProjectApi,
@@ -28,14 +28,15 @@ type ContentContextType = {
   saveAllContent: () => boolean
   updateExperience: (experience: Experience[]) => void
   otherSkills: OtherSkill[];
+  // Métodos para OtherSkills
   addOtherSkill: (skill: OtherSkill) => void
   editOtherSkill: (id: string, updatedSkill: OtherSkill) => void
-  removeOtherSkill: (id: string) => void
-  // Añadir nuevos métodos para proyectos
+  removeOtherSkill: (id: string) => Promise<boolean>
+  // Métodos para proyectos
   createProjectItem: (project: Omit<Project, "id">, category: 'fullstack' | 'backend') => Promise<Project | null>
   updateProjectItem: (id: string, project: Project, category: 'fullstack' | 'backend') => Promise<boolean>
   deleteProjectItem: (id: string, category: 'fullstack' | 'backend') => Promise<boolean>
-  // Añadir nuevos métodos para skills
+  // Métodos para skills
   createSkillItem: (skillData: Omit<Skill, "_id">) => Promise<Skill | null>
   updateSkillItem: (id: string, skill: Skill) => Promise<boolean>
   deleteSkillItem: (id: string) => Promise<boolean>
@@ -100,8 +101,8 @@ export type Contact = {
 }
 
 export type OtherSkill = {
-  id: string;        
-  name: string;      
+  _id?: string;  // Opcional porque será asignado por MongoDB al crear
+  name: string;
 };
 
 // Actualizar el tipo Experience para incluir más campos detallados
@@ -149,30 +150,30 @@ export const ContentProvider = ({ children }: { children: ReactNode }) => {
   const [content, setContent] = useState<Content>(emptyContent)
   const [isLoading, setIsLoading] = useState(true)
   const [otherSkills, setOtherSkills] = useState<OtherSkill[]>([])
-  
+
   // Cargar todos los datos desde la API
   useEffect(() => {
     const loadData = async () => {
       setIsLoading(true)
-      
+
       try {
         // Cargar contenido general
         const contentData = await fetchContent()
-        
+
         // Cargar proyectos por categoría
         const fullstackProjects = await fetchProjects('fullstack')
         const backendProjects = await fetchProjects('backend')
-        
+
         // Cargar experiencias
         const experienceData = await fetchExperiences()
-        
+
         // Cargar skills
         const skillsData = await fetchSkills()
-        
+
         // Cargar otras habilidades
         const otherSkillsData = await fetchOtherSkills()
         console.log("Datos de otras habilidades:", otherSkillsData.data)
-        
+
         // Construir modelo de datos completo desde las APIs
         if (contentData) {
           const projectsData = {
@@ -197,7 +198,7 @@ export const ContentProvider = ({ children }: { children: ReactNode }) => {
               createdAt: p.createdAt
             }))
           }
-          
+
           setContent({
             hero: contentData.hero || emptyContent.hero,
             about: contentData.about || emptyContent.about,
@@ -215,7 +216,7 @@ export const ContentProvider = ({ children }: { children: ReactNode }) => {
         setIsLoading(false)
       }
     }
-    
+
     loadData()
   }, [])
 
@@ -307,10 +308,10 @@ export const ContentProvider = ({ children }: { children: ReactNode }) => {
         ...projectData,
         category
       }
-      
+
       // Llamar a la API para crear el proyecto
       const response = await createProjectApi(projectToCreate)
-      
+
       if (response.success && response.data) {
         // Formatear el proyecto creado
         const newProject: Project = {
@@ -323,7 +324,7 @@ export const ContentProvider = ({ children }: { children: ReactNode }) => {
           demo: response.data.demo || "#",
           createdAt: response.data.createdAt
         }
-        
+
         // Actualizar el estado local
         if (category === 'fullstack') {
           setContent(prev => ({
@@ -342,11 +343,11 @@ export const ContentProvider = ({ children }: { children: ReactNode }) => {
             }
           }))
         }
-        
+
         setIsLoading(false)
         return newProject
       }
-      
+
       setIsLoading(false)
       return null
     } catch (error) {
@@ -364,17 +365,17 @@ export const ContentProvider = ({ children }: { children: ReactNode }) => {
         ...project,
         category
       }
-      
+
       // Llamar a la API para actualizar el proyecto
       const response = await updateProjectApi(id, projectToUpdate)
-      
+
       if (response.success) {
         // Actualizar el estado local
         if (category === 'fullstack') {
-          const updatedProjects = content.projects.fullstack.map(p => 
+          const updatedProjects = content.projects.fullstack.map(p =>
             p.id.toString() === id ? project : p
           )
-          
+
           setContent(prev => ({
             ...prev,
             projects: {
@@ -383,10 +384,10 @@ export const ContentProvider = ({ children }: { children: ReactNode }) => {
             }
           }))
         } else {
-          const updatedProjects = content.projects.backend.map(p => 
+          const updatedProjects = content.projects.backend.map(p =>
             p.id.toString() === id ? project : p
           )
-          
+
           setContent(prev => ({
             ...prev,
             projects: {
@@ -395,11 +396,11 @@ export const ContentProvider = ({ children }: { children: ReactNode }) => {
             }
           }))
         }
-        
+
         setIsLoading(false)
         return true
       }
-      
+
       setIsLoading(false)
       return false
     } catch (error) {
@@ -414,14 +415,14 @@ export const ContentProvider = ({ children }: { children: ReactNode }) => {
     try {
       // Llamar a la API para eliminar el proyecto
       const response = await deleteProjectApi(id)
-      
+
       if (response.success) {
         // Actualizar el estado local
         if (category === 'fullstack') {
           const filteredProjects = content.projects.fullstack.filter(
             p => p.id.toString() !== id
           )
-          
+
           setContent(prev => ({
             ...prev,
             projects: {
@@ -433,7 +434,7 @@ export const ContentProvider = ({ children }: { children: ReactNode }) => {
           const filteredProjects = content.projects.backend.filter(
             p => p.id.toString() !== id
           )
-          
+
           setContent(prev => ({
             ...prev,
             projects: {
@@ -442,11 +443,11 @@ export const ContentProvider = ({ children }: { children: ReactNode }) => {
             }
           }))
         }
-        
+
         setIsLoading(false)
         return true
       }
-      
+
       setIsLoading(false)
       return false
     } catch (error) {
@@ -475,7 +476,7 @@ export const ContentProvider = ({ children }: { children: ReactNode }) => {
     try {
       // Llamar a la API para crear la skill
       const response = await createSkillApi(skillData)
-      
+
       if (response.success && response.data) {
         // Formatear la skill creada
         const newSkill: Skill = {
@@ -485,13 +486,13 @@ export const ContentProvider = ({ children }: { children: ReactNode }) => {
           category: response.data.category,
           colored: response.data.colored
         }
-        
+
         console.log("Skill creada:", newSkill);
-        
+
         // Actualizar el estado local según la categoría
         setContent(prev => {
           const updatedSkills = { ...prev.skills };
-          
+
           // Añadir la nueva skill a la categoría correspondiente
           if (newSkill.category === 'frontend') {
             updatedSkills.frontend = [...updatedSkills.frontend, newSkill];
@@ -502,17 +503,17 @@ export const ContentProvider = ({ children }: { children: ReactNode }) => {
           } else if (newSkill.category === 'devops') {
             updatedSkills.devops = [...updatedSkills.devops, newSkill];
           }
-          
+
           return {
             ...prev,
             skills: updatedSkills
           };
         });
-        
+
         setIsLoading(false)
         return newSkill
       }
-      
+
       setIsLoading(false)
       return null
     } catch (error) {
@@ -528,13 +529,13 @@ export const ContentProvider = ({ children }: { children: ReactNode }) => {
       // Asegurarnos que estamos pasando el objeto correcto a la API
       // No necesitamos hacer ajustes al objeto skill, ya que ya contiene la categoría
       const response = await updateSkillApi(id, skill)
-      
+
       if (response.success) {
         // Actualizar el estado local según la categoría
         setContent(prev => {
           const updatedSkills = { ...prev.skills };
           const category = skill.category;
-          
+
           // Actualizar la skill en la categoría correspondiente
           if (category === 'frontend') {
             updatedSkills.frontend = updatedSkills.frontend.map(s => {
@@ -557,17 +558,17 @@ export const ContentProvider = ({ children }: { children: ReactNode }) => {
               return (skillId?.toString() || '') === id ? skill : s;
             });
           }
-          
+
           return {
             ...prev,
             skills: updatedSkills
           };
         });
-        
+
         setIsLoading(false)
         return true
       }
-      
+
       setIsLoading(false)
       return false
     } catch (error) {
@@ -583,13 +584,13 @@ export const ContentProvider = ({ children }: { children: ReactNode }) => {
       console.error('Se intentó eliminar una skill con ID undefined');
       return false;
     }
-    
+
     setIsLoading(true)
     try {
       // Primero necesitamos encontrar la skill para saber su categoría
       let skillCategory = '';
       let skillFound = false;
-      
+
       // Buscar en todas las categorías
       for (const category of ['frontend', 'backend', 'database', 'devops'] as const) {
         // Buscar por _id
@@ -600,21 +601,21 @@ export const ContentProvider = ({ children }: { children: ReactNode }) => {
           break;
         }
       }
-      
+
       if (!skillFound) {
         console.error(`No se encontró la skill con ID ${id} en ninguna categoría`);
         setIsLoading(false);
         return false;
       }
-      
+
       // Llamar a la API para eliminar la skill
       const response = await deleteSkillApi(id);
-      
+
       if (response.success) {
         // Actualizar el estado local
         setContent(prev => {
           const updatedSkills = { ...prev.skills };
-          
+
           // Eliminar la skill de la categoría correspondiente
           if (skillCategory === 'frontend') {
             updatedSkills.frontend = updatedSkills.frontend.filter(s => s._id !== id);
@@ -625,17 +626,17 @@ export const ContentProvider = ({ children }: { children: ReactNode }) => {
           } else if (skillCategory === 'devops') {
             updatedSkills.devops = updatedSkills.devops.filter(s => s._id !== id);
           }
-          
+
           return {
             ...prev,
             skills: updatedSkills
           };
         });
-        
+
         setIsLoading(false);
         return true;
       }
-      
+
       setIsLoading(false);
       return false;
     } catch (error) {
@@ -658,6 +659,78 @@ export const ContentProvider = ({ children }: { children: ReactNode }) => {
     setIsLoading(false)
   }
 
+
+
+  // Operaciones para OtherSkills
+  const addOtherSkill = async (skill: OtherSkill) => {
+    try {
+      const response = await createOtherSkill(skill)
+      if (response.success) {
+        setOtherSkills(prev => [...prev, response.data])
+
+        // Actualizar también el contenido global
+        setContent(prev => ({
+          ...prev,
+          otherSkills: [...prev.otherSkills, response.data]
+        }))
+      }
+    } catch (error) {
+      console.error("Error añadiendo habilidad:", error)
+    }
+  }
+
+  const editOtherSkill = async (id: string, updatedSkill: OtherSkill) => {
+    try {
+      const response = await updateOtherSkill(id, updatedSkill)
+      if (response.success) {
+        // Actualizar el estado local de otherSkills
+        setOtherSkills(prev =>
+          prev.map(skill => skill._id === id ? updatedSkill : skill)
+        )
+
+        // Actualizar también el contenido global
+        setContent(prev => ({
+          ...prev,
+          otherSkills: prev.otherSkills.map(
+            skill => skill._id === id ? updatedSkill : skill
+          )
+        }))
+      }
+    } catch (error) {
+      console.error("Error editando habilidad:", error)
+    }
+  }
+
+  const removeOtherSkill = async (id: string): Promise<boolean> => {
+    try {
+      const response = await deleteOtherSkill(id)
+      if (response.success) {
+        // Actualizar el estado local de otherSkills
+        setOtherSkills(prev => prev.filter(skill => skill._id !== id))
+
+        // Actualizar también el contenido global
+        setContent(prev => ({
+          ...prev,
+          otherSkills: prev.otherSkills.filter(skill => skill._id !== id)
+        }))
+        
+        // Devolver true para indicar éxito
+        return true
+      } else {
+        // Si la API devuelve un error, devolver false
+        return false
+      }
+    } catch (error) {
+      console.error("Error eliminando habilidad:", error)
+      return false
+    }
+  }
+
+
+
+
+
+  ////////////////////////////////////////////////////////////////////////////////
   const updateContact = async (contact: Contact) => {
     setIsLoading(true)
     try {
@@ -682,64 +755,6 @@ export const ContentProvider = ({ children }: { children: ReactNode }) => {
       console.error("Error actualizando experience:", error)
     }
     setIsLoading(false)
-  }
-
-  // Operaciones para OtherSkills
-  const addOtherSkill = async (skill: OtherSkill) => {
-    try {
-      const response = await createOtherSkill(skill)
-      if (response.success) {
-        setOtherSkills(prev => [...prev, response.data])
-        
-        // Actualizar también el contenido global
-        setContent(prev => ({
-          ...prev,
-          otherSkills: [...prev.otherSkills, response.data]
-        }))
-      }
-    } catch (error) {
-      console.error("Error añadiendo habilidad:", error)
-    }
-  }
-  
-  const editOtherSkill = async (id: string, updatedSkill: OtherSkill) => {
-    try {
-      const response = await updateOtherSkill(id, updatedSkill)
-      if (response.success) {
-        // Actualizar el estado local de otherSkills
-        setOtherSkills(prev => 
-          prev.map(skill => skill.id === id ? updatedSkill : skill)
-        )
-        
-        // Actualizar también el contenido global
-        setContent(prev => ({
-          ...prev,
-          otherSkills: prev.otherSkills.map(
-            skill => skill.id === id ? updatedSkill : skill
-          )
-        }))
-      }
-    } catch (error) {
-      console.error("Error editando habilidad:", error)
-    }
-  }
-  
-  const removeOtherSkill = async (id: string) => {
-    try {
-      const response = await deleteOtherSkill(id)
-      if (response.success) {
-        // Actualizar el estado local de otherSkills
-        setOtherSkills(prev => prev.filter(skill => skill.id !== id))
-        
-        // Actualizar también el contenido global
-        setContent(prev => ({
-          ...prev,
-          otherSkills: prev.otherSkills.filter(skill => skill.id !== id)
-        }))
-      }
-    } catch (error) {
-      console.error("Error eliminando habilidad:", error)
-    }
   }
 
   return (

@@ -8,7 +8,10 @@ export async function PATCH(request: Request, { params }: { params: { id: string
   
   try {
     const body = await request.json();
-    const skill = await OtherSkill.findByIdAndUpdate(params.id, body, { new: true });
+    // Esperar a que params esté disponible y extraer el id
+    const { id } = await params;
+    
+    const skill = await OtherSkill.findByIdAndUpdate(id, body, { new: true });
     
     if (!skill) {
       return NextResponse.json({ success: false, message: 'Habilidad no encontrada' }, { status: 404 });
@@ -26,7 +29,10 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
   await dbConnect();
   
   try {
-    const skill = await OtherSkill.findByIdAndDelete(params.id);
+    // Esperar a que params esté disponible y extraer el id
+    const { id } = await params;
+    
+    const skill = await OtherSkill.findByIdAndDelete(id);
     
     if (!skill) {
       return NextResponse.json({ success: false, message: 'Habilidad no encontrada' }, { status: 404 });
