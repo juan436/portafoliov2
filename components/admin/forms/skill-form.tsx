@@ -62,7 +62,6 @@ interface SkillFormProps {
 export default function SkillForm({ isOpen, onClose, onSave, currentSkill, category }: SkillFormProps) {
   const [name, setName] = useState("")
   const [icon, setIcon] = useState("")
-  const [level, setLevel] = useState(50)
   const [useColored, setUseColored] = useState(false)
   const [iconSearchTerm, setIconSearchTerm] = useState("")
 
@@ -76,11 +75,9 @@ export default function SkillForm({ isOpen, onClose, onSave, currentSkill, categ
     if (currentSkill) {
       setName(currentSkill.name || "")
       setIcon(currentSkill.icon || "")
-      setLevel(currentSkill.level || 50)
     } else {
       setName("")
       setIcon("")
-      setLevel(50)
     }
   }, [currentSkill, isOpen])
 
@@ -102,11 +99,12 @@ export default function SkillForm({ isOpen, onClose, onSave, currentSkill, categ
 
     // Crear objeto de habilidad con los datos del formulario
     const skillData: Skill = {
-      id: currentSkill?.id || Date.now().toString(),
+      // Solo incluir el _id si existe (es decir, si estamos editando)
+      ...(currentSkill?._id ? { _id: currentSkill._id } : {}),
       name,
       icon,
-      level,
       category,
+      colored: useColored
     }
 
     // Llamar a la función de guardado
@@ -115,7 +113,6 @@ export default function SkillForm({ isOpen, onClose, onSave, currentSkill, categ
     // Limpiar el formulario y cerrar el diálogo
     setName("")
     setIcon("")
-    setLevel(50)
     onClose()
   }
 
@@ -213,26 +210,6 @@ export default function SkillForm({ isOpen, onClose, onSave, currentSkill, categ
                   )}
                 </div>
               </ScrollArea>
-            </div>
-          </div>
-
-          <div className="grid gap-2">
-            <div className="flex items-center justify-between">
-              <Label htmlFor="level">Nivel de habilidad: {level}%</Label>
-            </div>
-            <input
-              id="level"
-              type="range"
-              min="1"
-              max="100"
-              value={level}
-              onChange={(e) => setLevel(parseInt(e.target.value))}
-              className="w-full accent-blue-700"
-            />
-            <div className="flex justify-between text-xs text-slate-400">
-              <span>Principiante</span>
-              <span>Intermedio</span>
-              <span>Avanzado</span>
             </div>
           </div>
         </div>

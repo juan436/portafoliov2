@@ -20,48 +20,46 @@ export default function SkillsTable({
   renderDevIcon,
 }: SkillsTableProps) {
   return (
-    <div className="rounded-md border border-blue-700/20 overflow-hidden">
+    <div className="overflow-x-auto">
       <Table>
-        <TableHeader className="bg-black/40">
-          <TableRow className="hover:bg-transparent">
-            <TableHead className="w-16 text-blue-300">Ícono</TableHead>
-            <TableHead className="text-blue-300">Nombre</TableHead>
-            <TableHead className="text-blue-300">Nivel</TableHead>
-            <TableHead className="w-[120px] text-right text-blue-300">Acciones</TableHead>
+        <TableHeader>
+          <TableRow className="border-blue-700/20 hover:bg-blue-900/10">
+            <TableHead className="w-[50px]">Icono</TableHead>
+            <TableHead>Habilidad</TableHead>
+            <TableHead className="text-right">Acciones</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {skills.length > 0 ? (
+          {skills.length === 0 ? (
+            <TableRow key="no-skills" className="border-blue-700/20 hover:bg-blue-900/10">
+              <TableCell colSpan={3} className="text-center py-8 text-slate-400">
+                No hay habilidades disponibles. Haz clic en "Nueva Habilidad" para añadir una.
+              </TableCell>
+            </TableRow>
+          ) : (
             skills.map((skill) => (
-              <TableRow key={skill.id} className="hover:bg-blue-950/10">
-                <TableCell className="font-medium">{renderDevIcon(skill.icon, true)}</TableCell>
-                <TableCell>{skill.name}</TableCell>
+              <TableRow key={skill.name} className="border-blue-700/20 hover:bg-blue-900/10">
                 <TableCell>
-                  <div className="flex items-center">
-                    <div className="w-full bg-black/60 h-2 rounded-full overflow-hidden">
-                      <div
-                        className="bg-blue-700 h-full rounded-full"
-                        style={{ width: `${skill.level}%` }}
-                      ></div>
-                    </div>
-                    <span className="ml-2 text-xs min-w-[32px]">{skill.level}%</span>
+                  <div className="h-10 w-10 flex items-center justify-center bg-black/30 rounded-md p-1">
+                    {renderDevIcon(skill.icon, skill.colored !== false)}
                   </div>
                 </TableCell>
+                <TableCell className="font-medium">{skill.name}</TableCell>
                 <TableCell className="text-right">
-                  <div className="flex justify-end gap-2">
+                  <div className="flex justify-end space-x-2">
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="h-8 w-8 text-blue-500 hover:text-blue-400 hover:bg-blue-900/20"
                       onClick={() => onEdit(skill)}
+                      className="h-8 w-8 text-slate-400 hover:text-blue-500 hover:bg-blue-900/20"
                     >
                       <Pencil className="h-4 w-4" />
                     </Button>
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="h-8 w-8 text-red-500 hover:text-red-400 hover:bg-red-900/20"
                       onClick={() => onDelete(skill)}
+                      className="h-8 w-8 text-slate-400 hover:text-red-500 hover:bg-red-900/20"
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
@@ -69,12 +67,6 @@ export default function SkillsTable({
                 </TableCell>
               </TableRow>
             ))
-          ) : (
-            <TableRow>
-              <TableCell colSpan={4} className="text-center text-slate-400 py-4">
-                No hay habilidades registradas
-              </TableCell>
-            </TableRow>
           )}
         </TableBody>
       </Table>

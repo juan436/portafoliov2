@@ -229,14 +229,14 @@ export const deleteProject = async (id: string) => {
   }
 };
 
-export const createSkill = async (category: string, skill: any) => {
+export const createSkill = async (skill: any) => {
   try {
     const response = await fetch(`${API_URL}/skills`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ category, ...skill }),
+      body: JSON.stringify(skill),
     });
     
     if (!response.ok) {
@@ -252,21 +252,38 @@ export const createSkill = async (category: string, skill: any) => {
 
 export const updateSkill = async (id: string, skill: any) => {
   try {
+    console.log(`Intentando actualizar skill con ID: ${id}`, skill);
+
+    // Crear un objeto con solo los campos que el modelo espera
+    const skillToUpdate = {
+      name: skill.name,
+      icon: skill.icon,
+      colored: skill.colored !== undefined ? skill.colored : false,
+      category: skill.category
+    };
+    
+    console.log('Datos a enviar:', skillToUpdate);
+    
     const response = await fetch(`${API_URL}/skills/${id}`, {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(skill),
+      body: JSON.stringify(skillToUpdate),
     });
     
+    console.log(`Respuesta del servidor:`, response);
+    
     if (!response.ok) {
+      console.error(`Error en la respuesta del servidor: ${response.status} ${response.statusText}`);
       throw new Error('Error actualizando skill');
     }
     
-    return await response.json();
+    const data = await response.json();
+    console.log(`Datos de respuesta:`, data);
+    return data;
   } catch (error) {
-    console.error('Error updating skill:', error);
+    console.error('Error detallado al actualizar skill:', error);
     return { success: false, message: error.message };
   }
 };

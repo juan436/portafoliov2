@@ -36,7 +36,7 @@ type ContentContextType = {
   updateProjectItem: (id: string, project: Project, category: 'fullstack' | 'backend') => Promise<boolean>
   deleteProjectItem: (id: string, category: 'fullstack' | 'backend') => Promise<boolean>
   // Añadir nuevos métodos para skills
-  createSkillItem: (skill: Omit<Skill, "id">, category: string) => Promise<Skill | null>
+  createSkillItem: (skillData: Omit<Skill, "id">) => Promise<Skill | null>
   updateSkillItem: (id: string, skill: Skill) => Promise<boolean>
   deleteSkillItem: (id: string) => Promise<boolean>
 }
@@ -82,7 +82,6 @@ export type Skill = {
   id: string
   name: string
   icon: string
-  level: number
   category: string
 }
 
@@ -470,17 +469,11 @@ export const ContentProvider = ({ children }: { children: ReactNode }) => {
   }
 
   // Añadir nuevos métodos específicos para skills
-  const createSkillItem = async (skillData: Omit<Skill, "id">, category: string): Promise<Skill | null> => {
+  const createSkillItem = async (skillData: Omit<Skill, "id">): Promise<Skill | null> => {
     setIsLoading(true)
     try {
-      // Preparar la skill para la API
-      const skillToCreate = {
-        ...skillData,
-        category
-      }
-      
       // Llamar a la API para crear la skill
-      const response = await createSkillApi(skillToCreate)
+      const response = await createSkillApi(skillData)
       
       if (response.success && response.data) {
         // Formatear la skill creada
@@ -488,7 +481,6 @@ export const ContentProvider = ({ children }: { children: ReactNode }) => {
           id: response.data._id,
           name: response.data.name,
           icon: response.data.icon,
-          level: response.data.level || 0,
           category: response.data.category
         }
         
@@ -497,13 +489,13 @@ export const ContentProvider = ({ children }: { children: ReactNode }) => {
           const updatedSkills = { ...prev.skills };
           
           // Añadir la nueva skill a la categoría correspondiente
-          if (category === 'frontend') {
+          if (newSkill.category === 'frontend') {
             updatedSkills.frontend = [...updatedSkills.frontend, newSkill];
-          } else if (category === 'backend') {
+          } else if (newSkill.category === 'backend') {
             updatedSkills.backend = [...updatedSkills.backend, newSkill];
-          } else if (category === 'database') {
+          } else if (newSkill.category === 'database') {
             updatedSkills.database = [...updatedSkills.database, newSkill];
-          } else if (category === 'devops') {
+          } else if (newSkill.category === 'devops') {
             updatedSkills.devops = [...updatedSkills.devops, newSkill];
           }
           
@@ -529,7 +521,8 @@ export const ContentProvider = ({ children }: { children: ReactNode }) => {
   const updateSkillItem = async (id: string, skill: Skill): Promise<boolean> => {
     setIsLoading(true)
     try {
-      // Llamar a la API para actualizar la skill
+      // Asegurarnos que estamos pasando el objeto correcto a la API
+      // No necesitamos hacer ajustes al objeto skill, ya que ya contiene la categoría
       const response = await updateSkillApi(id, skill)
       
       if (response.success) {
@@ -540,21 +533,25 @@ export const ContentProvider = ({ children }: { children: ReactNode }) => {
           
           // Actualizar la skill en la categoría correspondiente
           if (category === 'frontend') {
-            updatedSkills.frontend = updatedSkills.frontend.map(s => 
-              s.id.toString() === id ? skill : s
-            );
+            updatedSkills.frontend = updatedSkills.frontend.map(s => {
+              const skillId = s._id || s.id;
+              return (skillId?.toString() || '') === id ? skill : s;
+            });
           } else if (category === 'backend') {
-            updatedSkills.backend = updatedSkills.backend.map(s => 
-              s.id.toString() === id ? skill : s
-            );
+            updatedSkills.backend = updatedSkills.backend.map(s => {
+              const skillId = s._id || s.id;
+              return (skillId?.toString() || '') === id ? skill : s;
+            });
           } else if (category === 'database') {
-            updatedSkills.database = updatedSkills.database.map(s => 
-              s.id.toString() === id ? skill : s
-            );
+            updatedSkills.database = updatedSkills.database.map(s => {
+              const skillId = s._id || s.id;
+              return (skillId?.toString() || '') === id ? skill : s;
+            });
           } else if (category === 'devops') {
-            updatedSkills.devops = updatedSkills.devops.map(s => 
-              s.id.toString() === id ? skill : s
-            );
+            updatedSkills.devops = updatedSkills.devops.map(s => {
+              const skillId = s._id || s.id;
+              return (skillId?.toString() || '') === id ? skill : s;
+            });
           }
           
           return {
@@ -577,6 +574,12 @@ export const ContentProvider = ({ children }: { children: ReactNode }) => {
   }
 
   const deleteSkillItem = async (id: string): Promise<boolean> => {
+    // Verificar que el ID sea válido
+    if (!id) {
+      console.error('Se intentó eliminar una skill con ID undefined');
+      return false;
+    }
+    
     setIsLoading(true)
     try {
       // Primero necesitamos encontrar la skill para saber su categoría
@@ -585,7 +588,8 @@ export const ContentProvider = ({ children }: { children: ReactNode }) => {
       
       // Buscar en todas las categorías
       for (const category of ['frontend', 'backend', 'database', 'devops'] as const) {
-        const found = content.skills[category].find(s => s.id.toString() === id);
+        // Buscar por _id
+        const found = content.skills[category].find(s => s._id === id);
         if (found) {
           skillCategory = category;
           skillFound = true;
@@ -594,28 +598,28 @@ export const ContentProvider = ({ children }: { children: ReactNode }) => {
       }
       
       if (!skillFound) {
-        console.error('No se encontró la skill con ID:', id);
+        console.error(`No se encontró la skill con ID ${id} en ninguna categoría`);
         setIsLoading(false);
         return false;
       }
       
       // Llamar a la API para eliminar la skill
-      const response = await deleteSkillApi(id)
+      const response = await deleteSkillApi(id);
       
       if (response.success) {
-        // Actualizar el estado local según la categoría
+        // Actualizar el estado local
         setContent(prev => {
           const updatedSkills = { ...prev.skills };
           
-          // Filtrar la skill de la categoría correspondiente
+          // Eliminar la skill de la categoría correspondiente
           if (skillCategory === 'frontend') {
-            updatedSkills.frontend = updatedSkills.frontend.filter(s => s.id.toString() !== id);
+            updatedSkills.frontend = updatedSkills.frontend.filter(s => s._id !== id);
           } else if (skillCategory === 'backend') {
-            updatedSkills.backend = updatedSkills.backend.filter(s => s.id.toString() !== id);
+            updatedSkills.backend = updatedSkills.backend.filter(s => s._id !== id);
           } else if (skillCategory === 'database') {
-            updatedSkills.database = updatedSkills.database.filter(s => s.id.toString() !== id);
+            updatedSkills.database = updatedSkills.database.filter(s => s._id !== id);
           } else if (skillCategory === 'devops') {
-            updatedSkills.devops = updatedSkills.devops.filter(s => s.id.toString() !== id);
+            updatedSkills.devops = updatedSkills.devops.filter(s => s._id !== id);
           }
           
           return {
@@ -624,16 +628,16 @@ export const ContentProvider = ({ children }: { children: ReactNode }) => {
           };
         });
         
-        setIsLoading(false)
-        return true
+        setIsLoading(false);
+        return true;
       }
       
-      setIsLoading(false)
-      return false
+      setIsLoading(false);
+      return false;
     } catch (error) {
-      console.error("Error eliminando skill:", error)
-      setIsLoading(false)
-      return false
+      console.error("Error eliminando skill:", error);
+      setIsLoading(false);
+      return false;
     }
   }
 
