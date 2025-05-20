@@ -36,7 +36,7 @@ type ContentContextType = {
   updateProjectItem: (id: string, project: Project, category: 'fullstack' | 'backend') => Promise<boolean>
   deleteProjectItem: (id: string, category: 'fullstack' | 'backend') => Promise<boolean>
   // Añadir nuevos métodos para skills
-  createSkillItem: (skillData: Omit<Skill, "id">) => Promise<Skill | null>
+  createSkillItem: (skillData: Omit<Skill, "_id">) => Promise<Skill | null>
   updateSkillItem: (id: string, skill: Skill) => Promise<boolean>
   deleteSkillItem: (id: string) => Promise<boolean>
 }
@@ -79,10 +79,11 @@ export type Projects = {
 
 // Definir el tipo para Skill
 export type Skill = {
-  id: string
+  _id: string
   name: string
   icon: string
   category: string
+  colored: boolean
 }
 
 export type Skills = {
@@ -469,7 +470,7 @@ export const ContentProvider = ({ children }: { children: ReactNode }) => {
   }
 
   // Añadir nuevos métodos específicos para skills
-  const createSkillItem = async (skillData: Omit<Skill, "id">): Promise<Skill | null> => {
+  const createSkillItem = async (skillData: Omit<Skill, "_id">): Promise<Skill | null> => {
     setIsLoading(true)
     try {
       // Llamar a la API para crear la skill
@@ -478,12 +479,14 @@ export const ContentProvider = ({ children }: { children: ReactNode }) => {
       if (response.success && response.data) {
         // Formatear la skill creada
         const newSkill: Skill = {
-          id: response.data._id,
+          _id: response.data._id,
           name: response.data.name,
           icon: response.data.icon,
           category: response.data.category,
           colored: response.data.colored
         }
+        
+        console.log("Skill creada:", newSkill);
         
         // Actualizar el estado local según la categoría
         setContent(prev => {
