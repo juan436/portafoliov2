@@ -287,43 +287,21 @@ export default function SkillsManager() {
       // Editar habilidad existente
       const skillId = currentOtherSkill._id;
       
-      if (skillId) {
-        console.log("Actualizando habilidad adicional:", skillId, newOtherSkill);
-        const result = await editOtherSkill(skillId, { name: newOtherSkill });
-        
-        if (result && result.success) {
-          // Actualizar estado local con la respuesta del servidor
-          const updatedSkills = [...otherSkillsState];
-          const index = updatedSkills.findIndex(s => s._id === skillId);
-          if (index !== -1) {
-            updatedSkills[index] = result.data;
-          }
-          
-          setOtherSkills(updatedSkills);
-          
-          // Actualizar currentOtherSkill con el objeto actualizado del servidor
-          setCurrentOtherSkill(result.data);
-          
-          toast({
-            title: "Habilidad actualizada",
-            description: "La habilidad adicional ha sido actualizada correctamente.",
-            variant: "default",
-          });
-        } else {
-          toast({
-            title: "Error al actualizar",
-            description: "Hubo un problema al actualizar la habilidad. Inténtalo de nuevo.",
-            variant: "destructive",
-          });
-        }
+      console.log("Actualizando habilidad adicional:", skillId, newOtherSkill);
+      const result = await editOtherSkill(skillId, { name: newOtherSkill });
+      
+      if (result && result.success) {
+        toast({
+          title: "Habilidad actualizada",
+          description: "La habilidad adicional ha sido actualizada correctamente.",
+          variant: "default",
+        });
       } else {
-        console.error("Error: No se encontró el ID de la habilidad a editar");
         toast({
           title: "Error al actualizar",
-          description: "No se pudo identificar la habilidad a actualizar.",
+          description: "Hubo un problema al actualizar la habilidad. Inténtalo de nuevo.",
           variant: "destructive",
         });
-        return;
       }
     } else {
       // Crear nueva habilidad
@@ -331,16 +309,6 @@ export default function SkillsManager() {
       const result = await addOtherSkill({ name: newOtherSkill });
       
       if (result && result.success) {
-        // Asegurarnos de que el objeto retornado tenga un _id
-        const newSkill = result.data;
-        console.log("Nueva habilidad creada con ID:", newSkill._id);
-        
-        // Actualizar estado local con la respuesta del servidor
-        setOtherSkills([...otherSkillsState, newSkill]);
-        
-        // Actualizar currentOtherSkill con el objeto creado
-        setCurrentOtherSkill(newSkill);
-        
         toast({
           title: "Habilidad creada",
           description: "La habilidad adicional ha sido creada correctamente.",
@@ -357,7 +325,7 @@ export default function SkillsManager() {
 
     setIsOtherSkillDialogOpen(false);
     setNewOtherSkill("");
-    // No reseteamos currentOtherSkill aquí para mantener la referencia actualizada
+    setCurrentOtherSkill(null);
   }
 
   // Eliminar una habilidad adicional

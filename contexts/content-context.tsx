@@ -683,21 +683,25 @@ export const ContentProvider = ({ children }: { children: ReactNode }) => {
     try {
       const response = await updateOtherSkill(id, updatedSkill)
       if (response.success) {
-        // Actualizar el estado local de otherSkills
+        // Actualizar el estado local de otherSkills con los datos devueltos por el servidor
         setOtherSkills(prev =>
-          prev.map(skill => skill._id === id ? updatedSkill : skill)
+          prev.map(skill => skill._id === id ? response.data : skill)
         )
 
         // Actualizar también el contenido global
         setContent(prev => ({
           ...prev,
           otherSkills: prev.otherSkills.map(
-            skill => skill._id === id ? updatedSkill : skill
+            skill => skill._id === id ? response.data : skill
           )
         }))
+        
+        return response
       }
+      return response
     } catch (error) {
       console.error("Error editando habilidad:", error)
+      return { success: false, message: error.message }
     }
   }
 
