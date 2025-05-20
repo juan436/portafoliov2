@@ -481,7 +481,8 @@ export const ContentProvider = ({ children }: { children: ReactNode }) => {
           id: response.data._id,
           name: response.data.name,
           icon: response.data.icon,
-          category: response.data.category
+          category: response.data.category,
+          colored: response.data.colored
         }
         
         // Actualizar el estado local según la categoría

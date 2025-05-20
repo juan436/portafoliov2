@@ -231,19 +231,33 @@ export const deleteProject = async (id: string) => {
 
 export const createSkill = async (skill: any) => {
   try {
+    console.log('Intentando crear skill:', skill);
+    
+    // Crear un objeto con solo los campos que el modelo espera
+    const skillToCreate = {
+      name: skill.name,
+      icon: skill.icon,
+      colored: skill.colored !== undefined ? skill.colored : false,
+      category: skill.category
+    };
+    
+    console.log('Datos a enviar:', skillToCreate);
+    
     const response = await fetch(`${API_URL}/skills`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(skill),
+      body: JSON.stringify(skillToCreate),
     });
     
     if (!response.ok) {
       throw new Error('Error creando skill');
     }
     
-    return await response.json();
+    const data = await response.json();
+    console.log('Respuesta del servidor:', data);
+    return data;
   } catch (error) {
     console.error('Error creating skill:', error);
     return { success: false, message: error.message };
