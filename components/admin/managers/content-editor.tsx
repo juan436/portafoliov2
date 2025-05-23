@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
-import { User, FileText, Code, Briefcase, Cpu } from "lucide-react"
+import { User, FileText, Code, Cpu } from "lucide-react"
 import { useContent } from "@/contexts/content-context"
 import { useToast } from "@/hooks/use-toast"
 import Script from "next/script"
@@ -13,11 +13,10 @@ import Script from "next/script"
 import HeroForm, { HeroContent } from "@/components/admin/forms/hero-form"
 import AboutForm, { AboutContent } from "@/components/admin/forms/about-form"
 import ServicesForm, { Service } from "@/components/admin/forms/services-form"
-import ExperienceForm, { Experience } from "@/components/admin/forms/experience-form"
 import ContactForm, { ContactContent } from "@/components/admin/forms/contact-form"
 
 export default function ContentEditor() {
-  const { content, updateHero, updateAbout, updateServices, updateExperience, updateContact, saveAllContent } =
+  const { content, updateHero, updateAbout, updateServices, updateContact, saveAllContent } =
     useContent()
   const { toast } = useToast()
   const [activeTab, setActiveTab] = useState("hero")
@@ -31,7 +30,6 @@ export default function ContentEditor() {
   })
   const [aboutContent, setAboutContent] = useState<AboutContent>(content.about)
   const [servicesContent, setServicesContent] = useState<Service[]>(content.services)
-  const [experienceContent, setExperienceContent] = useState<Experience[]>(content.experience)
   const [contactContent, setContactContent] = useState<ContactContent>(content.contact)
 
   // Añadir un estado para controlar la notificación de guardado
@@ -43,7 +41,6 @@ export default function ContentEditor() {
     setHeroContent(content.hero)
     setAboutContent(content.about)
     setServicesContent(content.services)
-    setExperienceContent(content.experience)
     setContactContent(content.contact)
   }, [content])
 
@@ -62,7 +59,6 @@ export default function ContentEditor() {
     updateHero(heroContent)
     updateAbout(aboutContent)
     updateServices(servicesContent)
-    updateExperience(experienceContent)
     updateContact(contactContent)
 
     // Luego guardar todo en localStorage y disparar el evento
@@ -153,13 +149,6 @@ export default function ContentEditor() {
               <Code className="mr-2 h-4 w-4" />
               Servicios
             </TabsTrigger>
-            <TabsTrigger
-              value="experience"
-              className="data-[state=active]:bg-blue-700/20 data-[state=active]:text-blue-500"
-            >
-              <Briefcase className="mr-2 h-4 w-4" />
-              Experiencia
-            </TabsTrigger>
             <TabsTrigger value="contact" className="data-[state=active]:bg-blue-700/20 data-[state=active]:text-blue-500">
               <Cpu className="mr-2 h-4 w-4" />
               Contacto
@@ -177,10 +166,6 @@ export default function ContentEditor() {
 
           <TabsContent value="services" className="mt-0">
             <ServicesForm services={servicesContent} onChange={setServicesContent} />
-          </TabsContent>
-
-          <TabsContent value="experience" className="mt-0">
-            <ExperienceForm experiences={experienceContent} onChange={setExperienceContent} />
           </TabsContent>
 
           <TabsContent value="contact" className="mt-0">

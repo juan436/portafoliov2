@@ -10,7 +10,8 @@ export async function GET(
   await dbConnect();
   
   try {
-    const experience = await Experience.findById(params.id);
+    const { id } = await params;
+    const experience = await Experience.findById(id);
     
     if (!experience) {
       return NextResponse.json({ 
@@ -32,37 +33,6 @@ export async function GET(
   }
 }
 
-
-// DELETE: Eliminar una experiencia
-export async function DELETE(
-  request: Request,
-  { params }: { params: { id: string } }
-) {
-  await dbConnect();
-  
-  try {
-    const experience = await Experience.findByIdAndDelete(params.id);
-    
-    if (!experience) {
-      return NextResponse.json({ 
-        success: false, 
-        message: 'Experiencia no encontrada' 
-      }, { status: 404 });
-    }
-    
-    return NextResponse.json({ 
-      success: true, 
-      message: 'Experiencia eliminada correctamente' 
-    });
-  } catch (error) {
-    console.error('Error eliminando experiencia:', error);
-    return NextResponse.json({ 
-      success: false, 
-      message: 'Error del servidor' 
-    }, { status: 500 });
-  }
-}
-
 // PATCH: Actualizar parcialmente una experiencia
 export async function PATCH(
   request: Request,
@@ -71,9 +41,10 @@ export async function PATCH(
   await dbConnect();
   
   try {
+    const { id } = await params;
     const body = await request.json();
     
-    const experience = await Experience.findById(params.id);
+    const experience = await Experience.findById(id);
     
     if (!experience) {
       return NextResponse.json({ 
@@ -91,7 +62,8 @@ export async function PATCH(
     
     return NextResponse.json({ 
       success: true, 
-      data: experience 
+      data: experience,
+      message: 'Experiencia actualizada correctamente'
     });
   } catch (error) {
     console.error('Error actualizando experiencia:', error);
@@ -99,6 +71,37 @@ export async function PATCH(
       success: false, 
       message: 'Error del servidor',
       error: (error as Error).message
+    }, { status: 500 });
+  }
+}
+
+// DELETE: Eliminar una experiencia
+export async function DELETE(
+  request: Request,
+  { params }: { params: { id: string } }
+) {
+  await dbConnect();
+  
+  try {
+    const { id } = await params;
+    const experience = await Experience.findByIdAndDelete(id);
+    
+    if (!experience) {
+      return NextResponse.json({ 
+        success: false, 
+        message: 'Experiencia no encontrada' 
+      }, { status: 404 });
+    }
+    
+    return NextResponse.json({ 
+      success: true, 
+      message: 'Experiencia eliminada correctamente' 
+    });
+  } catch (error) {
+    console.error('Error eliminando experiencia:', error);
+    return NextResponse.json({ 
+      success: false, 
+      message: 'Error del servidor' 
     }, { status: 500 });
   }
 }

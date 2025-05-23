@@ -11,7 +11,11 @@ import {
   // Importar funciones específicas para skills
   createSkill as createSkillApi,
   updateSkill as updateSkillApi,
-  deleteSkill as deleteSkillApi
+  deleteSkill as deleteSkillApi,
+  // Importar funciones específicas para experiencia
+  createExperience as createExperienceApi,
+  updateExperience as updateExperienceApi,
+  deleteExperience as deleteExperienceApi
 } from "@/services/api"
 
 // Definir el tipo para el contexto de contenido
@@ -40,6 +44,10 @@ type ContentContextType = {
   createSkillItem: (skillData: Omit<Skill, "_id">) => Promise<Skill | null>
   updateSkillItem: (id: string, skill: Skill) => Promise<boolean>
   deleteSkillItem: (id: string) => Promise<boolean>
+  // Métodos para experiencia
+  createExperienceItem: (experience: Omit<Experience, "_id">) => Promise<Experience | null>
+  updateExperienceItem: (id: string, experience: Experience) => Promise<boolean>
+  deleteExperienceItem: (id: string) => Promise<boolean>
 }
 
 // Definir los tipos para las secciones del contenido
@@ -107,6 +115,7 @@ export type OtherSkill = {
 
 // Actualizar el tipo Experience para incluir más campos detallados
 export type Experience = {
+  _id?: string;
   position: string
   company: string
   period: string
@@ -730,9 +739,98 @@ export const ContentProvider = ({ children }: { children: ReactNode }) => {
     }
   }
 
+  // Nuevos métodos para experiencia
+  const createExperienceItem = async (experienceData: Omit<Experience, "_id">): Promise<Experience | null> => {
+    setIsLoading(true)
+    try {
+      // Llamar a la API para crear la experiencia
+      const response = await createExperienceApi(experienceData)
 
+      if (response.success && response.data) {
+        // Formatear la experiencia creada
+        const newExperience: Experience = {
+          _id: response.data._id,
+          position: response.data.position,
+          company: response.data.company,
+          period: response.data.period,
+          description: response.data.description,
+          skills: response.data.skills,
+          companyLogo: response.data.companyLogo,
+          location: response.data.location,
+          achievements: response.data.achievements,
+          url: response.data.url
+        }
 
+        // Actualizar el estado local
+        setContent(prev => ({
+          ...prev,
+          experience: [...prev.experience, newExperience]
+        }))
 
+        setIsLoading(false)
+        return newExperience
+      }
+
+      setIsLoading(false)
+      return null
+    } catch (error) {
+      console.error("Error creando experiencia:", error)
+      setIsLoading(false)
+      return null
+    }
+  }
+
+  const updateExperienceItem = async (id: string, experience: Experience): Promise<boolean> => {
+    setIsLoading(true)
+    try {
+      // Llamar a la API para actualizar la experiencia
+      const response = await updateExperienceApi(id, experience)
+
+      if (response.success) {
+        // Actualizar el estado local
+        setContent(prev => ({
+          ...prev,
+          experience: prev.experience.map(e => e._id === id ? experience : e)
+        }))
+
+        setIsLoading(false)
+        return true
+      }
+
+      setIsLoading(false)
+      return false
+    } catch (error) {
+      console.error("Error actualizando experiencia:", error)
+      setIsLoading(false)
+      return false
+    }
+  }
+
+  const deleteExperienceItem = async (id: string): Promise<boolean> => {
+    setIsLoading(true)
+    try {
+      // Llamar a la API para eliminar la experiencia
+      const response = await deleteExperienceApi(id)
+
+      if (response.success) {
+        // Actualizar el estado local
+        setContent(prev => ({
+          ...prev,
+          experience: prev.experience.filter(e => e._id !== id)
+        }))
+
+        setIsLoading(false)
+        return true
+      }
+
+      setIsLoading(false)
+      return false
+    } catch (error) {
+      console.error("Error eliminando experiencia:", error)
+      setIsLoading(false)
+      return false
+    }
+  }
 
   ////////////////////////////////////////////////////////////////////////////////
   const updateContact = async (contact: Contact) => {
@@ -786,7 +884,11 @@ export const ContentProvider = ({ children }: { children: ReactNode }) => {
         // Nuevos métodos para skills
         createSkillItem,
         updateSkillItem,
-        deleteSkillItem
+        deleteSkillItem,
+        // Nuevos métodos para experiencia
+        createExperienceItem,
+        updateExperienceItem,
+        deleteExperienceItem
       }}
     >
       {children}

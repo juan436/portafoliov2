@@ -11,7 +11,8 @@ import ContentEditor from "@/components/admin/managers/content-editor"
 import SettingsPanel from "@/components/admin/managers/settings-panel"
 import ImageManager from "@/components/admin/managers/image-manager"
 import SkillsManager from "@/components/admin/managers/skills-manager"
-import { Code, FileText, FileImage, Settings, User } from "lucide-react"
+import ExperienceManager from "@/components/admin/managers/experience-manager"
+import { Code, FileText, FileImage, Settings, User, Briefcase } from "lucide-react"
 
 export default function DashboardPage() {
   const [isLoading, setIsLoading] = useState(true)
@@ -38,7 +39,7 @@ export default function DashboardPage() {
   // Establecer la pestaña activa basada en los parámetros de URL
   useEffect(() => {
     const tab = searchParams.get("tab")
-    if (tab && ["projects", "skills", "content", "images", "settings"].includes(tab)) {
+    if (tab && ["projects", "skills", "experience", "content", "images", "settings"].includes(tab)) {
       setActiveTab(tab)
     }
 
@@ -133,6 +134,13 @@ export default function DashboardPage() {
                 Habilidades
               </TabsTrigger>
               <TabsTrigger
+                value="experience"
+                className="data-[state=active]:bg-blue-700/20 data-[state=active]:text-blue-500 flex items-center"
+              >
+                <Briefcase className="mr-2 h-4 w-4" />
+                Experiencia
+              </TabsTrigger>
+              <TabsTrigger
                 value="content"
                 className="data-[state=active]:bg-blue-700/20 data-[state=active]:text-blue-500 flex items-center"
               >
@@ -185,6 +193,7 @@ export default function DashboardPage() {
         <div className="bg-black/20 border border-blue-700/20 rounded-lg p-6">
           {activeTab === "projects" && <ProjectsManager />}
           {activeTab === "skills" && <SkillsManager />}
+          {activeTab === "experience" && <ExperienceManager />}
           {activeTab === "content" && <ContentEditor />}
           {activeTab === "images" && <ImageManager />}
           {activeTab === "settings" && <SettingsPanel section={activeSettingsSection} />}
