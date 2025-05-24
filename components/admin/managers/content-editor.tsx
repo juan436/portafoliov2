@@ -1,10 +1,10 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
-import { motion, AnimatePresence } from "framer-motion"
+import { useState, useEffect } from "react"
+import { motion } from "framer-motion"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
-import { User, FileText, Code, Cpu } from "lucide-react"
+import { User, FileText, Code, Cpu, Save } from "lucide-react"
 import { useContent } from "@/contexts/content-context"
 import { useToast } from "@/hooks/use-toast"
 import Script from "next/script"
@@ -20,6 +20,7 @@ export default function ContentEditor() {
     useContent()
   const { toast } = useToast()
   const [activeTab, setActiveTab] = useState("hero")
+  const [isLoading, setIsLoading] = useState(false)
 
   // Estados locales para edición
   const [heroContent, setHeroContent] = useState<HeroContent>({
@@ -28,66 +29,87 @@ export default function ContentEditor() {
       content.hero.profileImage ||
       "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/profile-E9YRocD6o4olhnzraHWCjLmKjCbspw.jpeg",
   })
-  const [aboutContent, setAboutContent] = useState<AboutContent>(content.about)
-  const [servicesContent, setServicesContent] = useState<Service[]>(content.services)
+  const [aboutContent, setAboutContent] = useState<AboutContent>({
+    paragraph1: content.about.paragraph1 || "",
+    paragraph2: content.about.paragraph2 || "",
+    paragraph3: content.about.paragraph3 || "",
+  })
+  const [servicesContent, setServicesContent] = useState<Service[]>(content.services || [])
   const [contactContent, setContactContent] = useState<ContactContent>(content.contact)
-
-  // Añadir un estado para controlar la notificación de guardado
-  const [showSaveNotification, setShowSaveNotification] = useState(false)
-  const saveNotificationTimeout = useRef<NodeJS.Timeout | null>(null)
 
   // Actualizar estados locales cuando cambia el contenido global
   useEffect(() => {
-    setHeroContent(content.hero)
-    setAboutContent(content.about)
-    setServicesContent(content.services)
-    setContactContent(content.contact)
-  }, [content])
+    // Evitar actualizaciones innecesarias que causan parpadeo
+    if (isLoading) return;
 
-  // Limpiar el timeout cuando el componente se desmonte
-  useEffect(() => {
-    return () => {
-      if (saveNotificationTimeout.current) {
-        clearTimeout(saveNotificationTimeout.current)
-      }
-    }
-  }, [])
+    console.log("ContentEditor useEffect [content, isLoading]", {
+      isLoading,
+      contentAbout: content.about,
+      localAbout: aboutContent
+    });
+
+    setHeroContent({
+      ...content.hero,
+      profileImage:
+        content.hero.profileImage ||
+        "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/profile-E9YRocD6o4olhnzraHWCjLmKjCbspw.jpeg",
+    })
+    setAboutContent({
+      paragraph1: content.about.paragraph1 || "",
+      paragraph2: content.about.paragraph2 || "",
+      paragraph3: content.about.paragraph3 || "",
+    })
+    setServicesContent(content.services || [])
+    setContactContent(content.contact)
+  }, [content, isLoading])
 
   // Función para guardar todos los cambios
-  const handleSave = () => {
-    // Primero actualizar el contexto global con los estados locales
-    updateHero(heroContent)
-    updateAbout(aboutContent)
-    updateServices(servicesContent)
-    updateContact(contactContent)
+  const handleSave = async () => {
+    try {
+      setIsLoading(true)
 
-    // Luego guardar todo en localStorage y disparar el evento
-    const success = saveAllContent()
+      console.log("ContentEditor handleSave - antes de actualizar", {
+        aboutContent,
+        contentAbout: content.about
+      });
 
-    if (success) {
-      // Mostrar la notificación
-      setShowSaveNotification(true)
+      // Primero actualizar el contexto global con los estados locales
+      updateHero(heroContent)
+      updateAbout(aboutContent)
+      updateServices(servicesContent)
+      updateContact(contactContent)
 
-      // Mostrar el toast normal
-      toast({
-        title: "Cambios guardados",
-        description: "El contenido ha sido actualizado correctamente.",
-        variant: "default",
-      })
+      // Luego guardar todo en localStorage y disparar el evento
+      const success = saveAllContent()
 
-      // Ocultar la notificación después de 3 segundos
-      if (saveNotificationTimeout.current) {
-        clearTimeout(saveNotificationTimeout.current)
+      console.log("ContentEditor handleSave - después de actualizar", {
+        success,
+        aboutContent,
+        contentAbout: content.about
+      });
+
+      if (success) {
+        toast({
+          title: "Cambios guardados",
+          description: "El contenido ha sido actualizado correctamente.",
+          variant: "default",
+        })
+      } else {
+        toast({
+          title: "Error al guardar",
+          description: "Ha ocurrido un error al guardar los cambios.",
+          variant: "destructive",
+        })
       }
-      saveNotificationTimeout.current = setTimeout(() => {
-        setShowSaveNotification(false)
-      }, 3000)
-    } else {
+    } catch (error) {
+      console.error("Error al guardar el contenido:", error)
       toast({
-        title: "Error al guardar",
-        description: "Ha ocurrido un error al guardar los cambios.",
+        title: "Error",
+        description: "Ocurrió un error inesperado al guardar los cambios.",
         variant: "destructive",
       })
+    } finally {
+      setIsLoading(false)
     }
   }
 
@@ -102,33 +124,27 @@ export default function ContentEditor() {
         transition={{ duration: 0.5 }}
         className="space-y-6"
       >
-        {/* Notificación de guardado exitoso */}
-        <AnimatePresence>
-          {showSaveNotification && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 20 }}
-              className="fixed bottom-8 right-8 z-50 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg flex items-center"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-6 w-6 mr-2"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-              </svg>
-              <span className="font-medium">¡Cambios guardados exitosamente!</span>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
         <div className="flex justify-between items-center">
           <h2 className="text-2xl font-bold">Editor de Contenido</h2>
-          <Button onClick={handleSave} className="bg-blue-700 hover:bg-blue-800">
-            Guardar Cambios
+          <Button
+            onClick={handleSave}
+            className="bg-blue-700 hover:bg-blue-800"
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <>
+                <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Guardando...
+              </>
+            ) : (
+              <>
+                <Save className="mr-2 h-4 w-4" />
+                Guardar
+              </>
+            )}
           </Button>
         </div>
 

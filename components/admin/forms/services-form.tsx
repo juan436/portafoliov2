@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -14,6 +14,7 @@ export interface Service {
   title: string
   description: string
   icon: string
+  _id?: string
 }
 
 interface ServicesFormProps {
@@ -25,11 +26,22 @@ export default function ServicesForm({ services, onChange }: ServicesFormProps) 
   const { toast } = useToast()
   const [activeServiceIndex, setActiveServiceIndex] = useState(0)
 
+  // Verificar que el índice activo sea válido cuando cambian los servicios
+  useEffect(() => {
+    if (services.length === 0) {
+      setActiveServiceIndex(-1); // No hay servicios seleccionados
+    } else if (activeServiceIndex >= services.length) {
+      // Si el índice activo es mayor que la longitud del array, seleccionar el último
+      setActiveServiceIndex(services.length - 1);
+    }
+  }, [services, activeServiceIndex]);
+
   // Agregar nuevo servicio
   const addNewService = () => {
+    // Crear un nuevo servicio con valores vacíos (funcionarán como placeholders)
     const newService: Service = {
-      title: "Nuevo Servicio",
-      description: "Descripción del nuevo servicio",
+      title: "",
+      description: "",
       icon: "Code",
     }
     const updatedServices = [...services, newService]
@@ -50,22 +62,22 @@ export default function ServicesForm({ services, onChange }: ServicesFormProps) 
       e.stopPropagation()
     }
 
-    if (services.length <= 1) {
-      toast({
-        title: "No se puede eliminar",
-        description: "Debe haber al menos un servicio.",
-        variant: "destructive",
-      })
-      return
-    }
-
-    const updatedServices = [...services]
-    updatedServices.splice(index, 1)
-    onChange(updatedServices)
-
+    // Crear una copia del array sin el servicio a eliminar
+    const updatedServices = [...services];
+    updatedServices.splice(index, 1);
+    
+    // Actualizar el estado
+    onChange(updatedServices);
+    
     // Ajustar el índice activo si es necesario
-    if (activeServiceIndex >= updatedServices.length) {
-      setActiveServiceIndex(updatedServices.length - 1)
+    if (updatedServices.length === 0) {
+      setActiveServiceIndex(-1);
+    } else if (index === activeServiceIndex) {
+      // Si eliminamos el servicio activo, seleccionar el anterior o el primero
+      setActiveServiceIndex(index > 0 ? index - 1 : 0);
+    } else if (index < activeServiceIndex) {
+      // Si eliminamos un servicio antes del activo, ajustar el índice
+      setActiveServiceIndex(activeServiceIndex - 1);
     }
 
     toast({
@@ -131,7 +143,7 @@ export default function ServicesForm({ services, onChange }: ServicesFormProps) 
                   <div className="mb-2 mt-2">
                     {renderIcon(service.icon)}
                   </div>
-                  <h3 className="font-medium text-sm mb-1">{service.title}</h3>
+                  <h3 className="font-medium text-sm mb-1">{service.title || "Nuevo Servicio"}</h3>
                 </div>
                 <Button
                   variant="ghost"
@@ -146,44 +158,64 @@ export default function ServicesForm({ services, onChange }: ServicesFormProps) 
           ))}
         </div>
 
-        {services.length > 0 && (
+        {services.length > 0 ? (
           <div className="space-y-4 border border-blue-700/20 rounded-lg p-4">
-            <h3 className="font-medium mb-2">Editando: {services[activeServiceIndex].title}</h3>
-            <div className="space-y-2">
-              <Label htmlFor="service-title">Título del Servicio</Label>
-              <Input
-                id="service-title"
-                name="title"
-                value={services[activeServiceIndex].title}
-                onChange={handleServiceChange}
-                className="bg-black/40 border-blue-700/20"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="service-description">Descripción</Label>
-              <Textarea
-                id="service-description"
-                name="description"
-                value={services[activeServiceIndex].description}
-                onChange={handleServiceChange}
-                className="min-h-[100px] bg-black/40 border-blue-700/20"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="service-icon">Icono</Label>
-              <select
-                id="service-icon"
-                name="icon"
-                value={services[activeServiceIndex].icon}
-                onChange={handleServiceChange}
-                className="w-full p-2 rounded-md bg-black/40 border border-blue-700/20 focus:border-blue-500 outline-none"
-              >
-                <option value="Code">Code</option>
-                <option value="Server">Server</option>
-                <option value="Database">Database</option>
-                <option value="Cpu">Cpu</option>
-              </select>
-            </div>
+            {activeServiceIndex >= 0 && activeServiceIndex < services.length ? (
+              <>
+                <h3 className="font-medium mb-2">Editando: {services[activeServiceIndex].title || "Nuevo Servicio"}</h3>
+                <div className="space-y-2">
+                  <Label htmlFor="service-title">Título del Servicio</Label>
+                  <Input
+                    id="service-title"
+                    name="title"
+                    value={services[activeServiceIndex].title}
+                    onChange={handleServiceChange}
+                    className="bg-black/40 border-blue-700/20"
+                    placeholder="Ingresa el título del servicio"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="service-description">Descripción</Label>
+                  <Textarea
+                    id="service-description"
+                    name="description"
+                    value={services[activeServiceIndex].description}
+                    onChange={handleServiceChange}
+                    className="min-h-[100px] bg-black/40 border-blue-700/20"
+                    placeholder="Ingresa la descripción del servicio"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="service-icon">Icono</Label>
+                  <select
+                    id="service-icon"
+                    name="icon"
+                    value={services[activeServiceIndex].icon}
+                    onChange={handleServiceChange}
+                    className="w-full p-2 rounded-md bg-black/40 border border-blue-700/20 focus:border-blue-500 outline-none"
+                  >
+                    <option value="Code">Código</option>
+                    <option value="Server">Servidor</option>
+                    <option value="Database">Base de Datos</option>
+                    <option value="Cpu">CPU/Hardware</option>
+                  </select>
+                </div>
+              </>
+            ) : (
+              <p className="text-gray-400 text-center py-4">Selecciona un servicio para editar</p>
+            )}
+          </div>
+        ) : (
+          <div className="flex flex-col items-center justify-center p-8 border border-blue-700/20 rounded-lg">
+            <Code className="h-12 w-12 text-blue-500/50 mb-4" />
+            <h3 className="text-lg font-medium text-gray-300 mb-2">No hay servicios</h3>
+            <p className="text-gray-500 text-center max-w-md mb-6">
+              Agrega tu primer servicio haciendo clic en el botón "Agregar Servicio"
+            </p>
+            <Button onClick={addNewService} className="bg-blue-700 hover:bg-blue-800">
+              <Plus className="mr-2 h-4 w-4" />
+              Agregar Servicio
+            </Button>
           </div>
         )}
       </CardContent>

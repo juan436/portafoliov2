@@ -257,41 +257,64 @@ export const ContentProvider = ({ children }: { children: ReactNode }) => {
 
   // Actualizar métodos para usar API
   const updateHero = async (hero: Hero) => {
+    console.log("ContentContext updateHero - inicio", { hero, isLoading });
+    
+    // Actualizar inmediatamente el estado local para evitar el parpadeo
+    setContent(prev => ({ ...prev, hero: { ...hero } }));
+    
+    // Luego actualizar en el servidor
     setIsLoading(true)
     try {
       const response = await updateContent('hero', hero)
-      if (response.success) {
-        setContent(prev => ({ ...prev, hero }))
-      }
+      console.log("ContentContext updateHero - respuesta API", { response });
+      // No es necesario actualizar el estado de nuevo aquí, ya lo hicimos arriba
     } catch (error) {
       console.error("Error actualizando hero:", error)
+      // En caso de error, podríamos revertir al estado anterior
     }
+    console.log("ContentContext updateHero - fin", { hero, isLoading: false });
     setIsLoading(false)
   }
 
   const updateAbout = async (about: About) => {
+    console.log("ContentContext updateAbout - inicio", { about, isLoading });
+    
+    // Actualizar inmediatamente el estado local para evitar el parpadeo
+    setContent((prev) => ({ ...prev, about: { ...about } }));
+    
+    // Luego actualizar en el servidor
     setIsLoading(true)
     try {
       const response = await updateContent('about', about)
-      if (response.success) {
-        setContent((prev) => ({ ...prev, about }))
-      }
+      console.log("ContentContext updateAbout - respuesta API", { response });
+      // No es necesario actualizar el estado de nuevo aquí, ya lo hicimos arriba
     } catch (error) {
       console.error("Error actualizando about:", error)
+      // En caso de error, podríamos revertir al estado anterior
     }
+    console.log("ContentContext updateAbout - fin", { about, isLoading: false });
     setIsLoading(false)
   }
 
   const updateServices = async (services: Service[]) => {
+    console.log("ContentContext updateServices - inicio", { services });
+    
+    // Primero actualizamos el estado global inmediatamente para evitar parpadeos
+    setContent((prev) => ({ ...prev, services }))
+    
+    // Luego hacemos la operación asíncrona
     setIsLoading(true)
     try {
       const response = await updateContent('services', services)
-      if (response.success) {
-        setContent((prev) => ({ ...prev, services }))
+      if (!response.success) {
+        console.error("Error en la respuesta al actualizar services:", response)
+        // En caso de error, podríamos revertir al estado anterior
       }
     } catch (error) {
       console.error("Error actualizando services:", error)
+      // En caso de error, podríamos revertir al estado anterior
     }
+    console.log("ContentContext updateServices - fin", { services, isLoading: false });
     setIsLoading(false)
   }
 
@@ -834,15 +857,22 @@ export const ContentProvider = ({ children }: { children: ReactNode }) => {
 
   ////////////////////////////////////////////////////////////////////////////////
   const updateContact = async (contact: Contact) => {
+    console.log("ContentContext updateContact - inicio", { contact, isLoading });
+    
+    // Actualizar inmediatamente el estado local para evitar el parpadeo
+    setContent((prev) => ({ ...prev, contact: { ...contact } }));
+    
+    // Luego actualizar en el servidor
     setIsLoading(true)
     try {
       const response = await updateContent('contact', contact)
-      if (response.success) {
-        setContent((prev) => ({ ...prev, contact }))
-      }
+      console.log("ContentContext updateContact - respuesta API", { response });
+      // No es necesario actualizar el estado de nuevo aquí, ya lo hicimos arriba
     } catch (error) {
       console.error("Error actualizando contact:", error)
+      // En caso de error, podríamos revertir al estado anterior
     }
+    console.log("ContentContext updateContact - fin", { contact, isLoading: false });
     setIsLoading(false)
   }
 

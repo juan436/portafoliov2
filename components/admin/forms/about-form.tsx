@@ -1,6 +1,6 @@
 "use client"
 
-import React from "react"
+import React, { useRef } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
@@ -18,13 +18,18 @@ interface AboutFormProps {
 }
 
 export default function AboutForm({ content, onChange }: AboutFormProps) {
+  // Contador de renderizados para depuración
+  const renderCount = useRef(0);
+  renderCount.current += 1;
+  
   // Manejar cambios en los campos del formulario
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const { name, value } = e.target
+    
     onChange({
       ...content,
       [name]: value,
-    })
+    });
   }
 
   return (
@@ -41,7 +46,7 @@ export default function AboutForm({ content, onChange }: AboutFormProps) {
           <Textarea
             id="paragraph1"
             name="paragraph1"
-            value={content.paragraph1}
+            value={content.paragraph1 || ""}
             onChange={handleChange}
             className="min-h-[100px] bg-black/40 border-blue-700/20"
           />
@@ -51,7 +56,7 @@ export default function AboutForm({ content, onChange }: AboutFormProps) {
           <Textarea
             id="paragraph2"
             name="paragraph2"
-            value={content.paragraph2}
+            value={content.paragraph2 || ""}
             onChange={handleChange}
             className="min-h-[100px] bg-black/40 border-blue-700/20"
           />
@@ -61,7 +66,7 @@ export default function AboutForm({ content, onChange }: AboutFormProps) {
           <Textarea
             id="paragraph3"
             name="paragraph3"
-            value={content.paragraph3}
+            value={content.paragraph3 || ""}
             onChange={handleChange}
             className="min-h-[100px] bg-black/40 border-blue-700/20"
           />
