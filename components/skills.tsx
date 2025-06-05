@@ -246,7 +246,7 @@ export default function Skills() {
           <div className="flex flex-wrap justify-center gap-2">
             {otherSkills.map((skill, index) => (
               <motion.span
-                key={skill.id}
+                key={skill._id || `other-skill-${index}`}
                 initial={{ opacity: 0, scale: 0.9 }}
                 whileInView={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.3, delay: index * 0.05 }}

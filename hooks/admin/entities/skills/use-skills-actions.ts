@@ -18,7 +18,12 @@ export function useSkillsActions() {
   const toastNotifications = useToastNotifications();
   
   // Estado local para las habilidades
-  const [skills, setSkills] = useState<Skill[]>(content.skills || []);
+  const [skills, setSkills] = useState<any>(content.skills || {
+    frontend: [],
+    backend: [],
+    database: [],
+    devops: []
+  });
   const [currentSkill, setCurrentSkill] = useState<Skill | null>(null);
   const [isSkillFormOpen, setIsSkillFormOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<string>("frontend");
@@ -29,13 +34,6 @@ export function useSkillsActions() {
       setSkills(content.skills);
     }
   }, [content.skills]);
-
-  /**
-   * Filtra las habilidades por categoría
-   */
-  const getSkillsByCategory = useCallback((category: string) => {
-    return skills.filter(skill => skill.category === category);
-  }, [skills]);
 
   /**
    * Abre el formulario para crear una nueva habilidad
@@ -54,12 +52,12 @@ export function useSkillsActions() {
    * Abre el formulario para editar una habilidad existente
    */
   const openEditSkillForm = useCallback((skill: Skill) => {
-    setCurrentSkill(skill);
+    setCurrentSkill({ ...skill });
     setIsSkillFormOpen(true);
   }, []);
 
   /**
-   * Cierra el formulario de habilidades
+   * Cierra el formulario de habilidad
    */
   const closeSkillForm = useCallback(() => {
     setIsSkillFormOpen(false);
@@ -72,15 +70,19 @@ export function useSkillsActions() {
   const saveSkill = useCallback((skill: Skill) => {
     if (skill._id) {
       // Actualizar habilidad existente
-      updateSkillItem(skill)
-        .then(() => {
-          toastNotifications.showSuccessToast(
-            "Habilidad actualizada", 
-            `La habilidad "${skill.name}" ha sido actualizada correctamente.`
-          );
-          setSkills(prevSkills => 
-            prevSkills.map(s => s._id === skill._id ? skill : s)
-          );
+      updateSkillItem(skill._id, skill)
+        .then(success => {
+          if (success) {
+            toastNotifications.showSuccessToast(
+              "Habilidad actualizada", 
+              `La habilidad "${skill.name}" ha sido actualizada correctamente.`
+            );
+          } else {
+            toastNotifications.showErrorToast(
+              "Error al actualizar", 
+              "No se pudo actualizar la habilidad. Inténtalo de nuevo."
+            );
+          }
         })
         .catch(error => {
           toastNotifications.showErrorToast(
@@ -92,11 +94,12 @@ export function useSkillsActions() {
       // Crear nueva habilidad
       createSkillItem(skill)
         .then(newSkill => {
-          toastNotifications.showSuccessToast(
-            "Habilidad creada", 
-            `La habilidad "${newSkill.name}" ha sido creada correctamente.`
-          );
-          setSkills(prevSkills => [...prevSkills, newSkill]);
+          if (newSkill) {
+            toastNotifications.showSuccessToast(
+              "Habilidad creada", 
+              `La habilidad "${newSkill.name}" ha sido creada correctamente.`
+            );
+          }
         })
         .catch(error => {
           toastNotifications.showErrorToast(
@@ -114,12 +117,18 @@ export function useSkillsActions() {
    */
   const deleteSkill = useCallback((skillId: string) => {
     deleteSkillItem(skillId)
-      .then(() => {
-        toastNotifications.showSuccessToast(
-          "Habilidad eliminada", 
-          "La habilidad ha sido eliminada correctamente."
-        );
-        setSkills(prevSkills => prevSkills.filter(skill => skill._id !== skillId));
+      .then(success => {
+        if (success) {
+          toastNotifications.showSuccessToast(
+            "Habilidad eliminada", 
+            "La habilidad ha sido eliminada correctamente."
+          );
+        } else {
+          toastNotifications.showErrorToast(
+            "Error al eliminar", 
+            "No se pudo eliminar la habilidad. Inténtalo de nuevo."
+          );
+        }
       })
       .catch(error => {
         toastNotifications.showErrorToast(
@@ -134,7 +143,6 @@ export function useSkillsActions() {
     currentSkill,
     isSkillFormOpen,
     activeTab,
-    getSkillsByCategory,
     setActiveTab,
     openNewSkillForm,
     openEditSkillForm,

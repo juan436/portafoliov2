@@ -1,60 +1,61 @@
-"use client"
-
-import type React from "react"
-import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
-import { Plus, Code, Server, Database, Braces } from "lucide-react"
-import { useContent } from "@/contexts/content-context"
-import { useToast } from "@/hooks/use-toast"
-import type { Skill } from "@/contexts/content-context"
+import { Plus, Code, Server, Database, Layers, PanelRight } from "lucide-react"
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/components/ui/tabs"
 import Script from "next/script"
+import { useState,} from "react"
+import type { Skill } from "@/contexts/content-context"
 
 // Importar componentes extraídos
 import SkillForm from "@/components/admin/forms/skill-form"
 import SkillsTable from "@/components/admin/tables/skills-table"
 import OtherSkillsTable from "@/components/admin/tables/other-skills-table"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog"
+import { ConfirmationDialog } from "@/components/admin/common/confirmation-dialog"
+import { FormDialog } from "@/components/admin/common/form-dialog"
 import { Input } from "@/components/ui/input"
 
-export default function SkillsManager() {
-  const {
-    content,
-    addOtherSkill,
-    editOtherSkill,
-    removeOtherSkill,
-    // Métodos específicos para skills
-    createSkillItem,
-    updateSkillItem,
-    deleteSkillItem,
-  } = useContent()
-  
-  const { toast } = useToast()
-  const [skills, setSkills] = useState(content.skills)
-  const [otherSkillsState, setOtherSkills] = useState(content.otherSkills)
-  const [currentSkill, setCurrentSkill] = useState<Skill | null>(null)
-  const [currentOtherSkill, setCurrentOtherSkill] = useState<any>(null)
-  const [isSkillFormOpen, setIsSkillFormOpen] = useState(false)
-  const [isOtherSkillDialogOpen, setIsOtherSkillDialogOpen] = useState(false)
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
-  const [isDeleteOtherSkillDialogOpen, setIsDeleteOtherSkillDialogOpen] = useState(false)
-  const [activeTab, setActiveTab] = useState<string>("frontend")
-  const [newOtherSkill, setNewOtherSkill] = useState("")
-  const [isCreatingNewSkill, setIsCreatingNewSkill] = useState(false)
+// Importar los hooks personalizados
+import { useSkillsActions } from "@/hooks/admin/entities/skills/use-skills-actions"
+import { useOtherSkillsActions } from "@/hooks/admin/entities/other-skills/use-other-skills-actions"
 
-  useEffect(() => {
-    setSkills(content.skills)
-    setOtherSkills(content.otherSkills)
-  }, [content])
+export default function SkillsManager() {
+  // Usar los hooks personalizados
+  const {
+    skills,
+    currentSkill,
+    isSkillFormOpen,
+    activeTab,
+    setActiveTab,
+    openNewSkillForm,
+    openEditSkillForm,
+    closeSkillForm,
+    saveSkill,
+    deleteSkill
+  } = useSkillsActions();
+
+  const {
+    otherSkills,
+    currentOtherSkill,
+    isOtherSkillDialogOpen,
+    newOtherSkillName,
+    setNewOtherSkillName,
+    openNewOtherSkillDialog,
+    openEditOtherSkillDialog,
+    closeOtherSkillDialog,
+    saveOtherSkill,
+    deleteOtherSkill
+  } = useOtherSkillsActions();
+
+  // Estado para los diálogos de confirmación
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isDeleteOtherSkillDialogOpen, setIsDeleteOtherSkillDialogOpen] = useState(false);
+  const [skillToDelete, setSkillToDelete] = useState<Skill | null>(null);
+  const [otherSkillToDelete, setOtherSkillToDelete] = useState<any>(null);
 
   // Renderizador de iconos de Devicon
   const renderDevIcon = (iconName: string, colored = true) => {
@@ -78,15 +79,12 @@ export default function SkillsManager() {
       )
     }
 
-    // Casos especiales que usan sufijos diferentes
-    const specialIcons: Record<string, string> = {
-      express: "original",
-      nestjs: "plain-wordmark",
-      amazonwebservices: "original",
-      digitalocean: "original",
-    }
-
     // Determinar el sufijo correcto
+    const specialIcons: Record<string, string> = {
+      "csharp": "plain",
+      "dot-net": "plain-wordmark",
+      "dotnetcore": "plain",
+    }
     const suffix = specialIcons[iconName] || "plain"
 
     return (
@@ -99,278 +97,52 @@ export default function SkillsManager() {
 
   // Crear una nueva skill técnica
   const handleCreateSkill = () => {
-    // Crear un objeto de habilidad temporal (no se guarda en la base de datos todavía)
-    const tempSkill: Skill = { name: "", icon: "", category: activeTab, colored: false};
-    
-    setIsCreatingNewSkill(true);
-    setCurrentSkill(tempSkill);
-    setIsSkillFormOpen(true);
+    openNewSkillForm(activeTab);
   }
 
   // Editar una skill existente
   const handleEditSkill = (skill: Skill) => {
-    setIsCreatingNewSkill(false);
-    setCurrentSkill({ ...skill });
-    setIsSkillFormOpen(true);
+    openEditSkillForm(skill);
   }
 
   // Confirmar eliminación de una skill
   const handleDeleteSkillConfirm = (skill: Skill) => {
-    console.log("Confirmando eliminación de skill:", skill);
-    setCurrentSkill(skill);
+    setSkillToDelete(skill);
     setIsDeleteDialogOpen(true);
   }
 
   // Eliminar una skill
   const handleDeleteSkill = async () => {
-    console.log("Intentando eliminar skill:", currentSkill);
-    
-    if (!currentSkill) {
-      console.log("Error: No hay skill seleccionada");
-      toast({
-        title: "Error",
-        description: "No se puede eliminar la habilidad porque no hay ninguna seleccionada.",
-        variant: "destructive",
-      });
-      return;
+    if (skillToDelete && skillToDelete._id) {
+      deleteSkill(skillToDelete._id);
+      setIsDeleteDialogOpen(false);
+      setSkillToDelete(null);
     }
-    
-    const skillId = currentSkill._id;
-    
-    if (!skillId) {
-      console.log("Error: ID de skill no válido");
-      toast({
-        title: "Error",
-        description: "No se puede eliminar la habilidad porque no tiene un ID válido.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    console.log("Llamando a deleteSkillItem con ID:", skillId);
-    const success = await deleteSkillItem(skillId);
-    console.log("Resultado de deleteSkillItem:", success);
-
-    if (success) {
-      // Actualizar el estado local
-      setSkills(prev => {
-        const updated = { ...prev };
-        const category = currentSkill.category as keyof Skills;
-        updated[category] = updated[category].filter(s => s._id !== skillId);
-        return updated;
-      });
-
-      // Mostrar notificación
-      toast({
-        title: "Habilidad eliminada",
-        description: "La habilidad ha sido eliminada correctamente.",
-        variant: "default",
-      });
-    } else {
-      toast({
-        title: "Error al eliminar",
-        description: "Hubo un problema al eliminar la habilidad. Inténtalo de nuevo.",
-        variant: "destructive",
-      });
-    }
-
-    setIsDeleteDialogOpen(false);
-    setCurrentSkill(null);
-  }
-
-  // Guardar una skill
-  const handleSkillFormSubmit = async (skill: Skill) => {
-    if (isCreatingNewSkill) {
-      // Es una nueva habilidad
-      const result = await createSkillItem(skill);
-      
-      if (result) {
-        // Actualizar el estado local
-        setSkills(prev => {
-          const updated = { ...prev };
-          const category = skill.category as keyof Skills;
-          updated[category] = [...updated[category], result];
-          return updated;
-        });
-
-        toast({
-          title: "Habilidad creada",
-          description: "La habilidad ha sido creada correctamente.",
-          variant: "default",
-        });
-      } else {
-        toast({
-          title: "Error al crear",
-          description: "Hubo un problema al crear la habilidad. Inténtalo de nuevo.",
-          variant: "destructive",
-        });
-      }
-    } else {
-      // Es una edición de habilidad existente
-      const skillId = skill._id;
-      
-      if (!skillId) {
-        toast({
-          title: "Error al actualizar",
-          description: "No se pudo identificar la habilidad a actualizar.",
-          variant: "destructive",
-        });
-        return;
-      }
-      
-      console.log("Actualizando skill con ID:", skillId, "Datos:", skill);
-      const success = await updateSkillItem(skillId, skill);
-      
-      if (success) {
-        // Actualizar el estado local
-        setSkills(prev => {
-          const updated = { ...prev };
-          const category = skill.category as keyof Skills;
-          updated[category] = updated[category].map(s => s._id === skillId ? skill : s);
-          return updated;
-        });
-
-        toast({
-          title: "Habilidad actualizada",
-          description: "La habilidad ha sido actualizada correctamente.",
-          variant: "default",
-        });
-      } else {
-        toast({
-          title: "Error al actualizar",
-          description: "Hubo un problema al actualizar la habilidad. Inténtalo de nuevo.",
-          variant: "destructive",
-        });
-      }
-    }
-
-    setIsSkillFormOpen(false);
-    setCurrentSkill(null);
-    setIsCreatingNewSkill(false);
   }
 
   // Crear una nueva habilidad adicional
   const handleCreateOtherSkill = () => {
-    setNewOtherSkill("");
-    setCurrentOtherSkill(null);
-    setIsOtherSkillDialogOpen(true);
+    openNewOtherSkillDialog();
   }
 
   // Editar una habilidad adicional existente
   const handleEditOtherSkill = (skill: any) => {
-    // Siempre trabajamos con el nombre para el formulario
-    const skillName = typeof skill === 'string' ? skill : skill.name;
-    setNewOtherSkill(skillName);
-    // Pero guardamos el objeto completo (o convertimos la cadena a un objeto simple)
-    setCurrentOtherSkill(typeof skill === 'string' ? { name: skill } : skill);
-    setIsOtherSkillDialogOpen(true);
+    openEditOtherSkillDialog(skill);
   }
 
   // Confirmar eliminación de una habilidad adicional
   const handleDeleteOtherSkillConfirm = (skill: any) => {
-    setCurrentOtherSkill(typeof skill === 'string' ? { name: skill } : skill);
+    setOtherSkillToDelete(skill);
     setIsDeleteOtherSkillDialogOpen(true);
-  }
-
-  // Guardar una habilidad adicional (nueva o editada)
-  const handleSaveOtherSkill = async () => {
-    if (!newOtherSkill.trim()) {
-      toast({
-        title: "Error",
-        description: "El nombre de la habilidad no puede estar vacío.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (currentOtherSkill && currentOtherSkill._id) {
-      // Editar habilidad existente
-      const skillId = currentOtherSkill._id;
-      
-      console.log("Actualizando habilidad adicional:", skillId, newOtherSkill);
-      const result = await editOtherSkill(skillId, { name: newOtherSkill });
-      
-      if (result && result.success) {
-        toast({
-          title: "Habilidad actualizada",
-          description: "La habilidad adicional ha sido actualizada correctamente.",
-          variant: "default",
-        });
-      } else {
-        toast({
-          title: "Error al actualizar",
-          description: "Hubo un problema al actualizar la habilidad. Inténtalo de nuevo.",
-          variant: "destructive",
-        });
-      }
-    } else {
-      // Crear nueva habilidad
-      console.log("Creando nueva habilidad adicional:", newOtherSkill);
-      const result = await addOtherSkill({ name: newOtherSkill });
-      
-      if (result && result.success) {
-        toast({
-          title: "Habilidad creada",
-          description: "La habilidad adicional ha sido creada correctamente.",
-          variant: "default",
-        });
-      } else {
-        toast({
-          title: "Error al crear",
-          description: "Hubo un problema al crear la habilidad. Inténtalo de nuevo.",
-          variant: "destructive",
-        });
-      }
-    }
-
-    setIsOtherSkillDialogOpen(false);
-    setNewOtherSkill("");
-    setCurrentOtherSkill(null);
   }
 
   // Eliminar una habilidad adicional
   const handleDeleteOtherSkill = async () => {
-    if (!currentOtherSkill) {
-      console.error("Error: No hay habilidad seleccionada para eliminar");
-      return;
+    if (otherSkillToDelete && otherSkillToDelete._id) {
+      deleteOtherSkill(otherSkillToDelete._id);
+      setIsDeleteOtherSkillDialogOpen(false);
+      setOtherSkillToDelete(null);
     }
-    
-    // Ahora currentOtherSkill siempre es un objeto
-    const skillId = currentOtherSkill._id;
-    console.log("Intentando eliminar habilidad con ID:", skillId);
-    
-    if (skillId) {
-      console.log("Enviando solicitud de eliminación para ID:", skillId);
-      const success = await removeOtherSkill(skillId);
-      console.log("Resultado de la eliminación:", success);
-      
-      if (success) {
-        // No necesitamos actualizar el estado local aquí porque
-        // removeOtherSkill ya actualiza el estado en el contexto
-        toast({
-          title: "Habilidad eliminada",
-          description: "La habilidad adicional ha sido eliminada correctamente.",
-          variant: "default",
-        });
-      } else {
-        console.error("Error al eliminar la habilidad");
-        toast({
-          title: "Error al eliminar",
-          description: "Hubo un problema al eliminar la habilidad. Inténtalo de nuevo.",
-          variant: "destructive",
-        });
-      }
-    } else {
-      console.error("Error: No se encontró el ID de la habilidad a eliminar");
-      toast({
-        title: "Error al eliminar",
-        description: "No se pudo identificar la habilidad a eliminar.",
-        variant: "destructive",
-      });
-    }
-    
-    setIsDeleteOtherSkillDialogOpen(false);
-    setCurrentOtherSkill(null);
   }
 
   return (
@@ -414,45 +186,60 @@ export default function SkillsManager() {
               className="data-[state=active]:bg-blue-700/20 data-[state=active]:text-blue-500 flex items-center"
             >
               <Database className="mr-2 h-4 w-4" />
-              Base de Datos
+              Bases de Datos
             </TabsTrigger>
             <TabsTrigger
               value="devops"
               className="data-[state=active]:bg-blue-700/20 data-[state=active]:text-blue-500 flex items-center"
             >
-              <Braces className="mr-2 h-4 w-4" />
+              <Layers className="mr-2 h-4 w-4" />
               DevOps
+            </TabsTrigger>
+            <TabsTrigger
+              value="other"
+              className="data-[state=active]:bg-blue-700/20 data-[state=active]:text-blue-500 flex items-center"
+            >
+              <PanelRight className="mr-2 h-4 w-4" />
+              Otras
             </TabsTrigger>
           </TabsList>
 
-          {/* Contenido de las tabs */}
-          <TabsContent value="frontend" className="m-0">
+          {/* Contenido para cada tab */}
+          <TabsContent value="frontend" className="mt-0">
             <SkillsTable
-              skills={skills.frontend}
+              skills={skills.frontend || []}
               onEdit={handleEditSkill}
               onDelete={handleDeleteSkillConfirm}
               renderDevIcon={renderDevIcon}
             />
           </TabsContent>
-          <TabsContent value="backend" className="m-0">
+          <TabsContent value="backend" className="mt-0">
             <SkillsTable
-              skills={skills.backend}
+              skills={skills.backend || []}
               onEdit={handleEditSkill}
               onDelete={handleDeleteSkillConfirm}
               renderDevIcon={renderDevIcon}
             />
           </TabsContent>
-          <TabsContent value="database" className="m-0">
+          <TabsContent value="database" className="mt-0">
             <SkillsTable
-              skills={skills.database}
+              skills={skills.database || []}
               onEdit={handleEditSkill}
               onDelete={handleDeleteSkillConfirm}
               renderDevIcon={renderDevIcon}
             />
           </TabsContent>
-          <TabsContent value="devops" className="m-0">
+          <TabsContent value="devops" className="mt-0">
             <SkillsTable
-              skills={skills.devops}
+              skills={skills.devops || []}
+              onEdit={handleEditSkill}
+              onDelete={handleDeleteSkillConfirm}
+              renderDevIcon={renderDevIcon}
+            />
+          </TabsContent>
+          <TabsContent value="other" className="mt-0">
+            <SkillsTable
+              skills={skills.other || []}
               onEdit={handleEditSkill}
               onDelete={handleDeleteSkillConfirm}
               renderDevIcon={renderDevIcon}
@@ -461,111 +248,71 @@ export default function SkillsManager() {
         </Tabs>
 
         {/* Sección de otras habilidades */}
-        <div className="mt-10">
-          <div className="flex justify-between items-center mb-6">
+        <div className="mt-12 space-y-6">
+          <div className="flex items-center justify-between">
             <h2 className="text-2xl font-bold">Otras Habilidades</h2>
             <Button onClick={handleCreateOtherSkill} className="bg-blue-700 hover:bg-blue-800">
               <Plus className="mr-2 h-4 w-4" />
-              Nueva Habilidad Adicional
+              Añadir Habilidad
             </Button>
           </div>
-          
-          <Card className="bg-black/40 border-blue-700/20">
-            <CardHeader>
-              <CardTitle>Habilidades Adicionales</CardTitle>
-              <CardDescription>Gestiona las habilidades adicionales que se mostrarán en tu portafolio.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <OtherSkillsTable
-                skills={otherSkillsState}
-                onEdit={handleEditOtherSkill}
-                onDelete={handleDeleteOtherSkillConfirm}
-              />
-            </CardContent>
-          </Card>
+
+          <OtherSkillsTable
+            skills={otherSkills}
+            onEdit={handleEditOtherSkill}
+            onDelete={handleDeleteOtherSkillConfirm}
+          />
         </div>
       </motion.div>
 
-      {/* Formulario de habilidad técnica */}
+      {/* Formulario para añadir/editar habilidad técnica */}
       <SkillForm
         isOpen={isSkillFormOpen}
-        onClose={() => setIsSkillFormOpen(false)}
-        onSave={handleSkillFormSubmit}
+        onClose={closeSkillForm}
+        onSave={saveSkill}
         currentSkill={currentSkill}
         category={activeTab}
       />
 
       {/* Dialog para confirmar eliminación de habilidad técnica */}
-      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <DialogContent className="bg-black border-blue-700/20">
-          <DialogHeader>
-            <DialogTitle>Confirmar eliminación</DialogTitle>
-            <DialogDescription>
-              ¿Estás seguro de que deseas eliminar la habilidad {currentSkill?.name}? Esta acción no se puede deshacer.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>
-              Cancelar
-            </Button>
-            <Button variant="destructive" onClick={handleDeleteSkill}>
-              Eliminar
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <ConfirmationDialog
+        isOpen={isDeleteDialogOpen}
+        onClose={() => setIsDeleteDialogOpen(false)}
+        onConfirm={handleDeleteSkill}
+        title="Confirmar eliminación"
+        description={`¿Estás seguro de que deseas eliminar la habilidad ${skillToDelete?.name}? Esta acción no se puede deshacer.`}
+        confirmLabel="Eliminar"
+      />
 
       {/* Dialog para añadir/editar otra habilidad */}
-      <Dialog open={isOtherSkillDialogOpen} onOpenChange={setIsOtherSkillDialogOpen}>
-        <DialogContent className="bg-black border-blue-700/20">
-          <DialogHeader>
-            <DialogTitle>{currentOtherSkill ? "Editar Habilidad" : "Nueva Habilidad"}</DialogTitle>
-            <DialogDescription>
-              {currentOtherSkill
-                ? "Actualiza el nombre de la habilidad adicional."
-                : "Añade una nueva habilidad adicional a tu perfil."}
-            </DialogDescription>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid gap-2">
-              <Input
-                value={newOtherSkill}
-                onChange={(e) => setNewOtherSkill(e.target.value)}
-                placeholder="Ej: Gestión de equipos, Comunicación efectiva"
-                className="bg-black/40 border-blue-700/20"
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsOtherSkillDialogOpen(false)}>
-              Cancelar
-            </Button>
-            <Button onClick={handleSaveOtherSkill} className="bg-blue-700 hover:bg-blue-800">
-              Guardar
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <FormDialog
+        isOpen={isOtherSkillDialogOpen}
+        onClose={closeOtherSkillDialog}
+        onSubmit={saveOtherSkill}
+        title={currentOtherSkill ? "Editar Habilidad" : "Nueva Habilidad"}
+        description={currentOtherSkill
+          ? "Actualiza el nombre de la habilidad adicional."
+          : "Añade una nueva habilidad adicional a tu perfil."}
+      >
+        <div className="grid gap-2">
+          <Input
+            value={newOtherSkillName}
+            onChange={(e) => setNewOtherSkillName(e.target.value)}
+            placeholder="Ej: Gestión de equipos, Comunicación efectiva"
+            className="bg-black/40 border-blue-700/20"
+          />
+        </div>
+      </FormDialog>
 
       {/* Dialog para confirmar eliminación de otra habilidad */}
-      <Dialog open={isDeleteOtherSkillDialogOpen} onOpenChange={setIsDeleteOtherSkillDialogOpen}>
-        <DialogContent className="bg-black border-blue-700/20">
-          <DialogHeader>
-            <DialogTitle>Confirmar eliminación</DialogTitle>
-            <DialogDescription>
-              ¿Estás seguro de que deseas eliminar la habilidad "{currentOtherSkill?.name}"? Esta acción no se puede deshacer.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsDeleteOtherSkillDialogOpen(false)}>
-              Cancelar
-            </Button>
-            <Button variant="destructive" onClick={handleDeleteOtherSkill}>
-              Eliminar
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <ConfirmationDialog
+        isOpen={isDeleteOtherSkillDialogOpen}
+        onClose={() => setIsDeleteOtherSkillDialogOpen(false)}
+        onConfirm={handleDeleteOtherSkill}
+        title="Confirmar eliminación"
+        description={`¿Estás seguro de que deseas eliminar la habilidad "${otherSkillToDelete?.name}"? Esta acción no se puede deshacer.`}
+        confirmLabel="Eliminar"
+      />
     </>
   )
 }

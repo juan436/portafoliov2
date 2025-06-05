@@ -81,14 +81,11 @@ export function useOtherSkillsActions() {
         name: newOtherSkillName.trim()
       };
       
-      editOtherSkill(updatedSkill)
+      editOtherSkill(currentOtherSkill._id, updatedSkill)
         .then(() => {
           toastNotifications.showSuccessToast(
             "Habilidad actualizada", 
             `La habilidad "${updatedSkill.name}" ha sido actualizada correctamente.`
-          );
-          setOtherSkills(prevSkills => 
-            prevSkills.map(s => s._id === updatedSkill._id ? updatedSkill : s)
           );
           closeOtherSkillDialog();
         })
@@ -100,17 +97,16 @@ export function useOtherSkillsActions() {
         });
     } else {
       // Crear nueva habilidad
-      const newSkill = {
+      const newSkill: OtherSkill = {
         name: newOtherSkillName.trim()
       };
       
       addOtherSkill(newSkill)
-        .then(createdSkill => {
+        .then(() => {
           toastNotifications.showSuccessToast(
             "Habilidad creada", 
-            `La habilidad "${createdSkill.name}" ha sido creada correctamente.`
+            `La habilidad "${newSkill.name}" ha sido creada correctamente.`
           );
-          setOtherSkills(prevSkills => [...prevSkills, createdSkill]);
           closeOtherSkillDialog();
         })
         .catch(error => {
@@ -127,12 +123,18 @@ export function useOtherSkillsActions() {
    */
   const deleteOtherSkill = useCallback((skillId: string) => {
     removeOtherSkill(skillId)
-      .then(() => {
-        toastNotifications.showSuccessToast(
-          "Habilidad eliminada", 
-          "La habilidad ha sido eliminada correctamente."
-        );
-        setOtherSkills(prevSkills => prevSkills.filter(skill => skill._id !== skillId));
+      .then(success => {
+        if (success) {
+          toastNotifications.showSuccessToast(
+            "Habilidad eliminada", 
+            "La habilidad ha sido eliminada correctamente."
+          );
+        } else {
+          toastNotifications.showErrorToast(
+            "Error al eliminar", 
+            "No se pudo eliminar la habilidad. Inténtalo de nuevo."
+          );
+        }
       })
       .catch(error => {
         toastNotifications.showErrorToast(
