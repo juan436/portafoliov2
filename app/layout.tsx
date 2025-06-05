@@ -24,7 +24,6 @@ export default function RootLayout({
   return (
     <html lang="es" suppressHydrationWarning>
       <head>
-        {/* Add Devicon CSS */}
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/devicon.min.css" />
       </head>
       <body className={`${inter.className} bg-[#0a0a0a] text-slate-200`}>
@@ -33,8 +32,8 @@ export default function RootLayout({
             <LanguageProvider>
               {children}
               <WolfGuide />
-              <Toaster />
             </LanguageProvider>
+            <Toaster />
           </ContentProvider>
         </ThemeProvider>
       </body>

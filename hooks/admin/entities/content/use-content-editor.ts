@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useContent } from "@/contexts/content-context";
-import { useToast } from "@/hooks/use-toast";
+import { useToastNotifications } from "../../use-toast-notifications";
 import { HeroContent } from "@/components/admin/forms/hero-form";
 import { AboutContent } from "@/components/admin/forms/about-form";
 import { Service } from "@/components/admin/forms/services-form";
@@ -20,7 +20,7 @@ export function useContentEditor() {
     saveAllContent 
   } = useContent();
   
-  const { toast } = useToast();
+  const { showSuccessToast, showErrorToast } = useToastNotifications();
   const [activeTab, setActiveTab] = useState("hero");
   const [isLoading, setIsLoading] = useState(false);
 
@@ -80,25 +80,22 @@ export function useContentEditor() {
       const success = saveAllContent();
 
       if (success) {
-        toast({
-          title: "Cambios guardados",
-          description: "El contenido ha sido actualizado correctamente.",
-          variant: "default",
-        });
+        showSuccessToast(
+          "Cambios guardados", 
+          "El contenido ha sido actualizado correctamente."
+        );
       } else {
-        toast({
-          title: "Error al guardar",
-          description: "Ha ocurrido un error al guardar los cambios.",
-          variant: "destructive",
-        });
+        showErrorToast(
+          "Error al guardar", 
+          "Ha ocurrido un error al guardar los cambios."
+        );
       }
     } catch (error) {
       console.error("Error al guardar el contenido:", error);
-      toast({
-        title: "Error",
-        description: "Ocurrió un error inesperado al guardar los cambios.",
-        variant: "destructive",
-      });
+      showErrorToast(
+        "Error", 
+        "Ocurrió un error inesperado al guardar los cambios."
+      );
     } finally {
       setIsLoading(false);
     }
@@ -112,7 +109,8 @@ export function useContentEditor() {
     updateServices, 
     updateContact, 
     saveAllContent, 
-    toast
+    showSuccessToast, 
+    showErrorToast
   ]);
 
   return {
