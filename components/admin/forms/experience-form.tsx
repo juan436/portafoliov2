@@ -1,561 +1,348 @@
 "use client"
 
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { Plus, Trash2, Tag, Briefcase, Save } from "lucide-react"
+import { Trash2, Tag } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog"
 
 // Definir la interfaz para una experiencia laboral
 export interface Experience {
-  _id?: string
-  position: string
-  company: string
-  period: string
-  description: string
-  skills: string[]
-  companyLogo?: string
-  location?: string
-  achievements?: string[]
-  url?: string
-  isNew?: boolean
+  _id?: string, position: string, company: string, period: string, description: string, skills: string[], companyLogo?: string
+  location?: string, achievements?: string[], url?: string, isNew?: boolean
 }
 
 interface ExperienceFormProps {
-  experiences: Experience[]
-  onChange: (experiences: Experience[]) => void
-  onCreate?: (experience: Omit<Experience, "_id">) => Promise<void>
-  onUpdate?: (id: string, experience: Experience) => Promise<void>
-  onDelete?: (id: string) => Promise<void>
+  experience: Experience | null
+  editMode: boolean
+  setEditMode: (value: boolean) => void
+  onSave: (experience: Experience) => void
+  onCancel?: () => void
+  isNewExperience?: boolean
 }
 
-export default function ExperienceForm({ 
-  experiences, 
-  onChange, 
-  onCreate, 
-  onUpdate, 
-  onDelete 
-}: ExperienceFormProps) {
+// Componente para el campo de formulario
+const FormField = ({ label, name, value, onChange, placeholder, disabled, isTextarea = false
+}: {
+  label: string
+  name: string
+  value: string
+  onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void
+  placeholder: string
+  disabled: boolean
+  isTextarea?: boolean
+}) => (
+  <div className="space-y-2">
+    <Label htmlFor={name}>{label}</Label>
+    {isTextarea ? (
+      <Textarea
+        id={name}
+        name={name}
+        value={value}
+        onChange={onChange}
+        placeholder={placeholder}
+        className="bg-black/40 min-h-[100px]"
+        disabled={disabled}
+      />
+    ) : (
+      <Input
+        id={name}
+        name={name}
+        value={value}
+        onChange={onChange}
+        placeholder={placeholder}
+        className="bg-black/40"
+        disabled={disabled}
+      />
+    )}
+  </div>
+);
+
+// Componente para la sección de tecnologías
+const TechnologiesSection = ({
+  skills,
+  editMode,
+  newTechnology,
+  setNewTechnology,
+  addTechnology,
+  removeTechnology
+}: {
+  skills: string[]
+  editMode: boolean
+  newTechnology: string
+  setNewTechnology: (value: string) => void
+  addTechnology: () => void
+  removeTechnology: (tech: string) => void
+}) => (
+  <div className="space-y-2">
+    <Label className="flex items-center">
+      <Tag className="mr-2 h-4 w-4" />
+      Tecnologías utilizadas
+    </Label>
+    <div className="flex flex-wrap gap-2 mb-2">
+      {skills?.map((tech, i) => (
+        <div
+          key={i}
+          className="bg-blue-700/20 text-blue-400 px-2 py-1 rounded-md text-sm flex items-center"
+        >
+          {tech}
+          {editMode && (
+            <button
+              onClick={() => removeTechnology(tech)}
+              className="ml-2 text-blue-400 hover:text-red-500"
+            >
+              <Trash2 className="h-3 w-3" />
+            </button>
+          )}
+        </div>
+      ))}
+      {(!skills || skills.length === 0) && (
+        <div className="text-gray-500 text-sm italic">
+          No hay tecnologías añadidas
+        </div>
+      )}
+    </div>
+    {editMode && (
+      <div className="flex space-x-2">
+        <Input
+          value={newTechnology}
+          onChange={(e) => setNewTechnology(e.target.value)}
+          placeholder="Añadir tecnología (ej: React, Node.js)"
+          className="bg-black/40"
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault()
+              addTechnology()
+            }
+          }}
+        />
+        <Button
+          onClick={addTechnology}
+          className="bg-blue-700 hover:bg-blue-800"
+          type="button"
+        >
+          Añadir
+        </Button>
+      </div>
+    )}
+    <p className="text-xs text-gray-400 mt-1">
+      Estas tecnologías se mostrarán como badges en la sección de experiencia.
+    </p>
+  </div>
+);
+
+export default function ExperienceForm({ experience, editMode, setEditMode, onSave, onCancel, isNewExperience = false }: ExperienceFormProps) {
   const { toast } = useToast()
-  const [activeExperienceIndex, setActiveExperienceIndex] = useState(0)
+  const [formData, setFormData] = useState<Experience | null>(experience)
   const [newTechnology, setNewTechnology] = useState("")
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
-  const [experienceToDeleteIndex, setExperienceToDeleteIndex] = useState<number | null>(null)
+  const [emptyFields, setEmptyFields] = useState<Record<string, boolean>>({})
 
-  // Agregar nueva experiencia (solo en memoria)
-  const addNewExperience = () => {
-    const newExperience: Experience = {
-      position: "",
-      company: "",
-      period: "",
-      description: "",
-      skills: [],
-      isNew: true // Marcar como nueva para saber que aún no está en la base de datos
-    }
-    
-    // Siempre agregamos en memoria primero
-    const updatedExperiences = [...experiences, newExperience]
-    onChange(updatedExperiences)
-    setActiveExperienceIndex(updatedExperiences.length - 1)
-
-    toast({
-      title: "Nueva experiencia",
-      description: "Completa los datos y guarda los cambios para crear la experiencia.",
-      variant: "default",
-    })
-  }
-
-  // Iniciar proceso de eliminación de experiencia
-  const confirmDeleteExperience = (index: number, e?: React.MouseEvent) => {
-    // Evitar la propagación del evento si existe
-    if (e) {
-      e.stopPropagation()
-    }
-    
-    setExperienceToDeleteIndex(index)
-    setIsDeleteDialogOpen(true)
-  }
-
-  // Eliminar experiencia después de confirmación
-  const executeDeleteExperience = () => {
-    if (experienceToDeleteIndex === null) return
-    
-    const index = experienceToDeleteIndex
-    const experienceToDelete = experiences[index]
-
-    // Si la experiencia es nueva (solo en memoria), simplemente la eliminamos del estado
-    if (experienceToDelete.isNew) {
-      const updatedExperiences = [...experiences]
-      updatedExperiences.splice(index, 1)
-      onChange(updatedExperiences)
-      
-      // Ajustar el índice activo si es necesario
-      if (updatedExperiences.length === 0) {
-        // No hay más experiencias, no necesitamos ajustar el índice
-      } else if (activeExperienceIndex >= updatedExperiences.length) {
-        setActiveExperienceIndex(updatedExperiences.length - 1)
-      } else if (activeExperienceIndex === index) {
-        // Si estamos eliminando la experiencia activa, cambiamos a otra
-        setActiveExperienceIndex(Math.max(0, index - 1))
-      }
-      
-      toast({
-        title: "Experiencia eliminada",
-        description: "La experiencia ha sido eliminada.",
-        variant: "default",
-      })
-      return
-    }
-
-    // Si tiene ID y existe onDelete, la eliminamos de la base de datos
-    if (onDelete && experienceToDelete._id) {
-      // Primero eliminamos del estado local para una UI más responsiva
-      const updatedExperiences = [...experiences]
-      updatedExperiences.splice(index, 1)
-      onChange(updatedExperiences)
-      
-      // Ajustar el índice activo si es necesario
-      if (updatedExperiences.length === 0) {
-        // No hay más experiencias, no necesitamos ajustar el índice
-      } else if (activeExperienceIndex >= updatedExperiences.length) {
-        setActiveExperienceIndex(updatedExperiences.length - 1)
-      } else if (activeExperienceIndex === index) {
-        // Si estamos eliminando la experiencia activa, cambiamos a otra
-        setActiveExperienceIndex(Math.max(0, index - 1))
-      }
-      
-      // Luego eliminamos de la base de datos
-      onDelete(experienceToDelete._id)
-        .catch(error => {
-          console.error("Error al eliminar experiencia:", error)
-          toast({
-            title: "Error",
-            description: "No se pudo eliminar la experiencia. Los cambios locales se han revertido.",
-            variant: "destructive",
-          })
-          // Revertir cambios locales en caso de error
-          onChange(experiences)
-        })
+  // Actualizar el formData cuando cambia la experiencia seleccionada
+  useEffect(() => {
+    if (isNewExperience && experience) {
+      const emptyExperience = { ...experience, position: '', company: '', period: '', description: '', skills: [] };
+      setFormData(emptyExperience);
     } else {
-      // Modo de edición local (para compatibilidad con el ContentEditor)
-      const updatedExperiences = [...experiences]
-      updatedExperiences.splice(index, 1)
-      onChange(updatedExperiences)
-
-      // Ajustar el índice activo si es necesario
-      if (updatedExperiences.length === 0) {
-        // No hay más experiencias, no necesitamos ajustar el índice
-      } else if (activeExperienceIndex >= updatedExperiences.length) {
-        setActiveExperienceIndex(updatedExperiences.length - 1)
-      } else if (activeExperienceIndex === index) {
-        // Si estamos eliminando la experiencia activa, cambiamos a otra
-        setActiveExperienceIndex(Math.max(0, index - 1))
-      }
-
-      toast({
-        title: "Experiencia eliminada",
-        description: "La experiencia ha sido eliminada correctamente.",
-        variant: "default",
-      })
+      setFormData(experience);
     }
 
-    // Cerrar el diálogo
-    setIsDeleteDialogOpen(false)
-    setExperienceToDeleteIndex(null)
-  }
+    setEmptyFields({});
+  }, [experience, isNewExperience]);
 
-  // Manejar cambios en la experiencia activa
-  const handleExperienceChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  // Manejar cambios en los inputs
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
-    const updatedExperiences = [...experiences]
-    updatedExperiences[activeExperienceIndex] = {
-      ...updatedExperiences[activeExperienceIndex],
-      [name]: value,
-    }
-    onChange(updatedExperiences)
+    setEmptyFields(prev => ({ ...prev, [name]: value.trim() === '' }))
+    setFormData((prev) => prev ? { ...prev, [name]: value } : null)
   }
 
-  // Guardar cambios en la experiencia actual
-  const saveExperience = async () => {
-    const currentExperience = experiences[activeExperienceIndex]
-    
-    // Validar datos mínimos
-    if (!currentExperience.position.trim() || !currentExperience.company.trim() || !currentExperience.period.trim()) {
-      toast({
-        title: "Datos incompletos",
-        description: "Debes completar al menos el cargo, la empresa y el período.",
-        variant: "destructive",
-      })
-      return
+  // Guardar los cambios
+  const handleSave = () => {
+    if (formData) {
+      const processedData = { ...formData };
+      // Validar datos mínimos
+      if (!processedData.position.trim() || !processedData.company.trim() || !processedData.period.trim()) {
+        toast({ title: "Datos incompletos", description: "Debes completar al menos el cargo, la empresa y el período.", variant: "destructive" })
+        return;
+      }
+      onSave(processedData);
     }
+  }
 
-    // Si es una experiencia nueva, la creamos en la base de datos
-    if (currentExperience.isNew) {
-      if (onCreate) {
-        // Eliminar la propiedad isNew antes de enviar
-        const { isNew, ...experienceData } = currentExperience
-        
-        try {
-          await onCreate(experienceData)
-          
-          // Actualizar el estado para quitar la marca isNew y agregar el ID retornado
-          const updatedExperiences = [...experiences]
-          updatedExperiences[activeExperienceIndex] = {
-            ...updatedExperiences[activeExperienceIndex],
-            isNew: false
-          }
-          onChange(updatedExperiences)
-          
-          toast({
-            title: "Experiencia creada",
-            description: "La experiencia ha sido creada correctamente.",
-            variant: "default",
-          })
-        } catch (error) {
-          console.error("Error al crear experiencia:", error)
-          toast({
-            title: "Error",
-            description: "No se pudo crear la experiencia. Inténtalo de nuevo.",
-            variant: "destructive",
-          })
-        }
-      }
-    } else if (onUpdate && currentExperience._id) {
-      // Si ya existe, la actualizamos
-      try {
-        await onUpdate(currentExperience._id, currentExperience)
-        toast({
-          title: "Cambios guardados",
-          description: "Los cambios en la experiencia han sido guardados correctamente.",
-          variant: "default",
-        })
-      } catch (error) {
-        console.error("Error al actualizar experiencia:", error)
-        toast({
-          title: "Error",
-          description: "No se pudo actualizar la experiencia. Inténtalo de nuevo.",
-          variant: "destructive",
-        })
-      }
-    } else {
-      // Modo de edición local (para compatibilidad con el ContentEditor)
-      onChange(experiences)
-      toast({
-        title: "Cambios guardados",
-        description: "Los cambios en la experiencia han sido guardados localmente.",
-        variant: "default",
-      })
-    }
+  // Cancelar la edición
+  const handleCancel = () => {
+    if (onCancel) onCancel()
+    else setEditMode(false)
   }
 
   // Agregar tecnología a la experiencia actual
   const addTechnology = () => {
-    if (!newTechnology.trim()) return
-
-    const updatedExperiences = [...experiences]
-    const currentSkills = updatedExperiences[activeExperienceIndex].skills || []
+    if (!newTechnology.trim() || !formData) return;
+    const currentSkills = formData.skills || [];
 
     // Verificar si la tecnología ya existe
     if (currentSkills.includes(newTechnology.trim())) {
-      toast({
-        title: "Tecnología duplicada",
-        description: "Esta tecnología ya está en la lista.",
-        variant: "destructive",
-      })
-      return
+      toast({ title: "Tecnología duplicada", description: "Esta tecnología ya está en la lista.", variant: "destructive" })
+      return;
     }
 
-    updatedExperiences[activeExperienceIndex] = {
-      ...updatedExperiences[activeExperienceIndex],
-      skills: [...currentSkills, newTechnology.trim()],
-    }
+    setFormData({ ...formData, skills: [...currentSkills, newTechnology.trim()] });
+    setNewTechnology("");
 
-    onChange(updatedExperiences)
-    setNewTechnology("")
-
-    toast({
-      title: "Tecnología añadida",
-      description: `"${newTechnology.trim()}" ha sido añadida a la experiencia.`,
-      variant: "default",
-    })
+    toast({ title: "Tecnología añadida", description: `"${newTechnology.trim()}" ha sido añadida a la experiencia.`, variant: "default" });
   }
 
   // Eliminar tecnología de la experiencia actual
   const removeTechnology = (tech: string) => {
-    const updatedExperiences = [...experiences]
-    const currentSkills = updatedExperiences[activeExperienceIndex].skills || []
+    if (!formData) return;
 
-    updatedExperiences[activeExperienceIndex] = {
-      ...updatedExperiences[activeExperienceIndex],
-      skills: currentSkills.filter((t) => t !== tech),
-    }
-
-    onChange(updatedExperiences)
+    setFormData({ ...formData, skills: formData.skills.filter((t) => t !== tech) });
   }
 
-  // Renderizar el formulario de experiencia
-  const renderExperienceForm = () => {
-    if (experiences.length === 0) {
-      return (
-        <div className="flex flex-col items-center justify-center py-12">
-          <Briefcase className="h-12 w-12 text-blue-500/50 mb-4" />
-          <h3 className="text-lg font-medium text-gray-300 mb-2">No hay experiencias</h3>
-          <p className="text-gray-500 text-center max-w-md mb-6">
-            Agrega tu primera experiencia laboral haciendo clic en el botón "Agregar Experiencia"
-          </p>
-        </div>
-      )
-    }
-
+  // Si no hay experiencia seleccionada, mostrar mensaje
+  if (!formData) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <div className="md:col-span-1 space-y-2">
-          <h3 className="text-sm font-medium mb-2">Experiencias</h3>
-          <div className="space-y-2 max-h-[500px] overflow-y-auto pr-2">
-            {experiences.map((exp, index) => (
-              <div
-                key={index}
-                onClick={() => setActiveExperienceIndex(index)}
-                className={`p-3 rounded-md cursor-pointer flex justify-between items-center ${
-                  index === activeExperienceIndex
-                    ? "bg-blue-700/20 border border-blue-700/40"
-                    : "bg-black/20 border border-blue-700/10 hover:bg-blue-700/10"
-                }`}
-              >
-                <div className="flex-1 truncate">
-                  <p className="font-medium truncate">
-                    {exp.position || <span className="text-gray-500 italic">Nuevo cargo</span>}
-                  </p>
-                  <p className="text-sm text-gray-400 truncate">
-                    {exp.company || <span className="text-gray-500 italic">Nueva empresa</span>}
-                  </p>
-                </div>
-                <button
-                  onClick={(e) => confirmDeleteExperience(index, e)}
-                  className="ml-2 text-gray-400 hover:text-red-500"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </button>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Formulario de edición */}
-        <div className="md:col-span-3 bg-black/20 border border-blue-700/10 rounded-md p-4">
-          <div className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="position">Cargo</Label>
-                <Input
-                  id="position"
-                  name="position"
-                  value={experiences[activeExperienceIndex].position}
-                  onChange={handleExperienceChange}
-                  placeholder="Ej: Desarrollador Full Stack"
-                  className="bg-black/40"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="company">Empresa</Label>
-                <Input
-                  id="company"
-                  name="company"
-                  value={experiences[activeExperienceIndex].company}
-                  onChange={handleExperienceChange}
-                  placeholder="Ej: Tech Company"
-                  className="bg-black/40"
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="period">Período</Label>
-                <Input
-                  id="period"
-                  name="period"
-                  value={experiences[activeExperienceIndex].period}
-                  onChange={handleExperienceChange}
-                  placeholder="Ej: Enero 2022 - Presente"
-                  className="bg-black/40"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="location">Ubicación</Label>
-                <Input
-                  id="location"
-                  name="location"
-                  value={experiences[activeExperienceIndex].location || ""}
-                  onChange={handleExperienceChange}
-                  placeholder="Ej: Remoto / Ciudad, País"
-                  className="bg-black/40"
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="description">Descripción</Label>
-              <Textarea
-                id="description"
-                name="description"
-                value={experiences[activeExperienceIndex].description}
-                onChange={handleExperienceChange}
-                placeholder="Describe tus responsabilidades y logros en este puesto..."
-                className="bg-black/40 min-h-[100px]"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="companyLogo">Logo de la empresa (URL)</Label>
-              <Input
-                id="companyLogo"
-                name="companyLogo"
-                value={experiences[activeExperienceIndex].companyLogo || ""}
-                onChange={handleExperienceChange}
-                placeholder="https://example.com/logo.png"
-                className="bg-black/40"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="url">URL del proyecto o empresa</Label>
-              <Input
-                id="url"
-                name="url"
-                value={experiences[activeExperienceIndex].url || ""}
-                onChange={handleExperienceChange}
-                placeholder="https://example.com"
-                className="bg-black/40"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label className="flex items-center">
-                <Tag className="mr-2 h-4 w-4" />
-                Tecnologías utilizadas
-              </Label>
-              <div className="flex flex-wrap gap-2 mb-2">
-                {experiences[activeExperienceIndex].skills?.map((tech, i) => (
-                  <div
-                    key={i}
-                    className="bg-blue-700/20 text-blue-400 px-2 py-1 rounded-md text-sm flex items-center"
-                  >
-                    {tech}
-                    <button
-                      onClick={() => removeTechnology(tech)}
-                      className="ml-2 text-blue-400 hover:text-red-500"
-                    >
-                      <Trash2 className="h-3 w-3" />
-                    </button>
-                  </div>
-                ))}
-                {(!experiences[activeExperienceIndex].skills || experiences[activeExperienceIndex].skills.length === 0) && (
-                  <div className="text-gray-500 text-sm italic">
-                    No hay tecnologías añadidas
-                  </div>
-                )}
-              </div>
-              <div className="flex space-x-2">
-                <Input
-                  value={newTechnology}
-                  onChange={(e) => setNewTechnology(e.target.value)}
-                  placeholder="Añadir tecnología (ej: React, Node.js)"
-                  className="bg-black/40"
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      e.preventDefault()
-                      addTechnology()
-                    }
-                  }}
-                />
-                <Button
-                  onClick={addTechnology}
-                  className="bg-blue-700 hover:bg-blue-800"
-                  type="button"
-                >
-                  Añadir
-                </Button>
-              </div>
-              <p className="text-xs text-gray-400 mt-1">
-                Estas tecnologías se mostrarán como badges en la sección de experiencia.
-              </p>
-            </div>
-
-            <Button onClick={saveExperience} className="bg-blue-700 hover:bg-blue-800">
-              <Save className="h-4 w-4 mr-1" />
-              Guardar
-            </Button>
-          </div>
-        </div>
-      </div>
-    )
+      <Card className="bg-black/40 border-blue-700/20">
+        <CardHeader>
+          <CardTitle>Detalles de la Experiencia</CardTitle>
+          <CardDescription>
+            Selecciona una experiencia existente o crea una nueva para visualizar detalles
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="p-6">
+          <p className="text-center text-slate-400 py-4">No hay experiencia seleccionada</p>
+        </CardContent>
+      </Card>
+    );
   }
 
   return (
-    <>
-      <Card className="bg-black/40 border-blue-700/20">
-        <CardHeader className="flex flex-row items-center justify-between">
-          <div>
-            <CardTitle>Experiencia Laboral</CardTitle>
-            <CardDescription>
-              Gestiona tu historial de experiencia profesional
-            </CardDescription>
+    <Card className="bg-black/40 border-blue-700/20">
+      <CardHeader>
+        <div>
+          <CardTitle>
+            {isNewExperience
+              ? "Nueva Experiencia"
+              : formData.position || "Experiencia sin título"}
+          </CardTitle>
+          <CardDescription>
+            {isNewExperience
+              ? "Crea una nueva experiencia laboral"
+              : formData.company || "Sin empresa"}
+          </CardDescription>
+        </div>
+        {!editMode && (
+          <div className="flex justify-end">
+            <Button
+              onClick={() => setEditMode(true)}
+              variant="outline"
+              className="border-blue-500 text-blue-500 hover:bg-blue-950"
+              size="sm"
+            >
+              Editar
+            </Button>
           </div>
-          <Button onClick={addNewExperience} className="bg-blue-700 hover:bg-blue-800">
-            <Plus className="mr-2 h-4 w-4" />
-            Agregar Experiencia
-          </Button>
-        </CardHeader>
-        <CardContent>
-          {renderExperienceForm()}
-        </CardContent>
-      </Card>
+        )}
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <FormField
+              label="Cargo"
+              name="position"
+              value={formData.position}
+              onChange={handleInputChange}
+              placeholder="Ej: Desarrollador Full Stack"
+              disabled={!editMode}
+            />
+            <FormField
+              label="Empresa"
+              name="company"
+              value={formData.company}
+              onChange={handleInputChange}
+              placeholder="Ej: Tech Company"
+              disabled={!editMode}
+            />
+          </div>
 
-      {/* Diálogo de confirmación para eliminar experiencia */}
-      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <DialogContent className="bg-black border-blue-700/20">
-          <DialogHeader>
-            <DialogTitle>Confirmar eliminación</DialogTitle>
-            <DialogDescription>
-              {experienceToDeleteIndex !== null && experiences[experienceToDeleteIndex] ? (
-                <>
-                  ¿Estás seguro de que deseas eliminar la experiencia 
-                  <span className="font-medium text-blue-400">
-                    {" "}{experiences[experienceToDeleteIndex].position || "Nueva experiencia"}{" "}
-                  </span>
-                  en 
-                  <span className="font-medium text-blue-400">
-                    {" "}{experiences[experienceToDeleteIndex].company || "Nueva empresa"}
-                  </span>?
-                  Esta acción no se puede deshacer.
-                </>
-              ) : (
-                "¿Estás seguro de que deseas eliminar esta experiencia? Esta acción no se puede deshacer."
-              )}
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>
-              Cancelar
-            </Button>
-            <Button variant="destructive" onClick={executeDeleteExperience}>
-              Eliminar
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </>
-  )
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <FormField
+              label="Período"
+              name="period"
+              value={formData.period}
+              onChange={handleInputChange}
+              placeholder="Ej: Enero 2022 - Presente"
+              disabled={!editMode}
+            />
+            <FormField
+              label="Ubicación"
+              name="location"
+              value={formData.location || ""}
+              onChange={handleInputChange}
+              placeholder="Ej: Remoto / Ciudad, País"
+              disabled={!editMode}
+            />
+          </div>
+
+          <FormField
+            label="Descripción"
+            name="description"
+            value={formData.description}
+            onChange={handleInputChange}
+            placeholder="Describe tus responsabilidades y logros en este puesto..."
+            disabled={!editMode}
+            isTextarea
+          />
+
+          <FormField
+            label="Logo de la empresa (URL)"
+            name="companyLogo"
+            value={formData.companyLogo || ""}
+            onChange={handleInputChange}
+            placeholder="https://example.com/logo.png"
+            disabled={!editMode}
+          />
+
+          <FormField
+            label="URL del proyecto o empresa"
+            name="url"
+            value={formData.url || ""}
+            onChange={handleInputChange}
+            placeholder="https://example.com"
+            disabled={!editMode}
+          />
+
+          <TechnologiesSection
+            skills={formData.skills || []}
+            editMode={editMode}
+            newTechnology={newTechnology}
+            setNewTechnology={setNewTechnology}
+            addTechnology={addTechnology}
+            removeTechnology={removeTechnology}
+          />
+
+          {editMode && (
+            <div className="flex justify-end space-x-4 pt-4 mt-6 border-t border-blue-700/20">
+              <Button
+                onClick={handleCancel}
+                variant="outline"
+                className="border-red-500/30 text-red-500 hover:bg-red-950/20"
+              >
+                Cancelar
+              </Button>
+              <Button
+                onClick={handleSave}
+                className="bg-blue-700 hover:bg-blue-800"
+              >
+                Guardar
+              </Button>
+            </div>
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  );
 }

@@ -1,0 +1,184 @@
+import { useState, useCallback, useEffect } from "react";
+import { useContent } from "@/contexts/content-context";
+import { useToastNotifications } from "../../use-toast-notifications";
+import type { Project } from "@/contexts/content-context";
+
+// Tipo para las categorías de proyectos
+export type ProjectCategory = 'fullstack' | 'backend';
+
+/**
+ * Hook específico para gestionar proyectos en el panel de administración
+ * Mantiene toda la funcionalidad del ProjectsManager original
+ * @param initialCategory Categoría inicial seleccionada
+ * @returns Funciones y estado para gestionar proyectos
+ */
+export function useProjectsActions(initialCategory: ProjectCategory = 'fullstack') {
+  const { content, createProjectItem, updateProjectItem, deleteProjectItem } = useContent();
+  const toastNotifications = useToastNotifications();
+  
+  // Estados para manejar las pestañas y proyectos
+  const [activeCategory, setActiveCategory] = useState<ProjectCategory>(initialCategory);
+  const [fullstackProjects, setFullstackProjects] = useState<Project[]>(content.projects.fullstack || []);
+  const [backendProjects, setBackendProjects] = useState<Project[]>(content.projects.backend || []);
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+  const [editMode, setEditMode] = useState(false);
+  const [lastSelectedFullstack, setLastSelectedFullstack] = useState<Project | null>(null);
+  const [lastSelectedBackend, setLastSelectedBackend] = useState<Project | null>(null);
+  const [isTabChanging, setIsTabChanging] = useState(false);
+  const [isCreatingNewProject, setIsCreatingNewProject] = useState(false);
+
+  // Obtener los proyectos actuales según la categoría activa
+  const currentProjects = activeCategory === "fullstack" ? fullstackProjects : backendProjects;
+  const lastSelected = activeCategory === "fullstack" ? lastSelectedFullstack : lastSelectedBackend;
+  
+  // Función para recordar el último proyecto seleccionado por categoría
+  const setLastSelected = useCallback((project: Project | null) => {
+    if (activeCategory === "fullstack") {
+      setLastSelectedFullstack(project);
+    } else {
+      setLastSelectedBackend(project);
+    }
+  }, [activeCategory]);
+
+  // Sincronizar proyectos con el contexto
+  useEffect(() => {
+    setFullstackProjects(content.projects.fullstack || []);
+    setBackendProjects(content.projects.backend || []);
+  }, [content.projects]);
+
+  // Manejar cambios de pestaña y selección de proyectos
+  useEffect(() => {
+    if (selectedProject && !isTabChanging) {
+      setLastSelected(selectedProject);
+    }
+
+    if (isTabChanging) {
+      const lastProjectExists = lastSelected && 
+        currentProjects.some(p => p.id === lastSelected.id);
+      
+      setSelectedProject(lastProjectExists ? lastSelected : null);
+      setEditMode(false);
+      setIsTabChanging(false);
+    }
+  }, [activeCategory, selectedProject, isTabChanging, currentProjects, lastSelected, setLastSelected]);
+
+  /**
+   * Cambia la categoría activa (pestaña)
+   */
+  const handleTabChange = useCallback((value: string) => {
+    setIsTabChanging(true);
+    setActiveCategory(value as ProjectCategory);
+  }, []);
+
+  /**
+   * Crea un nuevo proyecto con valores predeterminados
+   */
+  const addNewProject = useCallback(() => {
+    const currentDate = new Date().toISOString().split("T")[0];
+    
+    // Crear un objeto de proyecto temporal mínimo
+    // Los valores predeterminados se manejan en el ProjectForm
+    const newProjectTemplate: Project = {
+      id: -1, // ID temporal negativo para indicar que es un proyecto nuevo
+      createdAt: currentDate,
+      // No definimos imagen por defecto, se manejará en el formulario con placeholders
+      image: undefined
+    };
+
+    // Establecer el modo de creación
+    setIsCreatingNewProject(true);
+    
+    // Seleccionar el proyecto temporal y activar el modo de edición
+    setSelectedProject(newProjectTemplate);
+    setEditMode(true);
+  }, []);
+
+  /**
+   * Guarda los cambios en un proyecto (nuevo o existente)
+   */
+  const handleSaveEdit = useCallback(async (updatedProject: Project) => {
+    // Si estamos creando un nuevo proyecto
+    if (isCreatingNewProject) {
+      const newProject = await createProjectItem(updatedProject, activeCategory);
+      
+      if (newProject) {
+        setSelectedProject(newProject);
+        setEditMode(false);
+        setIsCreatingNewProject(false);
+        toastNotifications.showCreatedToast("Proyecto");
+        
+        // Actualizar la lista de proyectos correspondiente
+        if (activeCategory === "fullstack") {
+          setFullstackProjects(prev => [...prev, newProject]);
+        } else {
+          setBackendProjects(prev => [...prev, newProject]);
+        }
+      } else {
+        toastNotifications.showErrorCreatingToast("proyecto");
+      }
+    } 
+    // Si estamos editando un proyecto existente
+    else {
+      const success = await updateProjectItem(updatedProject.id.toString(), updatedProject, activeCategory);
+
+      if (success) {
+        setSelectedProject(updatedProject);
+        setEditMode(false);
+        toastNotifications.showUpdatedToast("Proyecto");
+      } else {
+        toastNotifications.showErrorUpdatingToast("proyecto");
+      }
+    }
+  }, [activeCategory, createProjectItem, updateProjectItem, isCreatingNewProject, toastNotifications]);
+
+  /**
+   * Cancela la edición de un proyecto
+   */
+  const handleCancelEdit = useCallback(() => {
+    if (isCreatingNewProject) {
+      // Si estamos creando un nuevo proyecto, simplemente descartamos el proyecto temporal
+      setSelectedProject(null);
+      setIsCreatingNewProject(false);
+    }
+    
+    setEditMode(false);
+  }, [isCreatingNewProject]);
+
+  /**
+   * Elimina un proyecto
+   */
+  const deleteProject = useCallback(async (id: number) => {
+    const success = await deleteProjectItem(id.toString(), activeCategory);
+
+    if (success) {
+      if (selectedProject && selectedProject.id === id) {
+        const remainingProjects = currentProjects.filter(p => p.id !== id);
+        setSelectedProject(remainingProjects.length > 0 ? remainingProjects[0] : null);
+      }
+      
+      toastNotifications.showDeletedToast("Proyecto");
+    } else {
+      toastNotifications.showErrorDeletingToast("proyecto");
+    }
+  }, [activeCategory, currentProjects, deleteProjectItem, selectedProject, toastNotifications]);
+
+  return {
+    // Estado
+    activeCategory,
+    fullstackProjects,
+    backendProjects,
+    selectedProject,
+    currentProjects,
+    editMode,
+    isCreatingNewProject,
+    
+    // Acciones
+    setActiveCategory: handleTabChange,
+    setSelectedProject,
+    setEditMode,
+    addNewProject,
+    handleSaveEdit,
+    handleCancelEdit,
+    deleteProject
+  };
+}
