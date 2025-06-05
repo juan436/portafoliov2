@@ -7,6 +7,7 @@ import ExperienceTable from "@/components/admin/tables/experience-table"
 import ExperienceForm from "@/components/admin/forms/experience-form"
 import { Button } from "@/components/ui/button"
 import { Plus } from "lucide-react"
+import { ConfirmationDialog } from "@/components/admin/common/confirmation-dialog"
 
 export default function ExperienceManager() {
   // Usar el hook específico para experiencias que contiene toda la lógica
@@ -15,12 +16,15 @@ export default function ExperienceManager() {
     selectedExperience,
     editMode,
     isCreatingNewExperience,
+    isDeleteDialogOpen,
     setSelectedExperience,
     setEditMode,
     addNewExperience,
     handleSaveEdit,
     handleCancelEdit,
-    deleteExperience
+    deleteExperience,
+    handleConfirmDelete,
+    handleCloseDeleteDialog
   } = useExperienceActions();
 
   return (
@@ -49,14 +53,14 @@ export default function ExperienceManager() {
             Agregar Experiencia
           </Button>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-6">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             <div className="md:col-span-1">
-              <ExperienceTable 
+              <ExperienceTable
                 experiences={experienceContent}
                 selectedExperience={selectedExperience}
                 onSelectExperience={setSelectedExperience}
-                onDeleteExperience={deleteExperience}
+                onDeleteExperience={(id) => deleteExperience(id)}
                 title="Experiencias"
                 description="Selecciona una experiencia para ver detalles"
               />
@@ -82,6 +86,14 @@ export default function ExperienceManager() {
           </div>
         </CardContent>
       </Card>
+      
+      <ConfirmationDialog
+        isOpen={isDeleteDialogOpen}
+        onClose={handleCloseDeleteDialog}
+        onConfirm={handleConfirmDelete}
+        title="Eliminar Experiencia"
+        description="¿Estás seguro de que deseas eliminar esta experiencia?"
+      />
     </motion.div>
   )
 }

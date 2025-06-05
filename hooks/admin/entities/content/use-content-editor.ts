@@ -80,22 +80,22 @@ export function useContentEditor() {
       const success = saveAllContent();
 
       if (success) {
-        showSuccessToast(
-          "Cambios guardados", 
-          "El contenido ha sido actualizado correctamente."
-        );
+        showSuccessToast({
+          title: "Cambios guardados",
+          description: "El contenido ha sido actualizado correctamente.",
+        });
       } else {
-        showErrorToast(
-          "Error al guardar", 
-          "Ha ocurrido un error al guardar los cambios."
-        );
+        showErrorToast({
+          title: "Error al guardar",
+          description: "Ha ocurrido un error al guardar los cambios.",
+        });
       }
     } catch (error) {
       console.error("Error al guardar el contenido:", error);
-      showErrorToast(
-        "Error", 
-        "Ocurrió un error inesperado al guardar los cambios."
-      );
+      showErrorToast({
+        title: "Error",
+        description: "Ocurrió un error inesperado al guardar los cambios.",
+      });
     } finally {
       setIsLoading(false);
     }

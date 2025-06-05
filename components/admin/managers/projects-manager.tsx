@@ -9,6 +9,7 @@ import { useProjectsActions } from "@/hooks/admin/entities/projects/use-projects
 
 import ProjectForm from "@/components/admin/forms/project-form"
 import ProjectsTable from "@/components/admin/tables/projects-table"
+import { ConfirmationDialog } from "@/components/admin/common/confirmation-dialog"
 
 export default function ProjectsManager() {
   // Usar el hook específico para proyectos que contiene toda la lógica
@@ -18,13 +19,16 @@ export default function ProjectsManager() {
     selectedProject,
     editMode,
     isCreatingNewProject,
+    isDeleteDialogOpen,
     setActiveCategory,
     setSelectedProject,
     setEditMode,
     addNewProject,
     handleSaveEdit,
     handleCancelEdit,
-    deleteProject
+    handleOpenDeleteDialog,
+    handleCloseDeleteDialog,
+    handleConfirmDelete
   } = useProjectsActions();
 
   // Renderizar el contenido de proyectos según la categoría
@@ -35,7 +39,8 @@ export default function ProjectsManager() {
           projects={currentProjects}
           selectedProject={selectedProject}
           onSelectProject={setSelectedProject}
-          onDeleteProject={deleteProject}
+          onDeleteProject={() => {}} // Mantenemos este prop por compatibilidad
+          handleOpenDeleteDialog={handleOpenDeleteDialog}
           title={title}
           description={description}
         />
@@ -94,6 +99,14 @@ export default function ProjectsManager() {
           {renderProjectContent("backend", "Proyectos Backend", "APIs, servicios y aplicaciones de servidor.")}
         </TabsContent>
       </Tabs>
+
+      <ConfirmationDialog
+        isOpen={isDeleteDialogOpen}
+        onClose={handleCloseDeleteDialog}
+        onConfirm={handleConfirmDelete}
+        title="Eliminar Proyecto"
+        description="¿Estás seguro de que deseas eliminar este proyecto?"
+      />
     </motion.div>
   );
 }

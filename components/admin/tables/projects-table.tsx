@@ -12,6 +12,7 @@ interface ProjectsTableProps {
   selectedProject: Project | null
   onSelectProject: (project: Project) => void
   onDeleteProject: (id: number) => void
+  handleOpenDeleteDialog: (id: number) => void
   title: string
   description: string
 }
@@ -21,6 +22,7 @@ export default function ProjectsTable({
   selectedProject,
   onSelectProject,
   onDeleteProject,
+  handleOpenDeleteDialog,
   title,
   description
 }: ProjectsTableProps) {
@@ -59,7 +61,7 @@ export default function ProjectsTable({
                     className="h-6 w-6 p-1 absolute right-2 top-2 opacity-0 group-hover:opacity-100 text-red-500 hover:text-red-400 hover:bg-red-500/10"
                     onClick={(e) => {
                       e.stopPropagation()
-                      onDeleteProject(project.id)
+                      handleOpenDeleteDialog(project.id)
                     }}
                   >
                     <Trash2 className="h-4 w-4" />

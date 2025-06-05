@@ -26,6 +26,10 @@ export function useProjectsActions(initialCategory: ProjectCategory = 'fullstack
   const [lastSelectedBackend, setLastSelectedBackend] = useState<Project | null>(null);
   const [isTabChanging, setIsTabChanging] = useState(false);
   const [isCreatingNewProject, setIsCreatingNewProject] = useState(false);
+  
+  // Estado para el diálogo de confirmación de eliminación
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [projectToDelete, setProjectToDelete] = useState<number | null>(null);
 
   // Obtener los proyectos actuales según la categoría activa
   const currentProjects = activeCategory === "fullstack" ? fullstackProjects : backendProjects;
@@ -145,22 +149,42 @@ export function useProjectsActions(initialCategory: ProjectCategory = 'fullstack
   }, [isCreatingNewProject]);
 
   /**
-   * Elimina un proyecto
+   * Abre el diálogo de confirmación para eliminar un proyecto
    */
-  const deleteProject = useCallback(async (id: number) => {
-    const success = await deleteProjectItem(id.toString(), activeCategory);
+  const handleOpenDeleteDialog = useCallback((id: number) => {
+    setIsDeleteDialogOpen(true);
+    setProjectToDelete(id);
+  }, []);
 
-    if (success) {
-      if (selectedProject && selectedProject.id === id) {
-        const remainingProjects = currentProjects.filter(p => p.id !== id);
-        setSelectedProject(remainingProjects.length > 0 ? remainingProjects[0] : null);
+  /**
+   * Cierra el diálogo de confirmación para eliminar un proyecto
+   */
+  const handleCloseDeleteDialog = useCallback(() => {
+    setIsDeleteDialogOpen(false);
+    setProjectToDelete(null);
+  }, []);
+
+  /**
+   * Elimina un proyecto después de confirmar
+   */
+  const handleConfirmDelete = useCallback(async () => {
+    if (projectToDelete !== null) {
+      const success = await deleteProjectItem(projectToDelete.toString(), activeCategory);
+
+      if (success) {
+        if (selectedProject && selectedProject.id === projectToDelete) {
+          const remainingProjects = currentProjects.filter(p => p.id !== projectToDelete);
+          setSelectedProject(remainingProjects.length > 0 ? remainingProjects[0] : null);
+        }
+        
+        toastNotifications.showDeletedToast("Proyecto");
+      } else {
+        toastNotifications.showErrorDeletingToast("proyecto");
       }
-      
-      toastNotifications.showDeletedToast("Proyecto");
-    } else {
-      toastNotifications.showErrorDeletingToast("proyecto");
     }
-  }, [activeCategory, currentProjects, deleteProjectItem, selectedProject, toastNotifications]);
+
+    handleCloseDeleteDialog();
+  }, [activeCategory, currentProjects, deleteProjectItem, projectToDelete, selectedProject, toastNotifications]);
 
   return {
     // Estado
@@ -171,6 +195,7 @@ export function useProjectsActions(initialCategory: ProjectCategory = 'fullstack
     currentProjects,
     editMode,
     isCreatingNewProject,
+    isDeleteDialogOpen,
     
     // Acciones
     setActiveCategory: handleTabChange,
@@ -179,6 +204,8 @@ export function useProjectsActions(initialCategory: ProjectCategory = 'fullstack
     addNewProject,
     handleSaveEdit,
     handleCancelEdit,
-    deleteProject
+    handleOpenDeleteDialog,
+    handleCloseDeleteDialog,
+    handleConfirmDelete
   };
 }

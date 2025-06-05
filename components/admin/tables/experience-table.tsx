@@ -92,7 +92,8 @@ export default function ExperienceTable({
                       className="opacity-0 group-hover:opacity-100 transition-opacity p-1 h-auto"
                       onClick={(e) => {
                         e.stopPropagation();
-                        if (experience._id) {
+                        // Asegurarse de que experience._id existe antes de llamar a la función
+                        if (experience._id && typeof onDeleteExperience === 'function') {
                           onDeleteExperience(experience._id);
                         }
                       }}

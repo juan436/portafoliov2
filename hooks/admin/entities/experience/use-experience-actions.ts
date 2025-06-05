@@ -23,6 +23,10 @@ export function useExperienceActions() {
   const [editMode, setEditMode] = useState(false);
   const [isCreatingNewExperience, setIsCreatingNewExperience] = useState(false);
 
+  // Estado para el diálogo de confirmación de eliminación
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [experienceToDelete, setExperienceToDelete] = useState<string | null>(null);
+
   // Sincronizar con el contexto global
   useEffect(() => {
     setExperienceContent(content.experience);
@@ -177,12 +181,40 @@ export function useExperienceActions() {
     }
   }, [deleteExperienceItem, experienceContent, selectedExperience, toastNotifications]);
 
+  /**
+   * Abre el diálogo de confirmación de eliminación
+   */
+  const handleOpenDeleteDialog = useCallback((id: string) => {
+    setIsDeleteDialogOpen(true);
+    setExperienceToDelete(id);
+  }, []);
+
+  /**
+   * Cierra el diálogo de confirmación de eliminación
+   */
+  const handleCloseDeleteDialog = useCallback(() => {
+    setIsDeleteDialogOpen(false);
+    setExperienceToDelete(null);
+  }, []);
+
+  /**
+   * Confirma la eliminación de la experiencia
+   */
+  const handleConfirmDelete = useCallback(async () => {
+    if (experienceToDelete) {
+      await handleDeleteExperience(experienceToDelete);
+      handleCloseDeleteDialog();
+    }
+  }, [experienceToDelete, handleDeleteExperience, handleCloseDeleteDialog]);
+
   return {
     // Estado
     experienceContent,
     selectedExperience,
     editMode,
     isCreatingNewExperience,
+    isDeleteDialogOpen,
+    experienceToDelete,
     
     // Acciones
     setExperienceContent: handleExperienceChange,
@@ -191,6 +223,8 @@ export function useExperienceActions() {
     addNewExperience,
     handleSaveEdit,
     handleCancelEdit,
-    deleteExperience: handleDeleteExperience
+    deleteExperience: handleOpenDeleteDialog,
+    handleConfirmDelete,
+    handleCloseDeleteDialog
   };
 }
