@@ -6,7 +6,7 @@ import { ThemeProvider } from "@/components/theme-provider"
 import { LanguageProvider } from "@/contexts/language-context"
 import { ContentProvider } from "@/contexts/content-context"
 import WolfGuide from "@/components/wolf-guide"
-
+import { Toaster } from "@/components/ui/toaster"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
@@ -33,6 +33,7 @@ export default function RootLayout({
             <LanguageProvider>
               {children}
               <WolfGuide />
+              <Toaster />
             </LanguageProvider>
           </ContentProvider>
         </ThemeProvider>
