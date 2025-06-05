@@ -195,13 +195,6 @@ export default function SkillsManager() {
               <Layers className="mr-2 h-4 w-4" />
               DevOps
             </TabsTrigger>
-            <TabsTrigger
-              value="other"
-              className="data-[state=active]:bg-blue-700/20 data-[state=active]:text-blue-500 flex items-center"
-            >
-              <PanelRight className="mr-2 h-4 w-4" />
-              Otras
-            </TabsTrigger>
           </TabsList>
 
           {/* Contenido para cada tab */}
