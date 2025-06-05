@@ -44,7 +44,6 @@ export default function ExperienceForm({
   const { toast } = useToast()
   const [formData, setFormData] = useState<Experience | null>(experience)
   const [newTechnology, setNewTechnology] = useState("")
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [emptyFields, setEmptyFields] = useState<Record<string, boolean>>({})
 
   // Actualizar el formData cuando cambia la experiencia seleccionada
@@ -81,7 +80,6 @@ export default function ExperienceForm({
   const handleSave = () => {
     if (formData) {
       const processedData = { ...formData };
-      
       // Validar datos mínimos
       if (!processedData.position.trim() || !processedData.company.trim() || !processedData.period.trim()) {
         toast({
@@ -91,7 +89,6 @@ export default function ExperienceForm({
         })
         return;
       }
-      
       onSave(processedData);
     }
   }
@@ -108,9 +105,7 @@ export default function ExperienceForm({
   // Agregar tecnología a la experiencia actual
   const addTechnology = () => {
     if (!newTechnology.trim() || !formData) return;
-
     const currentSkills = formData.skills || [];
-
     // Verificar si la tecnología ya existe
     if (currentSkills.includes(newTechnology.trim())) {
       toast({
@@ -125,9 +120,7 @@ export default function ExperienceForm({
       ...formData,
       skills: [...currentSkills, newTechnology.trim()],
     });
-
     setNewTechnology("");
-
     toast({
       title: "Tecnología añadida",
       description: `"${newTechnology.trim()}" ha sido añadida a la experiencia.`,
@@ -138,13 +131,11 @@ export default function ExperienceForm({
   // Eliminar tecnología de la experiencia actual
   const removeTechnology = (tech: string) => {
     if (!formData) return;
-    
     setFormData({
       ...formData,
       skills: formData.skills.filter((t) => t !== tech),
     });
   }
-
   // Si no hay experiencia seleccionada, mostrar mensaje
   if (!formData) {
     return (
@@ -161,7 +152,6 @@ export default function ExperienceForm({
       </Card>
     );
   }
-
   return (
     <Card className="bg-black/40 border-blue-700/20">
       <CardHeader>
