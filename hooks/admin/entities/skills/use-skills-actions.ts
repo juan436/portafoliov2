@@ -1,8 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
-import { useContent } from "@/contexts/content-context";
+import { useContent } from "@/contexts/content";
+import type { Skill } from "@/contexts/content/types";
 import { useToastNotifications } from "../../use-toast-notifications";
-import type { Skill } from "@/contexts/content-context";
-
 /**
  * Hook para gestionar las habilidades en el panel de administración
  * Encapsula toda la lógica de gestión de habilidades

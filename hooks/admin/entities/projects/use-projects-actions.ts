@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect } from "react";
-import { useContent } from "@/contexts/content-context";
+import { useContent } from "@/contexts/content";
 import { useToastNotifications } from "../../use-toast-notifications";
-import type { Project } from "@/contexts/content-context";
+import type { Project } from "@/contexts/content/types";
 
 // Tipo para las categorías de proyectos
 export type ProjectCategory = 'fullstack' | 'backend';

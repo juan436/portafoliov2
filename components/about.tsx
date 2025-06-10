@@ -5,7 +5,7 @@ import { Code2, Database, Server, Cpu } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import Image from "next/image"
 import { useLanguage } from "@/contexts/language-context"
-import { useContent } from "@/contexts/content-context"
+import { useContent } from "@/contexts/content"
 import { useEffect, useState } from "react"
 
 export default function About() {

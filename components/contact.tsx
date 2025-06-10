@@ -10,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
 import { Mail, MapPin, Phone, Send } from "lucide-react"
 import { useLanguage } from "@/contexts/language-context"
-import { useContent } from "@/contexts/content-context"
+import { useContent } from "@/contexts/content"
 
 export default function Contact() {
   const { t } = useLanguage()

@@ -9,8 +9,8 @@ import { ExternalLink, Github, Code2, Server, Database, Terminal, ArrowLeft } fr
 import Image from "next/image"
 import Link from "next/link"
 import { useLanguage } from "@/contexts/language-context"
-import { useContent } from "@/contexts/content-context"
-import type { Project } from "@/contexts/content-context"
+import { useContent } from "@/contexts/content"
+import type { Project } from "@/contexts/content/types"
 import LanguageSwitcher from "@/components/language-switcher"
 import Footer from "@/components/footer"
 

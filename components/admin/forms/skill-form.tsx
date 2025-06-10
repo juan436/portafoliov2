@@ -2,13 +2,14 @@
 
 import { useState, useEffect } from "react"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
+import { Label } from "@/components/ui/label"
+import { Input } from "@/components/ui/input"
 import { Switch } from "@/components/ui/switch"
-import { Search, X } from "lucide-react"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import type { Skill } from "@/contexts/content-context"
+import { Search, X } from "lucide-react"
+import type { Skill } from "@/contexts/content/types"
+import { renderDevIcon } from "@/lib/devicon-utils"
 
 // Lista de iconos disponibles en Devicon
 const availableIcons = [
@@ -81,12 +82,9 @@ export default function SkillForm({ isOpen, onClose, onSave, currentSkill, categ
     }
   }, [currentSkill, isOpen])
 
-  // Renderizar el ícono de Devicon con o sin color
-  const renderDevIcon = (iconName: string) => {
-    if (!iconName) return null
-
-    const iconClass = `devicon-${iconName}${useColored ? "-plain colored" : "-plain"}`
-    return <i className={`${iconClass} text-2xl`}></i>
+  // Renderizar el ícono de Devicon
+  const renderIcon = (iconName: string) => {
+    return renderDevIcon(iconName, useColored)
   }
 
   // Manejar el guardado de la habilidad
@@ -145,7 +143,7 @@ export default function SkillForm({ isOpen, onClose, onSave, currentSkill, categ
               <div className="flex items-center border rounded-md bg-black/40 border-blue-700/20 px-3 py-2">
                 {icon ? (
                   <div className="flex items-center gap-2">
-                    {renderDevIcon(icon)}
+                    {renderIcon(icon)}
                     <span>{icon}</span>
                   </div>
                 ) : (
@@ -199,7 +197,7 @@ export default function SkillForm({ isOpen, onClose, onSave, currentSkill, categ
                         }`}
                         onClick={() => setIcon(iconName)}
                       >
-                        {renderDevIcon(iconName)}
+                        {renderIcon(iconName)}
                         <span className="text-xs truncate w-full text-center">{iconName}</span>
                       </Button>
                     ))

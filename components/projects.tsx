@@ -9,8 +9,8 @@ import { Button } from "@/components/ui/button"
 import Image from "next/image"
 import Link from "next/link"
 import { useLanguage } from "@/contexts/language-context"
-import { useContent } from "@/contexts/content-context"
-import type { Project } from "@/contexts/content-context"
+import { useContent } from "@/contexts/content"
+import type { Project } from "@/contexts/content/types"
 
 export default function Projects() {
   const [activeTab, setActiveTab] = useState("fullstack")

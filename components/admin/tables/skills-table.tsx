@@ -4,7 +4,7 @@ import type React from "react"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import { Pencil, Trash2 } from "lucide-react"
-import type { Skill } from "@/contexts/content-context"
+import type { Skill } from "@/contexts/content/types"
 
 interface SkillsTableProps {
   skills: Skill[]

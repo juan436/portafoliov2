@@ -5,7 +5,7 @@ import { motion } from "framer-motion"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Trash2 } from "lucide-react"
-import type { Project } from "@/contexts/content-context"
+import type { Project } from "@/contexts/content/types"
 
 interface ProjectsTableProps {
   projects: Project[]

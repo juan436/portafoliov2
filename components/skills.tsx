@@ -5,8 +5,9 @@ import { motion } from "framer-motion"
 import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useLanguage } from "@/contexts/language-context"
-import { useContent } from "@/contexts/content-context"
+import { useContent } from "@/contexts/content"
 import Script from "next/script"
+import { renderSkillIcon } from "@/lib/devicon-utils"
 
 
 export default function Skills() {
@@ -63,38 +64,15 @@ export default function Skills() {
     window.addEventListener("skillsUpdated", handleSkillsUpdate as EventListener)
 
     return () => {
+      
       window.removeEventListener("contentUpdated", handleContentUpdate as EventListener)
       window.removeEventListener("skillsUpdated", handleSkillsUpdate as EventListener)
     }
   }, [])
 
-  // Renderizar el icono de Devicon
+  // Renderizar el icono de Devicon usando la utilidad centralizada
   const renderDevIcon = (skill: { name: string; icon: string; colored?: boolean }) => {
-    if (!skill.icon) return null
-
-    // Caso especial para Next.js
-    if (skill.icon === "nextjs") {
-      return (
-        <i
-          className={`devicon-nextjs-original-wordmark${skill.colored !== false ? " colored" : ""}`}
-          style={skill.colored === false ? { color: "white" } : {}}
-        ></i>
-      )
-    }
-
-    // Casos especiales que usan sufijos diferentes
-    const specialIcons: Record<string, string> = {
-      express: "original",
-      nestjs: "plain-wordmark",
-      amazonwebservices: "original",
-      digitalocean: "original",
-    }
-
-    // Determinar el sufijo correcto
-    const suffix = specialIcons[skill.icon] || "plain"
-    const iconClass = `devicon-${skill.icon}-${suffix}${skill.colored !== false ? " colored" : ""}`
-
-    return <i className={iconClass} style={skill.colored === false ? { color: "white" } : {}}></i>
+    return renderSkillIcon(skill);
   }
 
   return (

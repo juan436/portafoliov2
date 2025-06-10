@@ -8,6 +8,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Switch } from "@/components/ui/switch"
 import { Search, X, ChevronDown, ChevronUp, ExternalLink, Check, Palette } from "lucide-react"
+import { renderDevIcon } from "@/lib/devicon-utils"
 
 // Lista completa de iconos de Devicon organizados por categoría
 const deviconIcons = [
@@ -123,13 +124,8 @@ export default function IconSelector({ selectedIcon, onSelectIcon, category }: I
   }, [isOpen])
 
   // Renderizar el ícono de Devicon
-  const renderDevIcon = (iconName: string, colored = useColored) => {
-    if (!iconName) return null
-
-    // Construir la clase del ícono
-    const iconClass = `devicon-${iconName}${colored ? "-plain colored" : "-plain"}`
-
-    return <i className={`${iconClass} text-xl`}></i>
+  const renderDevIconWrapper = (iconName: string) => {
+    return renderDevIcon(iconName, useColored, "text-xl")
   }
 
   return (
@@ -146,7 +142,7 @@ export default function IconSelector({ selectedIcon, onSelectIcon, category }: I
             <div className="flex items-center">
               {selectedIcon ? (
                 <>
-                  <span className="mr-2">{renderDevIcon(selectedIcon)}</span>
+                  <span className="mr-2">{renderDevIconWrapper(selectedIcon)}</span>
                   <span>
                     {deviconIcons.find((icon) => icon.value === selectedIcon)?.label || selectedIcon}
                   </span>
@@ -213,7 +209,7 @@ export default function IconSelector({ selectedIcon, onSelectIcon, category }: I
                     }}
                   >
                     <div className="flex items-center">
-                      <span className="mr-2">{renderDevIcon(icon.value)}</span>
+                      <span className="mr-2">{renderDevIconWrapper(icon.value)}</span>
                       <span className="truncate text-xs">{icon.label}</span>
                       {selectedIcon === icon.value && (
                         <Check className="ml-1 h-3 w-3 text-blue-500" />

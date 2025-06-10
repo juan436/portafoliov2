@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { useContent } from "@/contexts/content-context";
+import { useContent } from "@/contexts/content";
 import { useToastNotifications } from "../../use-toast-notifications";
 import { HeroContent } from "@/components/admin/forms/hero-form";
 import { AboutContent } from "@/components/admin/forms/about-form";

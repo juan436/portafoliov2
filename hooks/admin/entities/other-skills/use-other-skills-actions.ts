@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
-import { useContent } from "@/contexts/content-context";
+import { useContent } from "@/contexts/content";
+import type { OtherSkill } from "@/contexts/content/types";
 import { useToastNotifications } from "../../use-toast-notifications";
 
 // Definir la interfaz para otras habilidades

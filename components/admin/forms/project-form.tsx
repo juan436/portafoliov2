@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { ImageIcon, X } from "lucide-react"
-import type { Project } from "@/contexts/content-context"
+import type { Project } from "@/contexts/content/types"
 
 interface ProjectFormProps {
   project: Project | null

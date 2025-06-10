@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { useContent } from "@/contexts/content-context";
+import { useContent } from "@/contexts/content";
 import { useToastNotifications } from "../../use-toast-notifications";
 import type { Experience } from "@/components/admin/forms/experience-form";
 

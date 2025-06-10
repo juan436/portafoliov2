@@ -5,7 +5,7 @@ import { motion } from "framer-motion"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { User, Laptop, ImageIcon, FileImage } from "lucide-react"
-import { useContent } from "@/contexts/content-context"
+import { useContent } from "@/contexts/content"
 
 // Importar componentes extraídos
 import ImageGuide, { ImageType } from "@/components/admin/common/image-guide"

@@ -8,7 +8,7 @@ import Image from "next/image"
 import Link from "next/link"
 import { useState } from "react"
 import { useLanguage } from "@/contexts/language-context"
-import { useContent } from "@/contexts/content-context"
+import { useContent } from "@/contexts/content"
 
 export default function Hero() {
   const { t } = useLanguage()

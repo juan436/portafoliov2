@@ -1,27 +1,19 @@
 import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
-import { Plus, Code, Server, Database, Layers, PanelRight } from "lucide-react"
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs"
-import Script from "next/script"
-import { useState,} from "react"
-import type { Skill } from "@/contexts/content-context"
-
-// Importar componentes extraídos
-import SkillForm from "@/components/admin/forms/skill-form"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Code, Database, Layers, Plus, Server } from "lucide-react"
 import SkillsTable from "@/components/admin/tables/skills-table"
+import SkillForm from "@/components/admin/forms/skill-form"
 import OtherSkillsTable from "@/components/admin/tables/other-skills-table"
 import { ConfirmationDialog } from "@/components/admin/common/confirmation-dialog"
 import { FormDialog } from "@/components/admin/common/form-dialog"
 import { Input } from "@/components/ui/input"
-
-// Importar los hooks personalizados
+import { useState, useEffect } from "react"
+import type { Skill } from "@/contexts/content/types"
 import { useSkillsActions } from "@/hooks/admin/entities/skills/use-skills-actions"
 import { useOtherSkillsActions } from "@/hooks/admin/entities/other-skills/use-other-skills-actions"
+import { renderDevIcon } from "@/lib/devicon-utils"
+import Script from "next/script"
 
 export default function SkillsManager() {
   // Usar los hooks personalizados
@@ -57,42 +49,9 @@ export default function SkillsManager() {
   const [skillToDelete, setSkillToDelete] = useState<Skill | null>(null);
   const [otherSkillToDelete, setOtherSkillToDelete] = useState<any>(null);
 
-  // Renderizador de iconos de Devicon
-  const renderDevIcon = (iconName: string, colored = true) => {
-    if (!iconName) return null
-
-    // Caso especial para Next.js
-    if (iconName === "nextjs") {
-      return (
-        <i
-          className={`devicon-nextjs-original-wordmark ${colored ? "colored" : ""}`}
-          style={{ fontSize: "2rem", color: !colored ? "white" : undefined }}
-        ></i>
-      )
-    }
-    if (iconName === "amazonwebservices") {
-      return (
-        <i
-          className={`devicon-amazonwebservices-plain-wordmark ${colored ? "colored" : ""}`}
-          style={{ fontSize: "2rem", color: !colored ? "white" : undefined }}
-        ></i>
-      )
-    }
-
-    // Determinar el sufijo correcto
-    const specialIcons: Record<string, string> = {
-      "csharp": "plain",
-      "dot-net": "plain-wordmark",
-      "dotnetcore": "plain",
-    }
-    const suffix = specialIcons[iconName] || "plain"
-
-    return (
-      <i
-        className={`devicon-${iconName}-${suffix} ${colored ? "colored" : ""}`}
-        style={{ fontSize: "2rem", color: !colored && !specialIcons[iconName] ? "white" : undefined }}
-      ></i>
-    )
+  // Renderizador de iconos de Devicon usando la utilidad centralizada
+  const renderIconWithStyle = (iconName: string, colored = true) => {
+    return renderDevIcon(iconName, colored, "text-2xl")
   }
 
   // Crear una nueva skill técnica
@@ -203,7 +162,7 @@ export default function SkillsManager() {
               skills={skills.frontend || []}
               onEdit={handleEditSkill}
               onDelete={handleDeleteSkillConfirm}
-              renderDevIcon={renderDevIcon}
+              renderDevIcon={renderIconWithStyle}
             />
           </TabsContent>
           <TabsContent value="backend" className="mt-0">
@@ -211,7 +170,7 @@ export default function SkillsManager() {
               skills={skills.backend || []}
               onEdit={handleEditSkill}
               onDelete={handleDeleteSkillConfirm}
-              renderDevIcon={renderDevIcon}
+              renderDevIcon={renderIconWithStyle}
             />
           </TabsContent>
           <TabsContent value="database" className="mt-0">
@@ -219,7 +178,7 @@ export default function SkillsManager() {
               skills={skills.database || []}
               onEdit={handleEditSkill}
               onDelete={handleDeleteSkillConfirm}
-              renderDevIcon={renderDevIcon}
+              renderDevIcon={renderIconWithStyle}
             />
           </TabsContent>
           <TabsContent value="devops" className="mt-0">
@@ -227,7 +186,7 @@ export default function SkillsManager() {
               skills={skills.devops || []}
               onEdit={handleEditSkill}
               onDelete={handleDeleteSkillConfirm}
-              renderDevIcon={renderDevIcon}
+              renderDevIcon={renderIconWithStyle}
             />
           </TabsContent>
           <TabsContent value="other" className="mt-0">
@@ -235,7 +194,7 @@ export default function SkillsManager() {
               skills={skills.other || []}
               onEdit={handleEditSkill}
               onDelete={handleDeleteSkillConfirm}
-              renderDevIcon={renderDevIcon}
+              renderDevIcon={renderIconWithStyle}
             />
           </TabsContent>
         </Tabs>
