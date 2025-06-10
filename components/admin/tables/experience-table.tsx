@@ -51,19 +51,19 @@ export default function ExperienceTable({
       </CardHeader>
       <CardContent className="p-4">
         <div className="space-y-2 max-h-[500px] overflow-y-auto pr-2">
-          {sortedExperiences.length > 0 ? (
-            sortedExperiences.map((experience, index) => (
+          {sortedExperiences.length > 0 && sortedExperiences.some(exp => exp._id) ? (
+            // Solo mostrar experiencias que tengan un _id (que ya están guardadas en la base de datos)
+            sortedExperiences
+              .filter(experience => experience._id) // Filtrar solo experiencias con _id
+              .map((experience, index) => (
               <motion.div
-                key={experience._id || `new-${index}`}
+                key={experience._id}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 className={`p-3 rounded-md cursor-pointer relative group ${
                   selectedExperience && 
-                  (selectedExperience._id === experience._id || 
-                   (experience.isNew && selectedExperience.isNew && 
-                    experience.position === selectedExperience.position && 
-                    experience.company === selectedExperience.company))
+                  (selectedExperience._id === experience._id)
                     ? "bg-blue-900/30 border border-blue-500"
                     : "bg-black/20 border border-blue-700/20 hover:border-blue-700/50"
                 }`}
@@ -102,11 +102,6 @@ export default function ExperienceTable({
                     </Button>
                   )}
                 </div>
-                {experience.isNew && (
-                  <div className="absolute top-1 right-1 bg-amber-500/20 text-amber-300 text-xs px-1.5 py-0.5 rounded">
-                    Nuevo
-                  </div>
-                )}
               </motion.div>
             ))
           ) : (

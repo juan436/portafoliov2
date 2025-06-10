@@ -48,8 +48,7 @@ export function useExperienceActions() {
       company: "",
       period: "",
       description: "",
-      skills: [],
-      isNew: true
+      skills: []
     };
     
     setSelectedExperience(newExperience);
@@ -68,7 +67,7 @@ export function useExperienceActions() {
   const handleCancelEdit = useCallback(() => {
     if (isCreatingNewExperience) {
       // Si estábamos creando una nueva experiencia, la eliminamos del estado
-      setExperienceContent(prev => prev.filter(exp => !exp.isNew));
+      setExperienceContent(prev => prev.filter(exp => exp._id));
       setSelectedExperience(null);
     }
     
@@ -86,11 +85,11 @@ export function useExperienceActions() {
       if (result) {
         // Actualizar el estado local para reflejar la creación exitosa
         const updatedExperiences = experienceContent.map(exp => {
-          if (exp.isNew && 
+          if (!exp._id && 
               exp.position === experience.position && 
               exp.company === experience.company) {
             // Encontramos la experiencia que acabamos de crear, actualizamos su estado
-            const updatedExp = { ...exp, isNew: false, _id: result._id };
+            const updatedExp = { ...exp, _id: result._id };
             setSelectedExperience(updatedExp);
             return updatedExp;
           }

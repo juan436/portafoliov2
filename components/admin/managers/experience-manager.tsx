@@ -57,7 +57,7 @@ export default function ExperienceManager() {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             <div className="md:col-span-1">
               <ExperienceTable
-                experiences={experienceContent}
+                experiences={experienceContent.filter(exp => exp._id)} 
                 selectedExperience={selectedExperience}
                 onSelectExperience={setSelectedExperience}
                 onDeleteExperience={(id) => deleteExperience(id)}
@@ -66,7 +66,7 @@ export default function ExperienceManager() {
               />
             </div>
             <div className="md:col-span-3">
-              {selectedExperience ? (
+              {selectedExperience && selectedExperience._id ? (
                 <ExperienceForm
                   experience={selectedExperience}
                   editMode={editMode}
@@ -74,6 +74,21 @@ export default function ExperienceManager() {
                   onSave={handleSaveEdit}
                   onCancel={handleCancelEdit}
                   isNewExperience={isCreatingNewExperience}
+                />
+              ) : isCreatingNewExperience ? (
+                <ExperienceForm
+                  experience={{
+                    position: "",
+                    company: "",
+                    period: "",
+                    description: "",
+                    skills: []
+                  }}
+                  editMode={true}
+                  setEditMode={setEditMode}
+                  onSave={handleSaveEdit}
+                  onCancel={handleCancelEdit}
+                  isNewExperience={true}
                 />
               ) : (
                 <div className="bg-black/20 border border-blue-700/10 rounded-md p-8 flex flex-col items-center justify-center h-full">

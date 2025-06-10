@@ -121,11 +121,6 @@ export default function ExperienceForm({
       skills: [...currentSkills, newTechnology.trim()],
     });
     setNewTechnology("");
-    toast({
-      title: "Tecnología añadida",
-      description: `"${newTechnology.trim()}" ha sido añadida a la experiencia.`,
-      variant: "default",
-    });
   }
 
   // Eliminar tecnología de la experiencia actual
