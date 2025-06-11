@@ -124,22 +124,22 @@ export function useContentEditor() {
       const success = saveAllContent();
 
       if (success) {
-        showSuccessToast({
-          title: "Cambios guardados",
-          description: "El contenido ha sido actualizado correctamente.",
-        });
+        showSuccessToast(
+          "Cambios guardados",
+          "El contenido ha sido actualizado correctamente."
+        );
       } else {
-        showErrorToast({
-          title: "Error al guardar",
-          description: "Ha ocurrido un error al guardar los cambios.",
-        });
+        showErrorToast(
+          "Error al guardar",
+          "Ha ocurrido un error al guardar los cambios."
+        );
       }
     } catch (error) {
       console.error("Error al guardar el contenido:", error);
-      showErrorToast({
-        title: "Error",
-        description: "Ocurrió un error inesperado al guardar los cambios.",
-      });
+      showErrorToast(
+        "Error",
+        "Ocurrió un error inesperado al guardar los cambios."
+      );
     } finally {
       setIsLoading(false);
     }
@@ -154,7 +154,8 @@ export function useContentEditor() {
     updateContact, 
     saveAllContent, 
     showSuccessToast, 
-    showErrorToast
+    showErrorToast,
+    hasChanges
   ]);
 
   return {
