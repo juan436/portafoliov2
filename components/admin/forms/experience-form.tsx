@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Trash2, Tag } from "lucide-react"
-import { useToast } from "@/hooks/use-toast"
+import { useToastNotifications } from "@/hooks/admin/use-toast-notifications"
 
 // Definir la interfaz para una experiencia laboral
 export interface Experience {
@@ -16,7 +16,7 @@ export interface Experience {
   company: string
   period: string
   description: string
-  skills: string[]
+  skills?: string[]
   companyLogo?: string
   location?: string
   achievements?: string[]
@@ -33,15 +33,8 @@ interface ExperienceFormProps {
   isNewExperience?: boolean
 }
 
-export default function ExperienceForm({ 
-  experience, 
-  editMode, 
-  setEditMode, 
-  onSave,
-  onCancel,
-  isNewExperience = false
-}: ExperienceFormProps) {
-  const { toast } = useToast()
+export default function ExperienceForm({ experience, editMode, setEditMode, onSave, onCancel,isNewExperience = false}: ExperienceFormProps) {
+  const toastNotifications = useToastNotifications()
   const [formData, setFormData] = useState<Experience | null>(experience)
   const [newTechnology, setNewTechnology] = useState("")
   const [emptyFields, setEmptyFields] = useState<Record<string, boolean>>({})
@@ -79,14 +72,17 @@ export default function ExperienceForm({
   // Guardar los cambios
   const handleSave = () => {
     if (formData) {
-      const processedData = { ...formData };
+      const processedData = { 
+        ...formData,
+        // Asegurar que skills siempre sea un array
+        skills: formData.skills || []
+      };
       // Validar datos mínimos
       if (!processedData.position.trim() || !processedData.company.trim() || !processedData.period.trim()) {
-        toast({
-          title: "Datos incompletos",
-          description: "Debes completar al menos el cargo, la empresa y el período.",
-          variant: "destructive",
-        })
+        toastNotifications.showErrorToast(
+          "Datos incompletos",
+          "Debes completar al menos el cargo, la empresa y el período."
+        );
         return;
       }
       onSave(processedData);
@@ -108,11 +104,10 @@ export default function ExperienceForm({
     const currentSkills = formData.skills || [];
     // Verificar si la tecnología ya existe
     if (currentSkills.includes(newTechnology.trim())) {
-      toast({
-        title: "Tecnología duplicada",
-        description: "Esta tecnología ya está en la lista.",
-        variant: "destructive",
-      })
+      toastNotifications.showErrorToast(
+        "Tecnología duplicada",
+        "Esta tecnología ya está en la lista."
+      )
       return;
     }
 
@@ -126,9 +121,10 @@ export default function ExperienceForm({
   // Eliminar tecnología de la experiencia actual
   const removeTechnology = (tech: string) => {
     if (!formData) return;
+    const currentSkills = formData.skills || [];
     setFormData({
       ...formData,
-      skills: formData.skills.filter((t) => t !== tech),
+      skills: currentSkills.filter((t) => t !== tech),
     });
   }
   // Si no hay experiencia seleccionada, mostrar mensaje

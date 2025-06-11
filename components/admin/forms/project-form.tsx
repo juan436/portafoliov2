@@ -7,8 +7,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
-import { ImageIcon, X } from "lucide-react"
+import { ImageIcon, X, Tag, Trash2 } from "lucide-react"
 import type { Project } from "@/contexts/content/types"
+import { useToastNotifications } from "@/hooks/admin/use-toast-notifications"
 
 interface ProjectFormProps {
   project: Project | null
@@ -29,6 +30,8 @@ export default function ProjectForm({
 }: ProjectFormProps) {
   const [formData, setFormData] = useState<Project | null>(project)
   const [emptyFields, setEmptyFields] = useState<Record<string, boolean>>({})
+  const [newTag, setNewTag] = useState("")
+  const toastNotifications = useToastNotifications()
 
   // Actualizar el formData cuando cambia el proyecto seleccionado
   useEffect(() => {
@@ -57,11 +60,39 @@ export default function ProjectForm({
       [name]: value.trim() === ''
     }))
     
-    if (name === "tags") {
-      setFormData((prev) => prev ? { ...prev, [name]: value } : null)
-    } else {
-      setFormData((prev) => prev ? { ...prev, [name]: value } : null)
+    setFormData((prev) => prev ? { ...prev, [name]: value } : null)
+  }
+
+  // Agregar etiqueta al proyecto actual
+  const addTag = () => {
+    if (!newTag.trim() || !formData) return;
+    const currentTags = Array.isArray(formData.tags) ? formData.tags : [];
+    
+    // Verificar si la etiqueta ya existe
+    if (currentTags.includes(newTag.trim())) {
+      toastNotifications.showErrorToast(
+        "Etiqueta duplicada",
+        "Esta etiqueta ya está en la lista."
+      );
+      return;
     }
+
+    setFormData({
+      ...formData,
+      tags: [...currentTags, newTag.trim()],
+    });
+    setNewTag("");
+  }
+
+  // Eliminar etiqueta del proyecto actual
+  const removeTag = (tag: string) => {
+    if (!formData) return;
+    const currentTags = Array.isArray(formData.tags) ? formData.tags : [];
+    
+    setFormData({
+      ...formData,
+      tags: currentTags.filter((t) => t !== tag),
+    });
   }
 
   // Guardar los cambios
@@ -69,10 +100,9 @@ export default function ProjectForm({
     if (formData) {
       const processedData = { ...formData };
       
-      if (typeof processedData.tags === 'string') {
-        processedData.tags = processedData.tags.split(',')
-          .map(tag => tag.trim())
-          .filter(Boolean)
+      // Asegurarse de que tags sea un array
+      if (!Array.isArray(processedData.tags)) {
+        processedData.tags = [];
       }
       
       if (isNewProject) {
@@ -235,16 +265,60 @@ export default function ProjectForm({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="tags">Etiquetas (separadas por comas)</Label>
-              <Input
-                id="tags"
-                name="tags"
-                value={emptyFields.tags ? '' : (typeof formData.tags === 'string' ? formData.tags : formData.tags.join(', '))}
-                onChange={handleInputChange}
-                disabled={!editMode}
-                className="bg-black/40 border-blue-700/20"
-                placeholder={getPlaceholder('tags')}
-              />
+              <Label htmlFor="tags" className="flex items-center">
+                <Tag className="mr-2 h-4 w-4" />
+                Etiquetas
+              </Label>
+              <div className="flex flex-wrap gap-2 mb-2">
+                {Array.isArray(formData.tags) && formData.tags.map((tag, i) => (
+                  <div
+                    key={i}
+                    className="bg-blue-700/20 text-blue-400 px-2 py-1 rounded-md text-sm flex items-center"
+                  >
+                    {tag}
+                    {editMode && (
+                      <button
+                        onClick={() => removeTag(tag)}
+                        className="ml-2 text-blue-400 hover:text-red-500"
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </button>
+                    )}
+                  </div>
+                ))}
+                {(!formData.tags || !Array.isArray(formData.tags) || formData.tags.length === 0) && (
+                  <div className="text-gray-500 text-sm italic">
+                    No hay etiquetas añadidas
+                  </div>
+                )}
+              </div>
+              {editMode && (
+                <div className="flex space-x-2">
+                  <Input
+                    id="newTag"
+                    value={newTag}
+                    onChange={(e) => setNewTag(e.target.value)}
+                    placeholder="Añadir etiqueta (ej: React, Web)"
+                    className="bg-black/40 border-blue-700/20"
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault()
+                        addTag()
+                      }
+                    }}
+                  />
+                  <Button
+                    onClick={addTag}
+                    className="bg-blue-700 hover:bg-blue-800"
+                    type="button"
+                  >
+                    Añadir
+                  </Button>
+                </div>
+              )}
+              <p className="text-xs text-gray-400">
+                Estas etiquetas se mostrarán como badges en la sección de proyectos.
+              </p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

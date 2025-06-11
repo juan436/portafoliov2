@@ -84,6 +84,11 @@ export function useProjectsActions(initialCategory: ProjectCategory = 'fullstack
     // Los valores predeterminados se manejan en el ProjectForm
     const newProjectTemplate: Project = {
       id: -1, // ID temporal negativo para indicar que es un proyecto nuevo
+      title: "", // Valor vacío por defecto
+      description: "", // Valor vacío por defecto
+      tags: [], // Array vacío por defecto
+      github: "", // Valor vacío por defecto
+      demo: "", // Valor vacío por defecto
       createdAt: currentDate,
       // No definimos imagen por defecto, se manejará en el formulario con placeholders
       image: undefined

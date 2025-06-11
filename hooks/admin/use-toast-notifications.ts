@@ -1,13 +1,20 @@
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
 
+// Tipo para almacenar las referencias completas de los toasts
+type ToastReference = {
+  id: string;
+  update: (props: any) => void;
+  dismiss: () => void;
+};
+
 /**
  * Hook para centralizar las notificaciones toast reutilizables
  * @returns Funciones para mostrar diferentes tipos de notificaciones toast
  */
 export function useToastNotifications() {
   const { toast } = useToast();
-  const [loadingToasts, setLoadingToasts] = useState<Record<string, string>>({});
+  const [loadingToasts, setLoadingToasts] = useState<Record<string, ToastReference>>({});
   
   /**
    * Muestra una notificación toast de éxito
@@ -36,38 +43,43 @@ export function useToastNotifications() {
    * @returns ID del toast para actualizarlo posteriormente
    */
   const showLoadingToast = (action: string, itemName: string) => {
-    const toastId = toast({
+    const toastRef = toast({
       title: `${action} ${itemName}...`,
       description: "Procesando...",
       duration: 100000, // Duración larga hasta que se actualice
-    }).id;
+    });
     
-    // Guardar referencia del toast
+    // Guardar referencia completa del toast
     setLoadingToasts(prev => ({
       ...prev,
-      [itemName]: toastId
+      [itemName]: toastRef
     }));
     
-    return toastId;
+    return toastRef.id;
   };
   
   /**
    * Actualiza un toast de carga a un toast de éxito
    */
   const updateToastToSuccess = (toastId: string, title: string, description: string) => {
-    toast({
-      id: toastId,
-      title,
-      description,
-      variant: "default",
-      duration: 3000,
-    });
+    // Buscar la referencia del toast por su ID
+    const toastRef = Object.values(loadingToasts).find(ref => ref.id === toastId);
+    
+    if (toastRef) {
+      // Usar el método update para modificar el toast
+      toastRef.update({
+        title,
+        description,
+        variant: "default",
+        duration: 3000,
+      });
+    }
     
     // Limpiar referencia
     setLoadingToasts(prev => {
       const newState = { ...prev };
       Object.keys(newState).forEach(key => {
-        if (newState[key] === toastId) delete newState[key];
+        if (newState[key].id === toastId) delete newState[key];
       });
       return newState;
     });
@@ -77,19 +89,24 @@ export function useToastNotifications() {
    * Actualiza un toast de carga a un toast de error
    */
   const updateToastToError = (toastId: string, title: string, description: string) => {
-    toast({
-      id: toastId,
-      title,
-      description,
-      variant: "destructive",
-      duration: 3000,
-    });
+    // Buscar la referencia del toast por su ID
+    const toastRef = Object.values(loadingToasts).find(ref => ref.id === toastId);
+    
+    if (toastRef) {
+      // Usar el método update para modificar el toast
+      toastRef.update({
+        title,
+        description,
+        variant: "destructive",
+        duration: 3000,
+      });
+    }
     
     // Limpiar referencia
     setLoadingToasts(prev => {
       const newState = { ...prev };
       Object.keys(newState).forEach(key => {
-        if (newState[key] === toastId) delete newState[key];
+        if (newState[key].id === toastId) delete newState[key];
       });
       return newState;
     });

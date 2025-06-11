@@ -32,7 +32,7 @@ export default function ProjectsManager() {
   } = useProjectsActions();
 
   // Renderizar el contenido de proyectos según la categoría
-  const renderProjectContent = (title: string, description: string) => (
+  const renderProjectContent = (category: string, title: string, description: string) => (
     <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
       <div className="md:col-span-1">
         <ProjectsTable
