@@ -24,6 +24,7 @@ export default function ContentEditor() {
     aboutContent,
     servicesContent,
     contactContent,
+    hasChanges,
     
     // Setters
     setActiveTab,
@@ -52,7 +53,7 @@ export default function ContentEditor() {
           <Button
             onClick={handleSave}
             className="bg-blue-700 hover:bg-blue-800"
-            disabled={isLoading}
+            disabled={isLoading || !hasChanges}
           >
             {isLoading ? (
               <>

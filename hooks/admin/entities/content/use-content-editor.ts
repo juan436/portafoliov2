@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useContent } from "@/contexts/content";
 import { useToastNotifications } from "../../use-toast-notifications";
 import { HeroContent } from "@/components/admin/forms/hero-form";
@@ -23,6 +23,15 @@ export function useContentEditor() {
   const { showSuccessToast, showErrorToast } = useToastNotifications();
   const [activeTab, setActiveTab] = useState("hero");
   const [isLoading, setIsLoading] = useState(false);
+  const [hasChanges, setHasChanges] = useState(false);
+
+  // Referencias para almacenar el estado inicial
+  const initialContent = useRef({
+    hero: {} as HeroContent,
+    about: {} as AboutContent,
+    services: [] as Service[],
+    contact: {} as ContactContent
+  });
 
   // Estados locales para edición
   const [heroContent, setHeroContent] = useState<HeroContent>({
@@ -46,27 +55,62 @@ export function useContentEditor() {
     // Evitar actualizaciones innecesarias que causan parpadeo
     if (isLoading) return;
 
-    setHeroContent({
+    const heroData = {
       ...content.hero,
       profileImage:
         content.hero.profileImage ||
         "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/profile-E9YRocD6o4olhnzraHWCjLmKjCbspw.jpeg",
-    });
-    
-    setAboutContent({
+    };
+
+    const aboutData = {
       paragraph1: content.about.paragraph1 || "",
       paragraph2: content.about.paragraph2 || "",
       paragraph3: content.about.paragraph3 || "",
-    });
-    
-    setServicesContent(content.services || []);
-    setContactContent(content.contact);
+    };
+
+    const servicesData = content.services || [];
+    const contactData = content.contact;
+
+    setHeroContent(heroData);
+    setAboutContent(aboutData);
+    setServicesContent(servicesData);
+    setContactContent(contactData);
+
+    // Guardar una copia profunda del estado inicial
+    initialContent.current = {
+      hero: JSON.parse(JSON.stringify(heroData)),
+      about: JSON.parse(JSON.stringify(aboutData)),
+      services: JSON.parse(JSON.stringify(servicesData)),
+      contact: JSON.parse(JSON.stringify(contactData))
+    };
+
+    // Resetear el estado de cambios
+    setHasChanges(false);
   }, [content, isLoading]);
+
+  // Detectar cambios en el contenido
+  useEffect(() => {
+    // Comparar el estado actual con el estado inicial
+    const currentContent = {
+      hero: heroContent,
+      about: aboutContent,
+      services: servicesContent,
+      contact: contactContent
+    };
+
+    const currentJson = JSON.stringify(currentContent);
+    const initialJson = JSON.stringify(initialContent.current);
+    
+    setHasChanges(currentJson !== initialJson);
+  }, [heroContent, aboutContent, servicesContent, contactContent]);
 
   /**
    * Función para guardar todos los cambios en el contenido
    */
   const handleSave = useCallback(async () => {
+    // Si no hay cambios, no hacer nada
+    if (!hasChanges) return;
+
     try {
       setIsLoading(true);
 
@@ -121,6 +165,7 @@ export function useContentEditor() {
     aboutContent,
     servicesContent,
     contactContent,
+    hasChanges,
     
     // Setters
     setActiveTab,
