@@ -14,12 +14,12 @@ export default function WolfGuide() {
 
   // Short greeting messages for each section
   const messages = {
-    welcome: t("wolf.welcome.short") || "¡Hola! Bienvenido",
-    about: t("wolf.about.short") || "¡Sobre mí!",
-    skills: t("wolf.skills.short") || "Mis habilidades",
-    projects: t("wolf.projects.short") || "Mis proyectos",
-    contact: t("wolf.contact.short") || "¡Contáctame!",
-    experience: t("wolf.experience.short") || "¡Mi experiencia!",
+    welcome: t("wolf.welcome_short") || "¡Hola! Bienvenido",
+    about: t("wolf.about_short") || "¡Sobre mí!",
+    skills: t("wolf.skills_short") || "Mis habilidades",
+    projects: t("wolf.projects_short") || "Mis proyectos",
+    contact: t("wolf.contact_short") || "¡Contáctame!",
+    experience: t("wolf.experience_short") || "¡Mi experiencia!",
     idle: "",
   }
 

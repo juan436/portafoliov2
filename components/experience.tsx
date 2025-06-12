@@ -137,10 +137,10 @@ export default function Experience() {
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
         >
-          <h2 className="text-4xl font-bold text-white mb-4">Experiencia Laboral</h2>
+          <h2 className="text-4xl font-bold text-white mb-4">{t("experience.title")}</h2>
           <div className="w-24 h-1 bg-blue-500 mx-auto mb-6"></div>
           <p className="text-blue-300 max-w-2xl mx-auto">
-            Mi trayectoria profesional y los roles que he desempeñado en diferentes empresas.
+            {t("experience.subtitle")}
           </p>
         </motion.div>
 
@@ -347,7 +347,7 @@ export default function Experience() {
               className={`h-2 rounded-full transition-all duration-300 ${
                 index === activeIndex ? "bg-blue-500 w-8" : "bg-slate-700 w-2 hover:bg-slate-600"
               }`}
-              aria-label={`Ver experiencia ${index + 1}`}
+              aria-label={`${t("experience.viewExperience")} ${index + 1}`}
             />
           ))}
         </motion.div>
@@ -367,7 +367,7 @@ export default function Experience() {
               isAutoPlaying ? "bg-blue-900/30 text-blue-300" : "bg-black/50 text-blue-500"
             } hover:bg-blue-900/30 hover:border-blue-500 transition-all`}
           >
-            {isAutoPlaying ? "Pausar presentación" : "Reproducir automáticamente"}
+            {isAutoPlaying ? t("experience.pause") : t("experience.autoplay")}
           </Button>
         </motion.div>
       </div>

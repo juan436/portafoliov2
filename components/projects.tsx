@@ -94,7 +94,7 @@ export default function Projects() {
                       className="border-blue-700/50 text-blue-500 hover:bg-blue-700/10 group-hover:border-blue-500 transition-all duration-300"
                     >
                       <Plus className="mr-2 h-4 w-4" />
-                      {t("projects.viewMore")}
+                      {t(`projects.viewMore.${activeTab}`)}
                     </Button>
                   </Link>
                 </motion.div>
@@ -124,7 +124,7 @@ export default function Projects() {
                   className="border-blue-700/50 text-blue-500 hover:bg-blue-700/10 group-hover:border-blue-500 transition-all duration-300"
                 >
                   <Plus className="mr-2 h-4 w-4" />
-                  {t("projects.viewMore")}
+                  {t(`projects.viewMore.${activeTab}`)}
                 </Button>
               </Link>
             </motion.div>
