@@ -6,7 +6,7 @@ import { ArrowRight, Github, Linkedin, Mail, Code, Server, Database, Layers, Rot
 import { WhatsappIcon } from "@/components/icons/whatsapp-icon"
 import Image from "next/image"
 import Link from "next/link"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useLanguage } from "@/contexts/language-context"
 import { useContent } from "@/contexts/content"
 
@@ -14,12 +14,25 @@ export default function Hero() {
   const { t } = useLanguage()
   const { content } = useContent()
   const [showAnimation, setShowAnimation] = useState(false)
+  const [translatedTexts, setTranslatedTexts] = useState<{
+    projects: string;
+    contact: string;
+  }>({
+    projects: "",
+    contact: ""
+  })
+
+  useEffect(() => {
+    setTranslatedTexts({
+      projects: String(t("hero.projects")),
+      contact: String(t("hero.contact"))
+    })
+  }, [t])
 
   const toggleAnimation = () => {
     setShowAnimation(!showAnimation)
   }
 
-  // Variantes para la animación de los iconos
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -40,7 +53,6 @@ export default function Hero() {
     },
   }
 
-  // Variantes para la animación de las líneas de código
   const codeLines = [
     "const dev = {",
     ` name: '${content.hero.title}',`,
@@ -72,12 +84,12 @@ export default function Hero() {
             <div className="flex flex-wrap gap-4">
               <Button asChild className="bg-blue-700 hover:bg-blue-800">
                 <Link href="#projects">
-                  {t("hero.projects")} <ArrowRight className="ml-2 h-4 w-4" />
+                  {translatedTexts.projects} <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>
 
               <Button asChild variant="outline" className="border-blue-700 text-blue-500 hover:bg-blue-700/10">
-                <Link href="#contact">{t("hero.contact")}</Link>
+                <Link href="#contact">{translatedTexts.contact}</Link>
               </Button>
             </div>
 
@@ -128,7 +140,6 @@ export default function Hero() {
                         className="absolute inset-0 bg-gradient-to-br from-blue-900 to-black rounded-full flex flex-col items-center justify-center overflow-hidden"
                         style={{ perspective: "1000px", transformStyle: "preserve-3d" }}
                       >
-                        {/* Partículas de fondo */}
                         {[...Array(20)].map((_, i) => (
                           <motion.div
                             key={i}
@@ -152,7 +163,6 @@ export default function Hero() {
                           />
                         ))}
 
-                        {/* Líneas de código */}
                         <div className="absolute top-0 left-0 w-full h-full flex flex-col justify-center items-center p-8 z-10">
                           <motion.div
                             initial={{ opacity: 0, y: 20 }}
@@ -174,7 +184,6 @@ export default function Hero() {
                             ))}
                           </motion.div>
 
-                          {/* Iconos de tecnologías */}
                           <motion.div
                             variants={containerVariants}
                             initial="hidden"

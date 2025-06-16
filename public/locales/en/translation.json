@@ -25,10 +25,6 @@
     "subtitle": "A selection of my most recent and outstanding projects. Each project reflects my focus on quality, user experience, and clean code.",
     "fullstack": "Full Stack",
     "backend": "Backend",
-    "viewMore": {
-      "fullstack": "View more Full Stack projects",
-      "backend": "View more Backend projects"
-    },
     "code": "Code",
     "demo": "Demo",
     "repo": "Repository",

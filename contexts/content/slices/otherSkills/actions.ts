@@ -23,8 +23,9 @@ export const updateOtherSkills = async (
     }
   } catch (error) {
     console.error("Error actualizando otherSkills:", error)
+  } finally {
+    setIsLoading(false)
   }
-  setIsLoading(false)
 }
 
 /**
@@ -33,21 +34,28 @@ export const updateOtherSkills = async (
 export const addOtherSkill = async (
   skill: OtherSkill,
   setContent: Dispatch<SetStateAction<Content>>,
-  setOtherSkills: Dispatch<SetStateAction<OtherSkill[]>>
-) => {
+  setIsLoading: Dispatch<SetStateAction<boolean>>
+): Promise<OtherSkill | null> => {
+  setIsLoading(true)
   try {
     const response = await createOtherSkillApi(skill)
     if (response.success) {
-      setOtherSkills(prev => [...prev, response.data])
-
-      // Actualizar también el contenido global
+      // Actualizar el contenido global
       setContent(prev => ({
         ...prev,
         otherSkills: [...prev.otherSkills, response.data]
       }))
+      
+      setIsLoading(false)
+      return response.data
     }
+    
+    setIsLoading(false)
+    return null
   } catch (error) {
     console.error("Error añadiendo habilidad:", error)
+    setIsLoading(false)
+    return null
   }
 }
 
@@ -58,17 +66,13 @@ export const editOtherSkill = async (
   id: string, 
   updatedSkill: OtherSkill,
   setContent: Dispatch<SetStateAction<Content>>,
-  setOtherSkills: Dispatch<SetStateAction<OtherSkill[]>>
-) => {
+  setIsLoading: Dispatch<SetStateAction<boolean>>
+): Promise<boolean> => {
+  setIsLoading(true)
   try {
     const response = await updateOtherSkillApi(id, updatedSkill)
     if (response.success) {
-      // Actualizar el estado local de otherSkills con los datos devueltos por el servidor
-      setOtherSkills(prev =>
-        prev.map(skill => skill._id === id ? response.data : skill)
-      )
-
-      // Actualizar también el contenido global
+      // Actualizar el contenido global
       setContent(prev => ({
         ...prev,
         otherSkills: prev.otherSkills.map(
@@ -76,12 +80,16 @@ export const editOtherSkill = async (
         )
       }))
       
-      return response
+      setIsLoading(false)
+      return true
     }
-    return response
+    
+    setIsLoading(false)
+    return false
   } catch (error) {
     console.error("Error editando habilidad:", error)
-    return { success: false, message: error.message }
+    setIsLoading(false)
+    return false
   }
 }
 
@@ -90,29 +98,29 @@ export const editOtherSkill = async (
  */
 export const removeOtherSkill = async (
   id: string,
+  content: Content,
   setContent: Dispatch<SetStateAction<Content>>,
-  setOtherSkills: Dispatch<SetStateAction<OtherSkill[]>>
+  setIsLoading: Dispatch<SetStateAction<boolean>>
 ): Promise<boolean> => {
+  setIsLoading(true)
   try {
     const response = await deleteOtherSkillApi(id)
     if (response.success) {
-      // Actualizar el estado local de otherSkills
-      setOtherSkills(prev => prev.filter(skill => skill._id !== id))
-
-      // Actualizar también el contenido global
+      // Actualizar el contenido global
       setContent(prev => ({
         ...prev,
         otherSkills: prev.otherSkills.filter(skill => skill._id !== id)
       }))
       
-      // Devolver true para indicar éxito
+      setIsLoading(false)
       return true
     } else {
-      // Si la API devuelve un error, devolver false
+      setIsLoading(false)
       return false
     }
   } catch (error) {
     console.error("Error eliminando habilidad:", error)
+    setIsLoading(false)
     return false
   }
 }

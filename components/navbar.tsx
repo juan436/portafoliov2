@@ -14,15 +14,39 @@ export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
   const [activeSection, setActiveSection] = useState("home")
+  const [translatedTexts, setTranslatedTexts] = useState({
+    home: "",
+    about: "",
+    experience: "",
+    projects: "",
+    skills: "",
+    contact: ""
+  })
+  const [navItems, setNavItems] = useState<Array<{ name: string, href: string }>>([])
 
-  const navItems = [
-    { name: t("nav.home"), href: "#home" },
-    { name: t("nav.about"), href: "#about" },
-    { name: t("nav.experience"), href: "#experience" },
-    { name: t("nav.projects"), href: "#projects" },
-    { name: t("nav.skills"), href: "#skills" },
-    { name: t("nav.contact"), href: "#contact" },
-  ]
+  // Cargar traducciones después de la hidratación
+  useEffect(() => {
+    setTranslatedTexts({
+      home: String(t("nav.home")),
+      about: String(t("nav.about")),
+      experience: String(t("nav.experience")),
+      projects: String(t("nav.projects")),
+      skills: String(t("nav.skills")),
+      contact: String(t("nav.contact"))
+    })
+  }, [t])
+
+  // Inicializar los elementos de navegación después de la hidratación
+  useEffect(() => {
+    setNavItems([
+      { name: translatedTexts.home, href: "#home" },
+      { name: translatedTexts.about, href: "#about" },
+      { name: translatedTexts.experience, href: "#experience" },
+      { name: translatedTexts.projects, href: "#projects" },
+      { name: translatedTexts.skills, href: "#skills" },
+      { name: translatedTexts.contact, href: "#contact" },
+    ])
+  }, [translatedTexts])
 
   // Detectar scroll para cambiar el estilo de la barra de navegación
   useEffect(() => {
@@ -156,7 +180,7 @@ export default function Navbar() {
             <div className="flex space-x-8 mr-4">
               {navItems.map((item) => (
                 <button
-                  key={item.name}
+                  key={item.href}
                   onClick={(e) => handleNavClick(e as any, item.href)}
                   className={`transition-colors duration-300 bg-transparent border-0 cursor-pointer ${
                     activeSection === item.href.substring(1)
@@ -197,7 +221,7 @@ export default function Navbar() {
             <div className="flex flex-col space-y-4">
               {navItems.map((item) => (
                 <button
-                  key={item.name}
+                  key={item.href}
                   onClick={(e) => handleNavClick(e as any, item.href)}
                   className={`py-2 transition-colors duration-300 text-left bg-transparent border-0 cursor-pointer ${
                     activeSection === item.href.substring(1)

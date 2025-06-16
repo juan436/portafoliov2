@@ -25,10 +25,6 @@
     "subtitle": "Una selección de mis proyectos más recientes y destacados. Cada proyecto refleja mi enfoque en la calidad, experiencia de usuario y código limpio.",
     "fullstack": "Full Stack",
     "backend": "Backend",
-    "viewMore": {
-      "fullstack": "Ver más proyectos Full Stack",
-      "backend": "Ver más proyectos Backend"
-    },
     "code": "Código",
     "demo": "Demo",
     "repo": "Repositorio",

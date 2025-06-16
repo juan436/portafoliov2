@@ -5,7 +5,7 @@ import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
 import { LanguageProvider } from "@/contexts/language-context"
 import { ContentProvider } from "@/contexts/content"
-import WolfGuide from "@/components/wolf-guide"
+import WolfGuide from "@/components/wolf"
 import { Toaster } from "@/components/ui/toaster"
 const inter = Inter({ subsets: ["latin"] })
 

@@ -17,6 +17,32 @@ export default function Projects() {
   const { t } = useLanguage()
   const { content, isLoading } = useContent()
   const [localProjects, setLocalProjects] = useState(content.projects)
+  const [translatedTexts, setTranslatedTexts] = useState({
+    title: "",
+    subtitle: "",
+    fullstack: "",
+    backend: "",
+    code: "",
+    demo: "",
+    repo: "",
+    docs: "",
+    viewMore: "",
+  })
+
+  // Cargar traducciones después de la hidratación
+  useEffect(() => {
+    setTranslatedTexts({
+      title: String(t("projects.title")),
+      subtitle: String(t("projects.subtitle")),
+      fullstack: String(t("projects.fullstack")),
+      backend: String(t("projects.backend")),
+      code: String(t("projects.code")),
+      demo: String(t("projects.demo")),
+      repo: String(t("projects.repo")),
+      docs: String(t("projects.docs")),
+      viewMore: String(t("projects.viewMore_general")),
+    })
+  }, [t])
 
   // Actualizar proyectos cuando cambia el contenido global
   useEffect(() => {
@@ -39,9 +65,9 @@ export default function Projects() {
           viewport={{ once: true }}
           className="text-center mb-16"
         >
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">{t("projects.title")}</h2>
+          <h2 className="text-3xl md:text-4xl font-bold mb-4">{translatedTexts.title}</h2>
           <div className="w-20 h-1 bg-blue-600 mx-auto mb-8"></div>
-          <p className="text-slate-400 max-w-2xl mx-auto">{t("projects.subtitle")}</p>
+          <p className="text-slate-400 max-w-2xl mx-auto">{translatedTexts.subtitle}</p>
         </motion.div>
 
         <Tabs defaultValue="fullstack" className="w-full" onValueChange={setActiveTab}>
@@ -52,14 +78,14 @@ export default function Projects() {
                 className="data-[state=active]:bg-blue-700/20 data-[state=active]:text-blue-500"
               >
                 <Code2 className="mr-2 h-4 w-4" />
-                {t("projects.fullstack")}
+                {translatedTexts.fullstack}
               </TabsTrigger>
               <TabsTrigger
                 value="backend"
                 className="data-[state=active]:bg-blue-700/20 data-[state=active]:text-blue-500"
               >
                 <Server className="mr-2 h-4 w-4" />
-                {t("projects.backend")}
+                {translatedTexts.backend}
               </TabsTrigger>
             </TabsList>
           </div>
@@ -68,7 +94,6 @@ export default function Projects() {
             {isLoading ? (
               <div className="text-center py-12">
                 <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-blue-500 border-r-transparent"></div>
-                <p className="mt-4 text-slate-400">Cargando proyectos...</p>
               </div>
             ) : (
               <>
@@ -77,7 +102,7 @@ export default function Projects() {
                     .sort((a, b) => b.id - a.id)
                     .slice(0, 3)
                     .map((project, index) => (
-                      <FullStackProjectCard key={project.id} project={project} index={index} />
+                      <FullStackProjectCard key={project.id} project={project} index={index} translatedTexts={translatedTexts} />
                     ))}
                 </div>
 
@@ -94,7 +119,7 @@ export default function Projects() {
                       className="border-blue-700/50 text-blue-500 hover:bg-blue-700/10 group-hover:border-blue-500 transition-all duration-300"
                     >
                       <Plus className="mr-2 h-4 w-4" />
-                      {t(`projects.viewMore.${activeTab}`)}
+                      {translatedTexts.viewMore}
                     </Button>
                   </Link>
                 </motion.div>
@@ -108,7 +133,7 @@ export default function Projects() {
                 .sort((a, b) => b.id - a.id)
                 .slice(0, 3)
                 .map((project, index) => (
-                  <BackendProjectCard key={project.id} project={project} index={index} />
+                  <BackendProjectCard key={project.id} project={project} index={index} translatedTexts={translatedTexts} />
                 ))}
             </div>
             <motion.div
@@ -124,7 +149,7 @@ export default function Projects() {
                   className="border-blue-700/50 text-blue-500 hover:bg-blue-700/10 group-hover:border-blue-500 transition-all duration-300"
                 >
                   <Plus className="mr-2 h-4 w-4" />
-                  {t(`projects.viewMore.${activeTab}`)}
+                  {translatedTexts.viewMore}
                 </Button>
               </Link>
             </motion.div>
@@ -136,9 +161,7 @@ export default function Projects() {
 }
 
 // Componente para mostrar proyectos Full Stack
-function FullStackProjectCard({ project, index }: { project: Project; index: number }) {
-  const { t } = useLanguage()
-
+function FullStackProjectCard({ project, index, translatedTexts }: { project: Project; index: number; translatedTexts: any }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 30 }}
@@ -184,13 +207,13 @@ function FullStackProjectCard({ project, index }: { project: Project; index: num
             >
               <a href={project.github} target="_blank" rel="noopener noreferrer">
                 <Github className="mr-2 h-4 w-4" />
-                {t("projects.code")}
+                {translatedTexts.code}
               </a>
             </Button>
             <Button asChild size="sm" className="bg-blue-600 hover:bg-blue-700">
               <a href={project.demo} target="_blank" rel="noopener noreferrer">
                 <ExternalLink className="mr-2 h-4 w-4" />
-                {t("projects.demo")}
+                {translatedTexts.demo}
               </a>
             </Button>
           </div>
@@ -201,9 +224,7 @@ function FullStackProjectCard({ project, index }: { project: Project; index: num
 }
 
 // Componente para mostrar proyectos Backend
-function BackendProjectCard({ project, index }: { project: Project; index: number }) {
-  const { t } = useLanguage()
-
+function BackendProjectCard({ project, index, translatedTexts }: { project: Project; index: number; translatedTexts: any }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 30 }}
@@ -246,13 +267,13 @@ function BackendProjectCard({ project, index }: { project: Project; index: numbe
             >
               <a href={project.github} target="_blank" rel="noopener noreferrer">
                 <Github className="mr-2 h-4 w-4" />
-                {t("projects.repo")}
+                {translatedTexts.repo}
               </a>
             </Button>
             <Button asChild size="sm" className="bg-blue-600 hover:bg-blue-700">
               <a href={project.demo} target="_blank" rel="noopener noreferrer">
                 <ExternalLink className="mr-2 h-4 w-4" />
-                {t("projects.docs")}
+                {translatedTexts.docs}
               </a>
             </Button>
           </div>

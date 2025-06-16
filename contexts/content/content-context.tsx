@@ -24,9 +24,8 @@ export type ContentContextType = {
   saveAllContent: () => boolean
   
   // Métodos para OtherSkills
-  otherSkills: OtherSkill[];
-  addOtherSkill: (skill: OtherSkill) => void
-  editOtherSkill: (id: string, updatedSkill: OtherSkill) => void
+  addOtherSkill: (skill: OtherSkill) => Promise<OtherSkill | null>
+  editOtherSkill: (id: string, updatedSkill: OtherSkill) => Promise<boolean>
   removeOtherSkill: (id: string) => Promise<boolean>
   
   // Métodos para proyectos

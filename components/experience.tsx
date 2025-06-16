@@ -19,6 +19,24 @@ export default function Experience() {
   const [isAutoPlaying, setIsAutoPlaying] = useState(false)
   const timelineRef = useRef<HTMLDivElement>(null)
   const autoPlayRef = useRef<NodeJS.Timeout | null>(null)
+  const [translatedTexts, setTranslatedTexts] = useState({
+    title: "",
+    subtitle: "",
+    viewExperience: "",
+    pause: "",
+    autoplay: ""
+  })
+
+  // Cargar traducciones después de la hidratación
+  useEffect(() => {
+    setTranslatedTexts({
+      title:  String(t("experience.title")),
+      subtitle: String(t("experience.subtitle")),
+      viewExperience: String(t("experience.viewExperience")),
+      pause: String(t("experience.pause")),
+      autoplay: String(t("experience.autoplay"))
+    })
+  }, [t])
 
   // Asegurarse de que la experiencia esté ordenada por fecha (más reciente primero)
   const sortedExperience = [...content.experience].sort((a, b) => {
@@ -137,10 +155,10 @@ export default function Experience() {
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
         >
-          <h2 className="text-4xl font-bold text-white mb-4">{t("experience.title")}</h2>
+          <h2 className="text-4xl font-bold text-white mb-4">{translatedTexts.title}</h2>
           <div className="w-24 h-1 bg-blue-500 mx-auto mb-6"></div>
           <p className="text-blue-300 max-w-2xl mx-auto">
-            {t("experience.subtitle")}
+            {translatedTexts.subtitle}
           </p>
         </motion.div>
 
@@ -347,7 +365,7 @@ export default function Experience() {
               className={`h-2 rounded-full transition-all duration-300 ${
                 index === activeIndex ? "bg-blue-500 w-8" : "bg-slate-700 w-2 hover:bg-slate-600"
               }`}
-              aria-label={`${t("experience.viewExperience")} ${index + 1}`}
+              aria-label={`${translatedTexts.viewExperience} ${index + 1}`}
             />
           ))}
         </motion.div>
@@ -367,7 +385,7 @@ export default function Experience() {
               isAutoPlaying ? "bg-blue-900/30 text-blue-300" : "bg-black/50 text-blue-500"
             } hover:bg-blue-900/30 hover:border-blue-500 transition-all`}
           >
-            {isAutoPlaying ? t("experience.pause") : t("experience.autoplay")}
+            {isAutoPlaying ? translatedTexts.pause : translatedTexts.autoplay}
           </Button>
         </motion.div>
       </div>

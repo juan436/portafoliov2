@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -21,6 +21,34 @@ export default function Contact() {
     subject: "",
     message: "",
   })
+  const [translatedTexts, setTranslatedTexts] = useState({
+    title: "",
+    subtitle: "",
+    info: "",
+    email: "",
+    phone: "",
+    location: "",
+    formName: "",
+    formSubject: "",
+    formMessage: "",
+    formSend: ""
+  })
+
+  // Cargar traducciones después de la hidratación
+  useEffect(() => {
+    setTranslatedTexts({
+      title: t("contact.title"),
+      subtitle: t("contact.subtitle"),
+      info: t("contact.info"),
+      email: t("contact.email"),
+      phone: t("contact.phone"),
+      location: t("contact.location"),
+      formName: t("contact.form.name"),
+      formSubject: t("contact.form.subject"),
+      formMessage: t("contact.form.message"),
+      formSend: t("contact.form.send")
+    })
+  }, [t])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
@@ -52,9 +80,9 @@ export default function Contact() {
           viewport={{ once: true }}
           className="text-center mb-16"
         >
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">{t("contact.title")}</h2>
+          <h2 className="text-3xl md:text-4xl font-bold mb-4">{translatedTexts.title}</h2>
           <div className="w-20 h-1 bg-blue-600 mx-auto mb-8"></div>
-          <p className="text-slate-400 max-w-2xl mx-auto">{t("contact.subtitle")}</p>
+          <p className="text-slate-400 max-w-2xl mx-auto">{translatedTexts.subtitle}</p>
         </motion.div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -67,7 +95,7 @@ export default function Contact() {
           >
             <Card className="bg-black/40 border-blue-700/20 h-full">
               <CardContent className="p-6">
-                <h3 className="text-xl font-semibold mb-6">{t("contact.info")}</h3>
+                <h3 className="text-xl font-semibold mb-6">{translatedTexts.info}</h3>
 
                 <div className="space-y-6">
                   <div className="flex items-start">
@@ -75,7 +103,7 @@ export default function Contact() {
                       <Mail className="h-5 w-5 text-blue-500" />
                     </div>
                     <div>
-                      <h4 className="font-medium mb-1">{t("contact.email")}</h4>
+                      <h4 className="font-medium mb-1">{translatedTexts.email}</h4>
                       <p className="text-slate-400">{content.contact.email}</p>
                     </div>
                   </div>
@@ -85,7 +113,7 @@ export default function Contact() {
                       <Phone className="h-5 w-5 text-blue-500" />
                     </div>
                     <div>
-                      <h4 className="font-medium mb-1">{t("contact.phone")}</h4>
+                      <h4 className="font-medium mb-1">{translatedTexts.phone}</h4>
                       <p className="text-slate-400">{content.contact.phone}</p>
                     </div>
                   </div>
@@ -95,7 +123,7 @@ export default function Contact() {
                       <MapPin className="h-5 w-5 text-blue-500" />
                     </div>
                     <div>
-                      <h4 className="font-medium mb-1">{t("contact.location")}</h4>
+                      <h4 className="font-medium mb-1">{translatedTexts.location}</h4>
                       <p className="text-slate-400">{content.contact.location}</p>
                     </div>
                   </div>
@@ -117,21 +145,21 @@ export default function Contact() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-2">
                       <label htmlFor="name" className="text-sm font-medium">
-                        {t("contact.form.name")}
+                        {translatedTexts.formName}
                       </label>
                       <Input
                         id="name"
                         name="name"
                         value={formData.name}
                         onChange={handleChange}
-                        placeholder={t("contact.form.name")}
+                        placeholder={translatedTexts.formName}
                         required
                         className="bg-black/40 border-blue-700/20 focus:border-blue-500"
                       />
                     </div>
                     <div className="space-y-2">
                       <label htmlFor="email" className="text-sm font-medium">
-                        {t("contact.email")}
+                        {translatedTexts.email}
                       </label>
                       <Input
                         id="email"
@@ -148,14 +176,14 @@ export default function Contact() {
 
                   <div className="space-y-2">
                     <label htmlFor="subject" className="text-sm font-medium">
-                      {t("contact.form.subject")}
+                      {translatedTexts.formSubject}
                     </label>
                     <Input
                       id="subject"
                       name="subject"
                       value={formData.subject}
                       onChange={handleChange}
-                      placeholder={t("contact.form.subject")}
+                      placeholder={translatedTexts.formSubject}
                       required
                       className="bg-black/40 border-blue-700/20 focus:border-blue-500"
                     />
@@ -163,14 +191,14 @@ export default function Contact() {
 
                   <div className="space-y-2">
                     <label htmlFor="message" className="text-sm font-medium">
-                      {t("contact.form.message")}
+                      {translatedTexts.formMessage}
                     </label>
                     <Textarea
                       id="message"
                       name="message"
                       value={formData.message}
                       onChange={handleChange}
-                      placeholder={t("contact.form.message")}
+                      placeholder={translatedTexts.formMessage}
                       required
                       className="min-h-[150px] bg-black/40 border-blue-700/20 focus:border-blue-500"
                     />
@@ -178,7 +206,7 @@ export default function Contact() {
 
                   <Button type="submit" className="w-full bg-blue-700 hover:bg-blue-800">
                     <Send className="mr-2 h-4 w-4" />
-                    {t("contact.form.send")}
+                    {translatedTexts.formSend}
                   </Button>
                 </form>
               </CardContent>

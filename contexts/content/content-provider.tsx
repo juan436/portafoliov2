@@ -55,7 +55,6 @@ const emptyContent: Content = {
 export const ContentProvider = ({ children }: { children: ReactNode }) => {
   const [content, setContent] = useState<Content>(emptyContent)
   const [isLoading, setIsLoading] = useState(true)
-  const [otherSkills, setOtherSkills] = useState<OtherSkill[]>([])
 
   // Cargar todos los datos desde la API
   useEffect(() => {
@@ -126,18 +125,7 @@ export const ContentProvider = ({ children }: { children: ReactNode }) => {
     loadData()
   }, [])
 
-  // Cargar habilidades al iniciar
-  useEffect(() => {
-    const loadOtherSkills = async () => {
-      const response = await fetchOtherSkills()
-      if (response.success) {
-        setOtherSkills(response.data)
-      }
-    }
-    loadOtherSkills()
-  }, [])
-
-  // Función para guardar todo el contenido - Ya no usa localStorage
+  // Función para guardar todo el contenido
   const saveAllContent = (): boolean => {
     try {
       // Disparar un evento para notificar a otros componentes sobre la actualización
@@ -168,10 +156,9 @@ export const ContentProvider = ({ children }: { children: ReactNode }) => {
     saveAllContent,
     
     // OtherSkills
-    otherSkills,
-    addOtherSkill: (skill) => addOtherSkill(skill, setContent, setOtherSkills),
-    editOtherSkill: (id, skill) => editOtherSkill(id, skill, setContent, setOtherSkills),
-    removeOtherSkill: (id) => removeOtherSkill(id, setContent, setOtherSkills),
+    addOtherSkill: (skill) => addOtherSkill(skill, setContent, setIsLoading),
+    editOtherSkill: (id, skill) => editOtherSkill(id, skill, setContent, setIsLoading),
+    removeOtherSkill: (id) => removeOtherSkill(id, content, setContent, setIsLoading),
     
     // Proyectos
     createProjectItem: (project, category) => createProject(project, category, setContent, setIsLoading),

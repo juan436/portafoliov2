@@ -13,6 +13,26 @@ export default function About() {
   const { content } = useContent()
   // Usamos el estado local para manejar el contenido actualizado
   const [localContent, setLocalContent] = useState(content)
+  const [translatedTexts, setTranslatedTexts] = useState({
+    aboutTitle: "",
+    role: "",
+    engineer: "",
+    university: "",
+    downloadCV: "",
+    heroTitle: ""
+  })
+
+  // Cargar traducciones después de la hidratación
+  useEffect(() => {
+    setTranslatedTexts({
+      aboutTitle: String(t("about.title")),
+      role: String(t("about.role")),
+      engineer: String(t("about.engineer")),
+      university: String(t("about.university")),
+      downloadCV: String(t("about.downloadCV")),
+      heroTitle: String(t("hero.title"))
+    })
+  }, [t])
 
   const fadeIn = {
     initial: { opacity: 0, y: 20 },
@@ -87,7 +107,7 @@ export default function About() {
           viewport={{ once: true }}
           className="text-center mb-16"
         >
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">{t("about.title")}</h2>
+          <h2 className="text-3xl md:text-4xl font-bold mb-4">{translatedTexts.aboutTitle}</h2>
           <div className="w-20 h-1 bg-blue-600 mx-auto mb-8"></div>
         </motion.div>
 
@@ -138,12 +158,12 @@ export default function About() {
                   </motion.div>
                 </motion.div>
                 <div className="space-y-2 text-center">
-                  <h3 className="text-xl font-bold">{t("hero.title")}</h3>
-                  <p className="text-blue-500">{t("about.role")}</p>
+                  <h3 className="text-xl font-bold">{translatedTexts.heroTitle}</h3>
+                  <p className="text-blue-500">{translatedTexts.role}</p>
                   <p className="text-sm text-slate-400">
-                    {t("about.engineer")}
+                    {translatedTexts.engineer}
                     <br />
-                    {t("about.university")}
+                    {translatedTexts.university}
                   </p>
                 </div>
               </motion.div>
@@ -165,7 +185,7 @@ export default function About() {
 
               <div className="pt-4">
                 <a href="#" className="inline-flex items-center text-blue-500 hover:text-blue-400 transition-colors">
-                  <span className="mr-2">{t("about.downloadCV")}</span>
+                  <span className="mr-2">{translatedTexts.downloadCV}</span>
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     width="16"

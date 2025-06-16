@@ -17,6 +17,30 @@ export default function Skills() {
   const [skills, setSkills] = useState(content.skills)
   const [otherSkills, setOtherSkills] = useState(content.otherSkills)
   const [skillsData, setSkillsData] = useState(content.skills)
+  const [translatedTexts, setTranslatedTexts] = useState({
+    title: "",
+    subtitle: "",
+    frontend: "",
+    backend: "",
+    database: "",
+    devops: "",
+    other: "",
+    viewExperience: ""
+  })
+
+  // Cargar traducciones después de la hidratación
+  useEffect(() => {
+    setTranslatedTexts({
+      title: t("skills.title"),
+      subtitle: t("skills.subtitle"),
+      frontend: t("skills.frontend"),
+      backend: t("skills.backend"),
+      database: t("skills.database"),
+      devops: t("skills.devops"),
+      other: t("skills.other"),
+      viewExperience: t("skills.viewExperience")
+    })
+  }, [t])
 
   // Actualizar cuando cambia el contenido global
   useEffect(() => {
@@ -93,9 +117,9 @@ export default function Skills() {
           viewport={{ once: true }}
           className="text-center mb-16"
         >
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">{t("skills.title")}</h2>
+          <h2 className="text-3xl md:text-4xl font-bold mb-4">{translatedTexts.title}</h2>
           <div className="w-20 h-1 bg-blue-600 mx-auto mb-8"></div>
-          <p className="text-slate-400 max-w-2xl mx-auto">{t("skills.subtitle")}</p>
+          <p className="text-slate-400 max-w-2xl mx-auto">{translatedTexts.subtitle}</p>
         </motion.div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
@@ -105,25 +129,25 @@ export default function Skills() {
                 value="frontend"
                 className="data-[state=active]:bg-blue-700/20 data-[state=active]:text-blue-500"
               >
-                Frontend
+                {translatedTexts.frontend}
               </TabsTrigger>
               <TabsTrigger
                 value="backend"
                 className="data-[state=active]:bg-blue-700/20 data-[state=active]:text-blue-500"
               >
-                Backend
+                {translatedTexts.backend}
               </TabsTrigger>
               <TabsTrigger
                 value="database"
                 className="data-[state=active]:bg-blue-700/20 data-[state=active]:text-blue-500"
               >
-                Database
+                {translatedTexts.database}
               </TabsTrigger>
               <TabsTrigger
                 value="devops"
                 className="data-[state=active]:bg-blue-700/20 data-[state=active]:text-blue-500"
               >
-                DevOps
+                {translatedTexts.devops}
               </TabsTrigger>
             </TabsList>
           </div>
@@ -220,7 +244,7 @@ export default function Skills() {
           viewport={{ once: true }}
           className="mt-16"
         >
-          <h3 className="text-xl font-semibold mb-6 text-center">{t("skills.other")}</h3>
+          <h3 className="text-xl font-semibold mb-6 text-center">{translatedTexts.other}</h3>
           <div className="flex flex-wrap justify-center gap-2">
             {otherSkills.map((skill, index) => (
               <motion.span

@@ -6,9 +6,22 @@ import { Github, Linkedin, Mail, ArrowUp } from "lucide-react"
 import { WhatsappIcon } from "@/components/icons/whatsapp-icon"
 import { Button } from "@/components/ui/button"
 import { useLanguage } from "@/contexts/language-context"
+import { useState, useEffect } from "react"
 
 export default function Footer() {
   const { t } = useLanguage()
+  const [translatedTexts, setTranslatedTexts] = useState({
+    rights: "",
+    role: ""
+  })
+  
+  // Cargar traducciones después de la hidratación
+  useEffect(() => {
+    setTranslatedTexts({
+      rights: String(t("footer.rights")),
+      role: String(t("footer.role"))
+    })
+  }, [t])
 
   const scrollToTop = () => {
     window.scrollTo({
@@ -69,9 +82,9 @@ export default function Footer() {
             className="text-center"
           >
             <p className="text-slate-400 mb-2">
-              &copy; {new Date().getFullYear()} Juan Villegas. {t("footer.rights")}
+              &copy; {new Date().getFullYear()} Juan Villegas. {translatedTexts.rights}
             </p>
-            <p className="text-slate-500 text-sm">{t("footer.role")}</p>
+            <p className="text-slate-500 text-sm">{translatedTexts.role}</p>
           </motion.div>
         </div>
       </div>
