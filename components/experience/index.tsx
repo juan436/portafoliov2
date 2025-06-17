@@ -1,14 +1,13 @@
 "use client"
 
-import type React from "react"
-
 import { useState, useEffect, useRef } from "react"
-import { motion, AnimatePresence } from "framer-motion"
+import { motion } from "framer-motion"
 import { useLanguage } from "@/contexts/language-context"
 import { useContent } from "@/contexts/content"
-import { Badge } from "@/components/ui/badge"
-import { Building2, Calendar, ChevronLeft, ChevronRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { ChevronLeft, ChevronRight } from "lucide-react"
+import { ExperienceTimeline } from "./experience-timeline"
+import { ExperienceCard } from "./experience-card"
 
 export default function Experience() {
   const { t } = useLanguage()
@@ -30,7 +29,7 @@ export default function Experience() {
   // Cargar traducciones después de la hidratación
   useEffect(() => {
     setTranslatedTexts({
-      title:  String(t("experience.title")),
+      title: String(t("experience.title")),
       subtitle: String(t("experience.subtitle")),
       viewExperience: String(t("experience.viewExperience")),
       pause: String(t("experience.pause")),
@@ -163,61 +162,17 @@ export default function Experience() {
         </motion.div>
 
         {/* Línea de tiempo horizontal con animación */}
-        <motion.div
-          className="relative mb-16"
-          ref={timelineRef}
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.8, delay: 0.2 }}
-        >
-          <div className="h-2 w-full bg-gray-800 rounded-full overflow-hidden">
-            <motion.div
-              className="h-full bg-blue-500 rounded-full"
-              initial={{ width: "0%" }}
-              animate={{ width: `${((activeIndex + 1) / sortedExperience.length) * 100}%` }}
-              transition={{ duration: 0.5 }}
-            />
-          </div>
-
-          {/* Marcadores de años */}
-          <div className="flex justify-between mt-2">
-            {timelineYears.map((year, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 + index * 0.1, duration: 0.5 }}
-                className={`relative cursor-pointer transition-all duration-300 ${
-                  index === activeIndex ? "scale-125" : "opacity-70 hover:opacity-100"
-                }`}
-                onClick={() => handleDotClick(index)}
-              >
-                <div
-                  className={`w-5 h-5 rounded-full ${
-                    index === activeIndex
-                      ? "bg-blue-500 shadow-[0_0_15px_rgba(59,130,246,0.7)]"
-                      : "bg-blue-900 hover:bg-blue-700"
-                  } transition-all duration-300`}
-                />
-                {index === activeIndex && (
-                  <div className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-blue-300 animate-ping" />
-                )}
-                <div
-                  className={`absolute -bottom-8 left-1/2 transform -translate-x-1/2 text-sm ${
-                    index === activeIndex ? "text-blue-400 font-medium" : "text-slate-500"
-                  }`}
-                >
-                  {year}
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </motion.div>
+        <ExperienceTimeline 
+          timelineRef={timelineRef}
+          activeIndex={activeIndex}
+          timelineYears={timelineYears}
+          experienceLength={sortedExperience.length}
+          handleDotClick={handleDotClick}
+        />
 
         {/* Carrusel de experiencia */}
         <div className="relative max-w-4xl mx-auto">
-          {/* Botones de navegación - Alejados de la carta */}
+          {/* Botones de navegación */}
           <div className="absolute top-1/2 left-0 transform -translate-y-1/2 -translate-x-16 z-10">
             <Button
               variant="outline"
@@ -242,113 +197,14 @@ export default function Experience() {
             </Button>
           </div>
 
-          {/* Tarjetas de experiencia con nueva transición tipo "flip" */}
-          <div
-            className="overflow-hidden perspective-3d"
-            onMouseDown={handleMouseDown}
-            onMouseMove={handleMouseMove}
-            onMouseUp={handleMouseUp}
-            onMouseLeave={handleMouseUp}
-          >
-            <div className="relative h-[400px] md:h-[350px]">
-              <AnimatePresence mode="wait">
-                {sortedExperience.map(
-                  (experience, index) =>
-                    index === activeIndex && (
-                      <motion.div
-                        key={index}
-                        className="absolute inset-0"
-                        initial={{
-                          opacity: 0,
-                          filter: "blur(10px)",
-                          scale: 0.9,
-                        }}
-                        animate={{
-                          opacity: 1,
-                          filter: "blur(0px)",
-                          scale: 1,
-                          transition: {
-                            duration: 0.5,
-                            ease: [0.22, 1, 0.36, 1],
-                          },
-                        }}
-                        exit={{
-                          opacity: 0,
-                          filter: "blur(10px)",
-                          scale: 1.1,
-                          transition: {
-                            duration: 0.5,
-                            ease: [0.22, 1, 0.36, 1],
-                          },
-                        }}
-                      >
-                        <div className="bg-gray-900/60 rounded-lg p-8 border border-blue-900/30 shadow-xl h-full backdrop-blur-md">
-                          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
-                            <div>
-                              <h3 className="text-2xl font-bold text-white">{experience.position}</h3>
-                              <div className="flex items-center text-blue-300 mt-2">
-                                <Building2 className="h-5 w-5 mr-2 text-blue-500" />
-                                <span className="font-medium">{experience.company}</span>
-                              </div>
-                            </div>
-                            <div className="flex items-center text-blue-300 bg-blue-900/30 px-4 py-2 rounded-full">
-                              <Calendar className="h-4 w-4 mr-2 text-blue-500" />
-                              <span>{experience.period}</span>
-                            </div>
-                          </div>
-
-                          <p className="text-slate-300 mb-8 text-lg leading-relaxed">{experience.description}</p>
-
-                          {/* Viñetas de tecnologías */}
-                          <div className="mt-6">
-                            <h4 className="text-sm uppercase tracking-wider text-slate-400 mb-3">Tecnologías</h4>
-                            <motion.div
-                              className="flex flex-wrap gap-2"
-                              initial="hidden"
-                              animate="visible"
-                              variants={{
-                                hidden: { opacity: 0 },
-                                visible: {
-                                  opacity: 1,
-                                  transition: {
-                                    staggerChildren: 0.05,
-                                    delayChildren: 0.2,
-                                  },
-                                },
-                              }}
-                            >
-                              {(experience.skills || ["Git", "REST APIs", "GraphQL", "Testing", "Agile"]).map(
-                                (skill, idx) => (
-                                  <motion.div
-                                    key={idx}
-                                    variants={{
-                                      hidden: { opacity: 0, y: 10 },
-                                      visible: {
-                                        opacity: 1,
-                                        y: 0,
-                                        transition: {
-                                          type: "spring",
-                                          stiffness: 500,
-                                          damping: 30,
-                                        },
-                                      },
-                                    }}
-                                  >
-                                    <Badge className="bg-blue-950 text-blue-300 border-blue-900 hover:bg-blue-900 transition-colors py-1.5 px-4 text-sm hover:scale-105 transform duration-200">
-                                      {skill}
-                                    </Badge>
-                                  </motion.div>
-                                ),
-                              )}
-                            </motion.div>
-                          </div>
-                        </div>
-                      </motion.div>
-                    ),
-                )}
-              </AnimatePresence>
-            </div>
-          </div>
+          {/* Tarjetas de experiencia */}
+          <ExperienceCard 
+            sortedExperience={sortedExperience}
+            activeIndex={activeIndex}
+            handleMouseDown={handleMouseDown}
+            handleMouseMove={handleMouseMove}
+            handleMouseUp={handleMouseUp}
+          />
         </div>
 
         {/* Indicadores de posición con animación */}

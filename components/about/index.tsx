@@ -1,12 +1,11 @@
 "use client"
 
 import { motion } from "framer-motion"
-import { Code2, Database, Server, Cpu } from "lucide-react"
-import { Card, CardContent } from "@/components/ui/card"
-import Image from "next/image"
 import { useLanguage } from "@/contexts/language-context"
 import { useContent } from "@/contexts/content"
 import { useEffect, useState } from "react"
+import { AboutProfile } from "./about-profile"
+import { AboutServices } from "./about-services"
 
 export default function About() {
   const { t } = useLanguage()
@@ -33,31 +32,6 @@ export default function About() {
       heroTitle: String(t("hero.title"))
     })
   }, [t])
-
-  const fadeIn = {
-    initial: { opacity: 0, y: 20 },
-    animate: (index: number) => ({
-      opacity: 1,
-      y: 0,
-      transition: { duration: 0.5, delay: 0.1 * index },
-    }),
-  }
-
-  // Mapear los iconos a los componentes correspondientes
-  const getServiceIcon = (iconName: string) => {
-    switch (iconName) {
-      case "Code":
-        return <Code2 className="h-10 w-10 text-blue-500" />
-      case "Server":
-        return <Server className="h-10 w-10 text-blue-500" />
-      case "Database":
-        return <Database className="h-10 w-10 text-blue-500" />
-      case "Cpu":
-        return <Cpu className="h-10 w-10 text-blue-500" />
-      default:
-        return <Code2 className="h-10 w-10 text-blue-500" />
-    }
-  }
 
   // Actualizar el estado local cuando cambia el contenido global
   useEffect(() => {
@@ -117,57 +91,15 @@ export default function About() {
             whileInView={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5 }}
             viewport={{ once: true }}
-            className="md:col-span-5 flex justify-center items-center"
+            className="md:col-span-5"
           >
-            <div className="relative w-full max-w-md">
-              <div className="absolute inset-0 bg-gradient-to-tr from-blue-700/20 to-transparent rounded-lg transform rotate-3"></div>
-              <div className="absolute inset-0 bg-gradient-to-bl from-blue-700/20 to-transparent rounded-lg transform -rotate-3"></div>
-              <motion.div
-                className="relative bg-black/40 border border-blue-700/30 rounded-lg p-6"
-                whileHover={{
-                  scale: 1.02,
-                  boxShadow: "0 0 20px rgba(59, 130, 246, 0.3)",
-                  borderColor: "rgba(59, 130, 246, 0.6)",
-                  transition: { duration: 0.3 },
-                }}
-              >
-                <motion.div
-                  className="aspect-[4/5] relative overflow-hidden rounded-lg mb-6"
-                  whileHover={{
-                    filter: "brightness(1.1)",
-                  }}
-                >
-                  <motion.div
-                    whileHover={{
-                      scale: 1.05,
-                      transition: { duration: 0.4 },
-                    }}
-                  >
-                    <Image
-                      src={
-                        localContent.hero.profileImage ||
-                        "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/profile-E9YRocD6o4olhnzraHWCjLmKjCbspw.jpeg" ||
-                        "/placeholder.svg" ||
-                        "/placeholder.svg"
-                      }
-                      alt="Juan Villegas"
-                      width={400}
-                      height={500}
-                      className="object-cover object-top transition-all duration-300"
-                    />
-                  </motion.div>
-                </motion.div>
-                <div className="space-y-2 text-center">
-                  <h3 className="text-xl font-bold">{translatedTexts.heroTitle}</h3>
-                  <p className="text-blue-500">{translatedTexts.role}</p>
-                  <p className="text-sm text-slate-400">
-                    {translatedTexts.engineer}
-                    <br />
-                    {translatedTexts.university}
-                  </p>
-                </div>
-              </motion.div>
-            </div>
+            <AboutProfile 
+              profileImage={localContent.hero.profileImage} 
+              heroTitle={translatedTexts.heroTitle}
+              role={translatedTexts.role}
+              engineer={translatedTexts.engineer}
+              university={translatedTexts.university}
+            />
           </motion.div>
 
           <motion.div
@@ -207,28 +139,7 @@ export default function About() {
           </motion.div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {localContent.services.map((service, index) => (
-            <motion.div
-              key={service.title}
-              custom={index}
-              variants={fadeIn}
-              initial="initial"
-              whileInView="animate"
-              viewport={{ once: true }}
-            >
-              <Card className="bg-black/40 border-blue-700/20 hover:border-blue-700/50 transition-all duration-300 h-full">
-                <CardContent className="pt-6">
-                  <div className="flex flex-col items-center text-center">
-                    <div className="mb-4 p-3 rounded-full bg-blue-700/10">{getServiceIcon(service.icon)}</div>
-                    <h3 className="text-xl font-semibold mb-2">{service.title}</h3>
-                    <p className="text-slate-400">{service.description}</p>
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
-          ))}
-        </div>
+        <AboutServices services={localContent.services} />
       </div>
     </section>
   )
