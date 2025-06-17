@@ -7,11 +7,11 @@ import { API_URL } from './index';
 export const fetchContent = async () => {
   try {
     const response = await fetch(`${API_URL}/content`);
-    
+
     if (!response.ok) {
       throw new Error('Error al obtener contenido');
     }
-    
+
     const data = await response.json();
     return data.success ? data.data : null;
   } catch (error) {
@@ -27,7 +27,7 @@ export const updateContent = async (section: string, data: any) => {
   try {
     // Crear un objeto con la sección como clave
     const payload = { [section]: data };
-    
+
     const response = await fetch(`${API_URL}/content`, {
       method: 'PATCH',
       headers: {
@@ -35,14 +35,17 @@ export const updateContent = async (section: string, data: any) => {
       },
       body: JSON.stringify(payload),
     });
-    
+
     if (!response.ok) {
       throw new Error(`Error actualizando ${section}`);
     }
-    
+
     return await response.json();
   } catch (error) {
     console.error(`Error updating ${section}:`, error);
-    return { success: false, message: error.message };
+    return {
+      success: false,
+      message: error instanceof Error ? error.message : 'Error desconocido'
+    };
   }
 };

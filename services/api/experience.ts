@@ -28,15 +28,18 @@ export const createExperience = async (experience: any) => {
       },
       body: JSON.stringify(experience),
     });
-    
+
     if (!response.ok) {
       throw new Error('Error creando experiencia');
     }
-    
+
     return await response.json();
   } catch (error) {
     console.error('Error creating experience:', error);
-    return { success: false, message: error.message };
+    return {
+      success: false,
+      message: error instanceof Error ? error.message : 'Error desconocido'
+    };
   }
 };
 
@@ -52,15 +55,18 @@ export const updateExperience = async (id: string, experience: any) => {
       },
       body: JSON.stringify(experience),
     });
-    
+
     if (!response.ok) {
       throw new Error('Error actualizando experiencia');
     }
-    
+
     return await response.json();
   } catch (error) {
     console.error('Error updating experience:', error);
-    return { success: false, message: error.message };
+    return {
+      success: false,
+      message: error instanceof Error ? error.message : 'Error desconocido'
+    };
   }
 };
 
@@ -72,14 +78,17 @@ export const deleteExperience = async (id: string) => {
     const response = await fetch(`${API_URL}/experience/${id}`, {
       method: 'DELETE',
     });
-    
+
     if (!response.ok) {
       throw new Error('Error eliminando experiencia');
     }
-    
+
     return await response.json();
   } catch (error) {
     console.error('Error deleting experience:', error);
-    return { success: false, message: error.message };
+    return {
+      success: false,
+      message: error instanceof Error ? error.message : 'Error desconocido'
+    };
   }
 };
