@@ -63,15 +63,11 @@ export function ProjectsTabs({
         ) : (
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {localProjects.fullstack.slice(0, 4).map((project, index) => (
+              {localProjects.fullstack.slice(0, 6).map((project, index) => (
                 <FullStackProjectCard 
                   key={project.id} 
                   project={project} 
                   index={index} 
-                  translatedTexts={{
-                    code: translatedTexts.code,
-                    demo: translatedTexts.demo
-                  }} 
                 />
               ))}
             </div>
@@ -82,7 +78,13 @@ export function ProjectsTabs({
               viewport={{ once: true }}
               className="mt-12 flex justify-center"
             >
-              <Link href={`/projects?tab=${activeTab}`} className="group">
+              <Link 
+                href="/projects" 
+                className="group"
+                onClick={() => {
+                  localStorage.setItem("activeProjectTab", "fullstack");
+                }}
+              >
                 <Button
                   variant="outline"
                   className="border-blue-700/50 text-blue-500 hover:bg-blue-700/10 group-hover:border-blue-500 transition-all duration-300"
@@ -109,10 +111,6 @@ export function ProjectsTabs({
                   key={project.id} 
                   project={project} 
                   index={index} 
-                  translatedTexts={{
-                    repo: translatedTexts.repo,
-                    docs: translatedTexts.docs
-                  }} 
                 />
               ))}
             </div>
@@ -123,7 +121,13 @@ export function ProjectsTabs({
               viewport={{ once: true }}
               className="mt-12 flex justify-center"
             >
-              <Link href={`/projects?tab=${activeTab}`} className="group">
+              <Link 
+                href="/projects" 
+                className="group"
+                onClick={() => {
+                  localStorage.setItem("activeProjectTab", "backend");
+                }}
+              >
                 <Button
                   variant="outline"
                   className="border-blue-700/50 text-blue-500 hover:bg-blue-700/10 group-hover:border-blue-500 transition-all duration-300"

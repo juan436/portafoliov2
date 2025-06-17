@@ -1,29 +1,26 @@
 "use client"
 
-import { motion } from "framer-motion"
-import { Card, CardContent } from "@/components/ui/card"
-import { ExternalLink, Github } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import Image from "next/image"
-import type { Project } from "@/contexts/content/types"
+import { motion } from "framer-motion";
+import { ExternalLink, Github } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import Image from "next/image";
+import { useLanguage } from "@/contexts/language-context";
+import type { Project } from "@/contexts/content/types";
 
 interface FullStackProjectCardProps {
-  project: Project
-  index: number
-  translatedTexts: {
-    code: string
-    demo: string
-    [key: string]: string
-  }
+  project: Project;
+  index: number;
 }
 
-export function FullStackProjectCard({ project, index, translatedTexts }: FullStackProjectCardProps) {
+export function FullStackProjectCard({ project, index }: FullStackProjectCardProps) {
+  const { t } = useLanguage();
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 30 }}
-      whileInView={{ opacity: 1, y: 0 }}
+      animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: index * 0.1 }}
-      viewport={{ once: true }}
     >
       <Card className="overflow-hidden bg-black/40 border-blue-700/20 hover:border-blue-700/50 transition-all duration-300 h-full">
         <div className="relative h-48 overflow-hidden">
@@ -44,7 +41,7 @@ export function FullStackProjectCard({ project, index, translatedTexts }: FullSt
           <p className="text-slate-400 mb-4">{project.description}</p>
 
           <div className="flex flex-wrap gap-2 mb-6">
-            {project.tags.map((tag: string) => (
+            {project.tags?.map((tag: string) => (
               <span
                 key={tag}
                 className="text-xs px-2 py-1 rounded-full bg-blue-700/10 text-blue-400 border border-blue-700/20"
@@ -63,18 +60,18 @@ export function FullStackProjectCard({ project, index, translatedTexts }: FullSt
             >
               <a href={project.github} target="_blank" rel="noopener noreferrer">
                 <Github className="mr-2 h-4 w-4" />
-                {translatedTexts.code}
+                {t("projects.code")}
               </a>
             </Button>
             <Button asChild size="sm" className="bg-blue-600 hover:bg-blue-700">
               <a href={project.demo} target="_blank" rel="noopener noreferrer">
                 <ExternalLink className="mr-2 h-4 w-4" />
-                {translatedTexts.demo}
+                {t("projects.demo")}
               </a>
             </Button>
           </div>
         </CardContent>
       </Card>
     </motion.div>
-  )
+  );
 }
