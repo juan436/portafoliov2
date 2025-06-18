@@ -3,7 +3,8 @@
 import { useState, useRef, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Globe } from "lucide-react"
-import { useLanguage, languages } from "@/contexts/language-context"
+import { languages } from "@/contexts/language-context"
+import { useLanguage } from "@/hooks/use-language"
 
 export default function LanguageSwitcher() {
   const { language, setLanguage } = useLanguage()
@@ -60,9 +61,8 @@ export default function LanguageSwitcher() {
                 <button
                   key={lang.code}
                   onClick={() => handleLanguageChange(lang)}
-                  className={`flex items-center w-full px-4 py-2 text-left hover:bg-blue-700/20 transition-colors ${
-                    language.code === lang.code ? "bg-blue-700/30 text-blue-400" : ""
-                  }`}
+                  className={`flex items-center w-full px-4 py-2 text-left hover:bg-blue-700/20 transition-colors ${language.code === lang.code ? "bg-blue-700/30 text-blue-400" : ""
+                    }`}
                 >
                   <span className="text-lg mr-2">{lang.flag}</span>
                   <span>{lang.name}</span>

@@ -49,13 +49,13 @@ i18next
   });
 
 // Crear el contexto
-type LanguageContextType = {
+export type LanguageContextType = {
   language: Language
   setLanguage: (language: Language) => void
   t: (key: string, options?: any) => string | object
 }
 
-const LanguageContext = createContext<LanguageContextType | undefined>(undefined)
+export const LanguageContext = createContext<LanguageContextType | undefined>(undefined)
 
 // Crear el proveedor
 export const LanguageProvider = ({ children }: { children: ReactNode }) => {
@@ -88,13 +88,4 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
       {children}
     </LanguageContext.Provider>
   )
-}
-
-// Hook personalizado para usar el contexto
-export const useLanguage = () => {
-  const context = useContext(LanguageContext)
-  if (context === undefined) {
-    throw new Error("useLanguage must be used within a LanguageProvider")
-  }
-  return context
 }

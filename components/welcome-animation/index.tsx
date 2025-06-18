@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { useLanguage } from "@/contexts/language-context"
+import { useLanguage } from "@/hooks/use-language"
 import { RobotWolf } from "./robot-wolf"
 import { WelcomeText } from "./welcome-text"
 

@@ -5,7 +5,7 @@ import Link from "next/link"
 import { Github, Linkedin, Mail, ArrowUp } from "lucide-react"
 import { WhatsappIcon } from "@/components/icons/whatsapp-icon"
 import { Button } from "@/components/ui/button"
-import { useLanguage } from "@/contexts/language-context"
+import { useLanguage } from "@/hooks/use-language"
 import { useState, useEffect } from "react"
 
 export default function Footer() {

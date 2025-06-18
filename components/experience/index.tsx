@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react"
 import { motion } from "framer-motion"
-import { useLanguage } from "@/contexts/language-context"
+import { useLanguage } from "@/hooks/use-language"
 import { useContent } from "@/contexts/content"
 import { Button } from "@/components/ui/button"
 import { ChevronLeft, ChevronRight } from "lucide-react"

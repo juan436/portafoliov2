@@ -1,7 +1,7 @@
 "use client"
 
 import { motion } from "framer-motion"
-import { useLanguage } from "@/contexts/language-context"
+import { useLanguage } from "@/hooks/use-language"
 import { useContent } from "@/contexts/content"
 import { useEffect, useState } from "react"
 import { AboutProfile } from "./about-profile"
@@ -91,7 +91,7 @@ export default function About() {
             whileInView={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5 }}
             viewport={{ once: true }}
-            className="md:col-span-5"
+            className="md:col-span-5 flex justify-center items-center"
           >
             <AboutProfile 
               profileImage={localContent.hero.profileImage} 

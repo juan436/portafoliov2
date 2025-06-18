@@ -5,7 +5,7 @@ import { ExternalLink, Github } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import Image from "next/image";
-import { useLanguage } from "@/contexts/language-context";
+import { useLanguage } from "@/hooks/use-language";
 import type { Project } from "@/contexts/content/types";
 
 interface FullStackProjectCardProps {
@@ -60,13 +60,13 @@ export function FullStackProjectCard({ project, index }: FullStackProjectCardPro
             >
               <a href={project.github} target="_blank" rel="noopener noreferrer">
                 <Github className="mr-2 h-4 w-4" />
-                {t("projects.code")}
+                {String(t("projects.code"))}
               </a>
             </Button>
             <Button asChild size="sm" className="bg-blue-600 hover:bg-blue-700">
               <a href={project.demo} target="_blank" rel="noopener noreferrer">
                 <ExternalLink className="mr-2 h-4 w-4" />
-                {t("projects.demo")}
+                {String(t("projects.demo"))}
               </a>
             </Button>
           </div>

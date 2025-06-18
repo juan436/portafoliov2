@@ -3,7 +3,7 @@
 import type React from "react"
 import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
-import { useLanguage } from "@/contexts/language-context"
+import { useLanguage } from "@/hooks/use-language"
 import { Logo } from "./logo"
 import { DesktopNav } from "./desktop-nav"
 import { MobileNav } from "./mobile-nav"

@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { ExternalLink, Github, Server, Database, Terminal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { useLanguage } from "@/contexts/language-context";
+import { useLanguage } from "@/hooks/use-language";
 import type { Project } from "@/contexts/content/types";
 
 interface BackendProjectCardProps {
@@ -61,13 +61,13 @@ export function BackendProjectCard({ project, index }: BackendProjectCardProps) 
             >
               <a href={project.github} target="_blank" rel="noopener noreferrer">
                 <Github className="mr-2 h-4 w-4" />
-                {t("projects.repo")}
+                {String(t("projects.repo"))}
               </a>
             </Button>
             <Button asChild size="sm" className="bg-blue-600 hover:bg-blue-700">
               <a href={project.demo} target="_blank" rel="noopener noreferrer">
                 <ExternalLink className="mr-2 h-4 w-4" />
-                {t("projects.docs")}
+                {String(t("projects.docs"))}
               </a>
             </Button>
           </div>

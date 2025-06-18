@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { useLanguage } from "@/contexts/language-context"
+import { useLanguage } from "@/hooks/use-language"
 import { WolfSvg, getWolfAnimation } from "./wolf-svg"
 import { WolfState, WolfTranslations } from "./types"
 import { usePathname } from "next/navigation"

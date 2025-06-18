@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
-import { useLanguage } from "@/contexts/language-context"
+import { useLanguage } from "@/hooks/use-language"
 import { useContent } from "@/contexts/content"
 import Script from "next/script"
 import { SkillsTabs } from "./skills-tabs"
