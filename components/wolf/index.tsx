@@ -98,7 +98,7 @@ export default function WolfGuide() {
   }, [currentSection, isVisible])
 
   // No renderizar en rutas del panel administrativo
-  if (pathname?.includes("/admin") || pathname?.includes("/dashboard")) return null
+  if (pathname?.includes("/admin") || pathname?.includes("/dashboard") || pathname?.includes("/projects")) return null
   
   // Don't render if not visible
   if (!isVisible) return null

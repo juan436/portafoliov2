@@ -62,8 +62,8 @@ export function ProjectsTabs({
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {localProjects.fullstack.slice(0, 6).map((project, index) => (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {localProjects.fullstack.slice(0, 3).map((project, index) => (
                 <FullStackProjectCard 
                   key={project.id} 
                   project={project} 
@@ -105,8 +105,8 @@ export function ProjectsTabs({
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {localProjects.backend.slice(0, 6).map((project, index) => (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {localProjects.backend.slice(0, 3).map((project, index) => (
                 <BackendProjectCard 
                   key={project.id} 
                   project={project} 
