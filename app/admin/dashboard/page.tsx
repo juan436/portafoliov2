@@ -118,7 +118,7 @@ export default function DashboardPage() {
 
           {/* Navegación principal */}
           <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-            <TabsList className="bg-black/40 border border-blue-700/20 w-full justify-start overflow-x-auto">
+            <TabsList className="bg-black/40 border border-blue-700/20 w-full justify-start flex-wrap">
               <TabsTrigger
                 value="projects"
                 className="data-[state=active]:bg-blue-700/20 data-[state=active]:text-blue-500 flex items-center"
