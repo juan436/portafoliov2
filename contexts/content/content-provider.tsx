@@ -41,14 +41,14 @@ import {
 
 // Crear estructura mínima para evitar errores durante la carga
 const emptyContent: Content = {
-  hero: { title: "", subtitle: "", description: "", profileImage: "" },
-  about: { paragraph1: "", paragraph2: "", paragraph3: "" },
-  services: [],
+  hero: { title: "", subtitle: "", description: "", profileImage: "", translations: {} },
+  about: { paragraph1: "", paragraph2: "", paragraph3: "", translations: {} },
+  services: [], 
   projects: { fullstack: [], backend: [] },
   skills: { frontend: [], backend: [], database: [], devops: [] },
-  otherSkills: [],
-  contact: { email: "", phone: "", location: "" },
-  experience: []
+  otherSkills: [], 
+  contact: { email: "", phone: "", location: "", translations: {} },
+  experience: [] 
 }
 
 // Crear el proveedor
@@ -64,20 +64,25 @@ export const ContentProvider = ({ children }: { children: ReactNode }) => {
       try {
         // Cargar contenido general
         const contentData = await fetchContent()
+        console.log("Contenido original (hero translations):", contentData?.hero?.translations)
+        console.log("Contenido original (about translations):", contentData?.about?.translations)
 
         // Cargar proyectos por categoría
         const fullstackProjects = await fetchProjects('fullstack')
+        console.log("Proyectos fullstack (primer proyecto translations):", fullstackProjects[0]?.translations)
         const backendProjects = await fetchProjects('backend')
 
         // Cargar experiencias
         const experienceData = await fetchExperiences()
+        console.log("Experiencias (primer experiencia translations):", experienceData[0]?.translations)
 
         // Cargar skills
         const skillsData = await fetchSkills()
+        console.log("Skills frontend (primer skill translations):", skillsData?.frontend?.[0]?.translations)
 
         // Cargar otras habilidades
         const otherSkillsData = await fetchOtherSkills()
-        console.log("Datos de otras habilidades:", otherSkillsData.data)
+        console.log("Otras habilidades (primer skill translations):", otherSkillsData.data?.[0]?.translations)
 
         // Construir modelo de datos completo desde las APIs
         if (contentData) {
@@ -90,7 +95,8 @@ export const ContentProvider = ({ children }: { children: ReactNode }) => {
               tags: p.tags || [],
               github: p.github || "#",
               demo: p.demo || "#",
-              createdAt: p.createdAt
+              createdAt: p.createdAt,
+              translations: p.translations || {} // Preservar traducciones
             })),
             backend: backendProjects.map((p: any) => ({
               id: p._id,
@@ -100,20 +106,57 @@ export const ContentProvider = ({ children }: { children: ReactNode }) => {
               tags: p.tags || [],
               github: p.github || "#",
               demo: p.demo || "#",
-              createdAt: p.createdAt
+              createdAt: p.createdAt,
+              translations: p.translations || {} // Preservar traducciones
             }))
           }
 
+          // Asegurarse de preservar las traducciones en todas las entidades
           setContent({
-            hero: contentData.hero || emptyContent.hero,
-            about: contentData.about || emptyContent.about,
-            services: contentData.services || [],
+            hero: {
+              ...contentData.hero,
+              translations: contentData.hero?.translations || {}
+            } || emptyContent.hero,
+            about: {
+              ...contentData.about,
+              translations: contentData.about?.translations || {}
+            } || emptyContent.about,
+            services: contentData.services?.map((service: any) => ({
+              ...service,
+              translations: service.translations || {}
+            })) || [],
             projects: projectsData,
-            skills: skillsData || emptyContent.skills,
-            otherSkills: otherSkillsData.data || [],
-            contact: contentData.contact || emptyContent.contact,
-            experience: experienceData || []
-          })
+            skills: {
+              frontend: skillsData?.frontend?.map((skill: any) => ({
+                ...skill,
+                translations: skill.translations || {}
+              })) || [],
+              backend: skillsData?.backend?.map((skill: any) => ({
+                ...skill,
+                translations: skill.translations || {}
+              })) || [],
+              database: skillsData?.database?.map((skill: any) => ({
+                ...skill,
+                translations: skill.translations || {}
+              })) || [],
+              devops: skillsData?.devops?.map((skill: any) => ({
+                ...skill,
+                translations: skill.translations || {}
+              })) || []
+            },
+            otherSkills: otherSkillsData.data?.map((skill: any) => ({
+              ...skill,
+              translations: skill.translations || {}
+            })) || [],
+            contact: {
+              ...contentData.contact,
+              translations: contentData.contact?.translations || {}
+            } || emptyContent.contact,
+            experience: experienceData?.map((exp: any) => ({
+              ...exp,
+              translations: exp.translations || {}
+            })) || []
+          });
         }
       } catch (error) {
         console.error("Error cargando datos:", error)
@@ -175,6 +218,16 @@ export const ContentProvider = ({ children }: { children: ReactNode }) => {
     updateExperienceItem: (id, experience) => updateExperienceItem(id, experience, setContent, setIsLoading),
     deleteExperienceItem: (id) => deleteExperienceItem(id, setContent, setIsLoading)
   }
+
+  // Verificar que las traducciones se preservaron correctamente en el estado
+  console.log("ESTADO FINAL - Hero translations:", content.hero?.translations)
+  console.log("ESTADO FINAL - About translations:", content.about?.translations)
+  console.log("ESTADO FINAL - Primer servicio translations:", content.services?.[0]?.translations)
+  console.log("ESTADO FINAL - Primer proyecto fullstack translations:", content.projects?.fullstack?.[0]?.translations)
+  console.log("ESTADO FINAL - Primer skill frontend translations:", content.skills?.frontend?.[0]?.translations)
+  console.log("ESTADO FINAL - Primer otherskill translations:", content.otherSkills?.[0]?.translations)
+  console.log("ESTADO FINAL - Contact translations:", content.contact?.translations)
+  console.log("ESTADO FINAL - Primer experiencia translations:", content.experience?.[0]?.translations)
 
   return (
     <ContentContext.Provider value={contextValue}>

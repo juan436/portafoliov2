@@ -1,4 +1,5 @@
 import { API_URL } from '../index';
+import { translateAndAddToObject } from '../../translation';
 
 /**
  * Obtiene otras habilidades
@@ -9,20 +10,34 @@ export const fetchOtherSkills = async () => {
 };
 
 /**
- * Crea una nueva habilidad adicional
+ * Crea una nueva habilidad adicional con traducciones automáticas
  */
 export const createOtherSkill = async (skill: any) => {
   try {
-    const skillToCreate = {
+    // Campos a traducir para otras habilidades
+    const fieldsToTranslate = ['name'];
+    
+    // Preparar el objeto base
+    const skillBase = {
       name: skill.name
     };
+    
+    // Generar traducciones automáticamente
+    const skillWithTranslations = await translateAndAddToObject(
+      skillBase,
+      'es', // Idioma de origen (español)
+      ['en', 'fr', 'it', 'pt'], // Idiomas destino
+      fieldsToTranslate
+    );
+    
+    console.log("Otra habilidad con traducciones:", skillWithTranslations);
     
     const response = await fetch(`${API_URL}/other-skills`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(skillToCreate),
+      body: JSON.stringify(skillWithTranslations),
     });
     
     if (!response.ok) {
@@ -41,16 +56,29 @@ export const createOtherSkill = async (skill: any) => {
 };
 
 /**
- * Actualiza una habilidad adicional existente
+ * Actualiza una habilidad adicional existente con traducciones automáticas
  */
 export const updateOtherSkill = async (id: string, skill: any) => {
   try {
+    // Campos a traducir para otras habilidades
+    const fieldsToTranslate = ['name'];
+    
+    // Generar traducciones automáticamente
+    const skillWithTranslations = await translateAndAddToObject(
+      skill,
+      'es', // Idioma de origen (español)
+      ['en', 'fr', 'it', 'pt'], // Idiomas destino
+      fieldsToTranslate
+    );
+    
+    console.log("Otra habilidad actualizada con traducciones:", skillWithTranslations);
+    
     const response = await fetch(`${API_URL}/other-skills/${id}`, {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(skill),
+      body: JSON.stringify(skillWithTranslations),
     });
     
     if (!response.ok) {

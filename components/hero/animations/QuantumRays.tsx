@@ -1,8 +1,22 @@
 "use client"
 
 import { motion } from "framer-motion"
+import { useEffect, useState } from "react"
 
 export function QuantumRays() {
+  // Estado para controlar si estamos en el cliente
+  const [isMounted, setIsMounted] = useState(false)
+  
+  // Efecto que se ejecuta solo en el cliente
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
+  
+  // No renderizar nada durante SSR
+  if (!isMounted) {
+    return null
+  }
+  
   return (
     <svg className="absolute inset-0 w-full h-full pointer-events-none z-10">
       {[...Array(8)].map((_, i) => {

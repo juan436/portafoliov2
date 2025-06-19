@@ -9,8 +9,24 @@ export interface IExperience extends Document {
   skills?: string[];
   companyLogo?: string;
   location?: string;
-  achievements?: string[];
   url?: string;
+  translations?: {
+    en?: {
+      position: string;
+      description: string;
+      location?: string;
+    };
+    fr?: {
+      position: string;
+      description: string;
+      location?: string;
+    };
+    it?: {
+      position: string;
+      description: string;
+      location?: string;
+    };
+  };
 }
 
 const ExperienceSchema = new mongoose.Schema({
@@ -33,8 +49,24 @@ const ExperienceSchema = new mongoose.Schema({
   skills: [String],
   companyLogo: String,
   location: String,
-  achievements: [String],
-  url: String
+  url: String,
+  translations: {
+    en: {
+      position: String,
+      description: String,
+      location: String,
+    },
+    fr: {
+      position: String,
+      description: String,
+      location: String,
+    },
+    it: {
+      position: String,
+      description: String,
+      location: String,
+    }
+  }
 }, { 
   timestamps: true 
 });

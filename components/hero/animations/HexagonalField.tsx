@@ -1,8 +1,22 @@
 "use client"
 
 import { motion } from "framer-motion"
+import { useEffect, useState } from "react"
 
 export function HexagonalField() {
+  // Estado para controlar si estamos en el cliente
+  const [isMounted, setIsMounted] = useState(false)
+  
+  // Efecto que se ejecuta solo en el cliente
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
+  
+  // No renderizar nada durante SSR
+  if (!isMounted) {
+    return null
+  }
+  
   return (
     <div className="absolute inset-0 flex items-center justify-center">
       {/* Hexágonos concéntricos */}

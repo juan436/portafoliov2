@@ -1,5 +1,6 @@
 // portfolio/services/api/experience.ts
 import { API_URL } from './index';
+import { translateAndAddToObject } from '../translation';
 
 /**
  * Obtiene todas las experiencias
@@ -17,16 +18,29 @@ export const fetchExperiences = async () => {
 };
 
 /**
- * Crea una nueva experiencia
+ * Crea una nueva experiencia con traducciones automáticas
  */
 export const createExperience = async (experience: any) => {
   try {
+    // Campos a traducir para experiencias
+    const fieldsToTranslate = ['position', 'location', 'description'];
+    
+    // Generar traducciones automáticamente
+    const experienceWithTranslations = await translateAndAddToObject(
+      experience,
+      'es',
+      ['en', 'fr', 'it'],
+      fieldsToTranslate
+    );
+    
+    console.log("Experiencia con traducciones:", experienceWithTranslations);
+    
     const response = await fetch(`${API_URL}/experience`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(experience),
+      body: JSON.stringify(experienceWithTranslations),
     });
 
     if (!response.ok) {
@@ -44,16 +58,29 @@ export const createExperience = async (experience: any) => {
 };
 
 /**
- * Actualiza una experiencia existente
+ * Actualiza una experiencia existente con traducciones automáticas
  */
 export const updateExperience = async (id: string, experience: any) => {
   try {
+    // Campos a traducir para experiencias
+    const fieldsToTranslate = ['position', 'location', 'description'];
+    
+    // Generar traducciones automáticamente
+    const experienceWithTranslations = await translateAndAddToObject(
+      experience,
+      'es',
+      ['en', 'fr', 'it'],
+      fieldsToTranslate
+    );
+    
+    console.log("Experiencia actualizada con traducciones:", experienceWithTranslations);
+    
     const response = await fetch(`${API_URL}/experience/${id}`, {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(experience),
+      body: JSON.stringify(experienceWithTranslations),
     });
 
     if (!response.ok) {

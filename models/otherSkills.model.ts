@@ -3,6 +3,17 @@ import mongoose, { Document } from 'mongoose';
 
 export interface IOtherSkill extends Document {
     name: string;
+    translations?: {
+        en?: {
+            name: string;
+        };
+        fr?: {
+            name: string;
+        };
+        it?: {
+            name: string;
+        };
+    };
 }
 
 const OtherSkillSchema = new mongoose.Schema({
@@ -10,6 +21,17 @@ const OtherSkillSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    translations: {
+        en: {
+            name: String
+        },
+        fr: {
+            name: String
+        },
+        it: {
+            name: String
+        }
+    }
 }, {
     timestamps: true
 });

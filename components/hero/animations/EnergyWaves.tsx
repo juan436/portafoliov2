@@ -1,8 +1,22 @@
 "use client"
 
 import { motion } from "framer-motion"
+import { useEffect, useState } from "react"
 
 export function EnergyWaves() {
+  // Estado para controlar si estamos en el cliente
+  const [isMounted, setIsMounted] = useState(false)
+  
+  // Efecto que se ejecuta solo en el cliente
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
+  
+  // No renderizar nada durante SSR
+  if (!isMounted) {
+    return null
+  }
+  
   return (
     <>
       {/* Ondas de energía cuántica */}

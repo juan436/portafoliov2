@@ -6,6 +6,17 @@ export interface ISkill extends Document {
   icon: string;
   colored?: boolean;
   category: 'frontend' | 'backend' | 'database' | 'devops';
+  translations?: {
+    en?: {
+      name: string;
+    };
+    fr?: {
+      name: string;
+    };
+    pt?: {
+      name: string;
+    };
+  };
 }
 
 const SkillSchema = new mongoose.Schema({
@@ -25,6 +36,17 @@ const SkillSchema = new mongoose.Schema({
     type: String, 
     enum: ['frontend', 'backend', 'database', 'devops'], 
     required: true 
+  },
+  translations: {
+    en: {
+      name: String
+    },
+    fr: {
+      name: String
+    },
+    pt: {
+      name: String
+    }
   }
 }, { 
   timestamps: true 

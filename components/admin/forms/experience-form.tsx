@@ -19,7 +19,6 @@ export interface Experience {
   skills?: string[]
   companyLogo?: string
   location?: string
-  achievements?: string[]
   url?: string
   isNew?: boolean
 }

@@ -1,5 +1,6 @@
 // portfolio/services/api/content.ts
 import { API_URL } from './index';
+import { translateAndAddToObject } from '../translation';
 
 /**
  * Obtiene todo el contenido del sitio
@@ -22,9 +23,53 @@ export const fetchContent = async () => {
 
 /**
  * Actualiza una sección específica del contenido
+ * Traduce automáticamente el contenido a los idiomas soportados
  */
 export const updateContent = async (section: string, data: any) => {
   try {
+    // Definir los campos a traducir según la sección
+    const fieldsToTranslate: Record<string, string[]> = {
+      hero: ['title', 'subtitle', 'description'],
+      about: ['paragraph1', 'paragraph2', 'paragraph3'],
+      services: ['title', 'description'],
+      contact: ['location'],
+      projects: ['title', 'description', 'tags'],
+      skills: ['name'],
+      otherSkills: ['name'],
+      experience: ['position', 'description', 'location']
+    };
+
+    // Si la sección tiene campos definidos para traducir
+    if (fieldsToTranslate[section]) {
+      console.log(`Traduciendo contenido para la sección: ${section}`);
+
+      // Si es un array (como services, projects, etc.)
+      if (Array.isArray(data)) {
+        // Traducir cada elemento del array
+        const translatedItems = await Promise.all(
+          data.map(async (item) => {
+            return await translateAndAddToObject(
+              item,
+              'es',
+              ['en', 'fr', 'it'],
+              fieldsToTranslate[section] as (keyof typeof item)[]
+            );
+          })
+        );
+        data = translatedItems;
+      } else {
+        // Traducir un objeto individual
+        data = await translateAndAddToObject(
+          data,
+          'es',
+          ['en', 'fr', 'it'],
+          fieldsToTranslate[section] as (keyof typeof data)[]
+        );
+      }
+
+      console.log(`Contenido traducido para la sección: ${section}`, data);
+    }
+
     // Crear un objeto con la sección como clave
     const payload = { [section]: data };
 

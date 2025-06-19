@@ -51,7 +51,6 @@ export const createExperienceItem = async (
         skills: response.data.skills,
         companyLogo: response.data.companyLogo,
         location: response.data.location,
-        achievements: response.data.achievements,
         url: response.data.url
       }
 
