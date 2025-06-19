@@ -4,7 +4,7 @@
  */
 
 // Códigos de idioma soportados por LibreTranslate
-export type SupportedLanguage = 'es' | 'en' | 'fr' | 'it' | 'pt';
+export type SupportedLanguage = 'es' | 'en' | 'fr' | 'it';
 
 // URL base de la API local
 const LIBRETRANSLATE_API_URL = 'https://api-translate.jvserver.com/translate';

@@ -14,19 +14,19 @@ export const fetchOtherSkills = async () => {
  */
 export const createOtherSkill = async (skill: any) => {
   try {
-    // Campos a traducir para otras habilidades
-    const fieldsToTranslate = ['name'];
-    
     // Preparar el objeto base
     const skillBase = {
       name: skill.name
     };
     
+    // Campos a traducir para otras habilidades
+    const fieldsToTranslate: Array<keyof typeof skillBase> = ['name'];
+    
     // Generar traducciones automáticamente
     const skillWithTranslations = await translateAndAddToObject(
       skillBase,
-      'es', // Idioma de origen (español)
-      ['en', 'fr', 'it', 'pt'], // Idiomas destino
+      'es',
+      ['en', 'fr', 'it'],
       fieldsToTranslate
     );
     
@@ -61,13 +61,13 @@ export const createOtherSkill = async (skill: any) => {
 export const updateOtherSkill = async (id: string, skill: any) => {
   try {
     // Campos a traducir para otras habilidades
-    const fieldsToTranslate = ['name'];
+    const fieldsToTranslate: Array<keyof typeof skill> = ['name'];
     
     // Generar traducciones automáticamente
     const skillWithTranslations = await translateAndAddToObject(
       skill,
-      'es', // Idioma de origen (español)
-      ['en', 'fr', 'it', 'pt'], // Idiomas destino
+      'es',
+      ['en', 'fr', 'it'],
       fieldsToTranslate
     );
     

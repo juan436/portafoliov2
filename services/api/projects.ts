@@ -36,8 +36,8 @@ export const createProject = async (project: any) => {
     // Generar traducciones automáticamente
     const projectWithTranslations = await translateAndAddToObject(
       project,
-      'es', // Idioma de origen (español)
-      ['en', 'fr', 'it', 'pt'], // Idiomas destino
+      'es',
+      ['en', 'fr', 'it'],
       fieldsToTranslate
     );
     
@@ -76,8 +76,8 @@ export const updateProject = async (id: string, project: any) => {
     // Generar traducciones automáticamente
     const projectWithTranslations = await translateAndAddToObject(
       project,
-      'es', // Idioma de origen (español)
-      ['en', 'fr', 'it', 'pt'], // Idiomas destino
+      'es',
+      ['en', 'fr', 'it'],
       fieldsToTranslate
     );
     

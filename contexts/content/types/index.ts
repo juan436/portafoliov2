@@ -1,7 +1,7 @@
 // Definiciones de tipos compartidos para el contexto de contenido
 
 // Tipo para traducciones
-export type TranslationLanguages = 'en' | 'fr' | 'pt';
+export type TranslationLanguages = 'en' | 'fr' | 'it';
 
 // Hero
 export type Hero = {
