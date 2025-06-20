@@ -6,13 +6,15 @@ import { ArrowRight } from "lucide-react"
 import Link from "next/link"
 import { useState, useEffect } from "react"
 import { useLanguage } from "@/hooks/use-language"
-import { useContent } from "@/contexts/content"
+import { useTranslatedContent } from "@/hooks/use-translated-content"
 import { HeroSocialLinks } from "./hero-social-links"
 import { HeroAnimation } from "./hero-animation"
+import { useContent } from "@/contexts/content/use-content"
 
 export default function Hero() {
-  const { t } = useLanguage()
+  const { t, language } = useLanguage()
   const { content } = useContent()
+  const { translatedContent } = useTranslatedContent()
   const [showAnimation, setShowAnimation] = useState(false)
   const [translatedTexts, setTranslatedTexts] = useState<{
     projects: string;
@@ -27,7 +29,7 @@ export default function Hero() {
       projects: String(t("hero.projects")),
       contact: String(t("hero.contact"))
     })
-  }, [t])
+  }, [t, language])
 
   const toggleAnimation = () => {
     setShowAnimation(!showAnimation)
@@ -44,14 +46,14 @@ export default function Hero() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
           <motion.div initial={{ opacity: 0, x: -50 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.8 }}>
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4">
-              <span className="text-blue-500">{content.hero.title}</span>
+              <span className="text-blue-500">{translatedContent.hero.title}</span>
               <br />
               <span className="bg-clip-text text-transparent bg-gradient-to-r from-slate-200 to-slate-400">
-                {content.hero.subtitle}
+                {translatedContent.hero.subtitle}
               </span>
             </h1>
 
-            <p className="text-slate-400 text-lg mb-8 max-w-lg">{content.hero.description}</p>
+            <p className="text-slate-400 text-lg mb-8 max-w-lg">{translatedContent.hero.description}</p>
 
             <div className="flex flex-wrap gap-4">
               <Button asChild className="bg-blue-700 hover:bg-blue-800">
@@ -73,8 +75,8 @@ export default function Hero() {
             toggleAnimation={toggleAnimation} 
             codeLines={[
               "const dev = {",
-              ` name: '${content.hero.title}',`,
-              ` role: '${content.hero.subtitle}',`,
+              ` name: '${translatedContent.hero.title}',`,
+              ` role: '${translatedContent.hero.subtitle}',`,
               " skills: ['React', 'Node']",
               "};",
             ]}

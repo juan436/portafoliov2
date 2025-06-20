@@ -6,10 +6,12 @@ import { useLanguage } from "@/hooks/use-language"
 import { useContent } from "@/contexts/content"
 import { ContactInfo } from "./contact-info"
 import { ContactForm } from "./contact-form"
+import {useTranslatedContent} from "@/hooks/use-translated-content"
 
 export default function Contact() {
   const { t } = useLanguage()
   const { content } = useContent()
+  const { translatedContent } = useTranslatedContent()
   const [translatedTexts, setTranslatedTexts] = useState({
     title: "",
     subtitle: "",
@@ -69,7 +71,7 @@ export default function Contact() {
           >
             <ContactInfo 
               translatedTexts={translatedTexts} 
-              contactInfo={content.contact} 
+              contactInfo={translatedContent.contact} 
             />
           </motion.div>
 

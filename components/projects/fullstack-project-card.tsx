@@ -41,14 +41,16 @@ export function FullStackProjectCard({ project, index }: FullStackProjectCardPro
           <p className="text-slate-400 mb-4">{project.description}</p>
 
           <div className="flex flex-wrap gap-2 mb-6">
-            {project.tags?.map((tag: string) => (
-              <span
-                key={tag}
-                className="text-xs px-2 py-1 rounded-full bg-blue-700/10 text-blue-400 border border-blue-700/20"
-              >
-                {tag}
-              </span>
-            ))}
+            {project.tags && project.tags.length > 0 ? (
+              project.tags.map((tag: string) => (
+                <span
+                  key={tag}
+                  className="text-xs px-2 py-1 rounded-full bg-blue-700/10 text-blue-400 border border-blue-700/20"
+                >
+                  {tag}
+                </span>
+              ))
+            ) : null}
           </div>
 
           <div className="flex gap-4">

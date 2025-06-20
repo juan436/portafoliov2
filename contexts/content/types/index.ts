@@ -11,6 +11,8 @@ export type Hero = {
   profileImage: string
   translations?: {
     [key in TranslationLanguages]?: {
+      title?: string
+      subtitle?: string
       description?: string
     }
   }
@@ -51,6 +53,7 @@ export type Project = {
   image?: string
   github: string
   demo: string
+  tags?: string[]
   createdAt?: string
   translations?: {
     [key in TranslationLanguages]?: {

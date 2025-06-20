@@ -8,6 +8,7 @@ export interface IProject extends Document {
   github: string;
   demo: string;
   category: 'fullstack' | 'backend';
+  tags: string[];
   createdAt: Date;
   translations?: {
     en?: {
@@ -41,6 +42,10 @@ const ProjectSchema = new mongoose.Schema({
     type: String, 
     enum: ['fullstack', 'backend'], 
     required: true 
+  },
+  tags: {
+    type: [String],
+    default: []
   },
   createdAt: { 
     type: Date, 

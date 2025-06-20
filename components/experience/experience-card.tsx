@@ -3,9 +3,11 @@
 import { motion, AnimatePresence } from "framer-motion"
 import { Badge } from "@/components/ui/badge"
 import { Building2, Calendar } from "lucide-react"
+import { useLanguage } from "@/hooks/use-language"
+import { Experience } from "@/contexts/content/types"
 
 interface ExperienceCardProps {
-  sortedExperience: any[]
+  sortedExperience: Experience[]
   activeIndex: number
   handleMouseDown?: (e: React.MouseEvent | TouchEvent) => void
   handleMouseMove?: (e: React.MouseEvent | TouchEvent) => void
@@ -19,6 +21,18 @@ export function ExperienceCard({
   handleMouseMove,
   handleMouseUp
 }: ExperienceCardProps) {
+  const { language } = useLanguage();
+  
+  // Función para obtener el texto traducido o el original si no hay traducción
+  const getTranslatedField = (experience: Experience, field: 'position' | 'description' | 'location') => {
+    // Si es español o no hay traducciones disponibles, devolver el texto original
+    if (language.code === 'es' || !experience.translations || !experience.translations[language.code]) {
+      return experience[field] ?? '';
+    }
+    // Devolver la traducción o el texto original si no hay traducción
+    return experience.translations[language.code]?.[field] ?? experience[field] ?? '';
+  };
+
   return (
     <div
       className="overflow-hidden perspective-3d"
@@ -62,7 +76,7 @@ export function ExperienceCard({
                   <div className="bg-gray-900/60 rounded-lg p-8 border border-blue-900/30 shadow-xl h-full backdrop-blur-md">
                     <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
                       <div>
-                        <h3 className="text-2xl font-bold text-white">{experience.position}</h3>
+                        <h3 className="text-2xl font-bold text-white">{getTranslatedField(experience, 'position')}</h3>
                         <div className="flex items-center text-blue-300 mt-2">
                           <Building2 className="h-5 w-5 mr-2 text-blue-500" />
                           <span className="font-medium">{experience.company}</span>
@@ -74,7 +88,7 @@ export function ExperienceCard({
                       </div>
                     </div>
 
-                    <p className="text-slate-300 mb-8 text-lg leading-relaxed">{experience.description}</p>
+                    <p className="text-slate-300 mb-8 text-lg leading-relaxed">{getTranslatedField(experience, 'description')}</p>
 
                     {/* Viñetas de tecnologías */}
                     <div className="mt-6">

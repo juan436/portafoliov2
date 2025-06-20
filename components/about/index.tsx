@@ -2,14 +2,16 @@
 
 import { motion } from "framer-motion"
 import { useLanguage } from "@/hooks/use-language"
-import { useContent } from "@/contexts/content"
+import { useContent } from "@/contexts/content/use-content"
+import { useTranslatedContent } from "@/hooks/use-translated-content"
 import { useEffect, useState } from "react"
 import { AboutProfile } from "./about-profile"
 import { AboutServices } from "./about-services"
 
 export default function About() {
-  const { t } = useLanguage()
+  const { t, language } = useLanguage()
   const { content } = useContent()
+  const { translatedContent } = useTranslatedContent()
   // Usamos el estado local para manejar el contenido actualizado
   const [localContent, setLocalContent] = useState(content)
   const [translatedTexts, setTranslatedTexts] = useState({
@@ -31,7 +33,7 @@ export default function About() {
       downloadCV: String(t("about.downloadCV")),
       heroTitle: String(t("hero.title"))
     })
-  }, [t])
+  }, [t, language])
 
   // Actualizar el estado local cuando cambia el contenido global
   useEffect(() => {
@@ -94,7 +96,7 @@ export default function About() {
             className="md:col-span-5 flex justify-center items-center"
           >
             <AboutProfile 
-              profileImage={localContent.hero.profileImage} 
+              profileImage={content.hero.profileImage} 
               heroTitle={translatedTexts.heroTitle}
               role={translatedTexts.role}
               engineer={translatedTexts.engineer}
@@ -110,10 +112,10 @@ export default function About() {
             className="md:col-span-7 flex flex-col justify-center"
           >
             <div className="space-y-6 text-slate-300">
-              {/* Usar localContent en lugar de content para mostrar los párrafos */}
-              <p className="leading-relaxed">{localContent.about.paragraph1}</p>
-              <p className="leading-relaxed">{localContent.about.paragraph2}</p>
-              <p className="leading-relaxed">{localContent.about.paragraph3}</p>
+              {/* Usar translatedAbout para mostrar los párrafos traducidos */}
+              <p className="leading-relaxed">{translatedContent.about.paragraph1}</p>
+              <p className="leading-relaxed">{translatedContent.about.paragraph2}</p>
+              <p className="leading-relaxed">{translatedContent.about.paragraph3}</p>
 
               <div className="pt-4">
                 <a href="#" className="inline-flex items-center text-blue-500 hover:text-blue-400 transition-colors">
@@ -139,7 +141,7 @@ export default function About() {
           </motion.div>
         </div>
 
-        <AboutServices services={localContent.services} />
+        <AboutServices services={translatedContent.services} />
       </div>
     </section>
   )

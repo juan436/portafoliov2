@@ -47,13 +47,4 @@ export type ContentContextType = {
 // Crear el contexto
 const ContentContext = createContext<ContentContextType | undefined>(undefined)
 
-// Hook personalizado para usar el contexto
-export const useContent = () => {
-  const context = useContext(ContentContext)
-  if (context === undefined) {
-    throw new Error("useContent debe ser usado dentro de un ContentProvider")
-  }
-  return context
-}
-
 export default ContentContext

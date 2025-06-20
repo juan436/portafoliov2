@@ -5,12 +5,34 @@ import { motion } from "framer-motion"
 import { useLanguage } from "@/hooks/use-language"
 import { useContent } from "@/contexts/content"
 import { ProjectsTabs } from "./projects-tabs"
+import { useTranslatedContent } from "@/hooks/use-translated-content"
 
 export default function Projects() {
   const [activeTab, setActiveTab] = useState("fullstack")
-  const { t } = useLanguage()
+  const { t, language } = useLanguage()
   const { content, isLoading } = useContent()
-  const [localProjects, setLocalProjects] = useState(content.projects)
+  const { translatedContent } = useTranslatedContent()
+
+  // Combinar proyectos traducidos con las etiquetas del contenido original
+  const combinedProjects = {
+    fullstack: translatedContent.projects?.fullstack?.map(project => {
+      // Buscar el proyecto original por id para obtener las etiquetas
+      const originalProject = content.projects.fullstack.find(p => p.id === project.id);
+      return {
+        ...project,
+        tags: originalProject?.tags || []
+      };
+    }) || [],
+    backend: translatedContent.projects?.backend?.map(project => {
+      // Buscar el proyecto original por id para obtener las etiquetas
+      const originalProject = content.projects.backend.find(p => p.id === project.id);
+      return {
+        ...project,
+        tags: originalProject?.tags || []
+      };
+    }) || []
+  };
+
   const [translatedTexts, setTranslatedTexts] = useState({
     title: "",
     subtitle: "",
@@ -36,13 +58,7 @@ export default function Projects() {
       docs: String(t("projects.docs")),
       viewMore: String(t("projects.viewMore_general")),
     })
-  }, [t])
-
-  // Actualizar proyectos cuando cambia el contenido global
-  useEffect(() => {
-    console.log("Actualizando proyectos en componente Projects:", content.projects)
-    setLocalProjects(content.projects)
-  }, [content.projects])
+  }, [t, language])
 
   return (
     <section id="projects" className="py-20 relative">
@@ -67,7 +83,7 @@ export default function Projects() {
         <ProjectsTabs 
           activeTab={activeTab}
           setActiveTab={setActiveTab}
-          localProjects={localProjects}
+          localProjects={combinedProjects}
           isLoading={isLoading}
           translatedTexts={translatedTexts}
         />

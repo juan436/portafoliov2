@@ -3,14 +3,14 @@
 import { useState, useEffect, useRef } from "react"
 import { motion } from "framer-motion"
 import { useLanguage } from "@/hooks/use-language"
-import { useContent } from "@/contexts/content"
+import { useContent } from "@/contexts/content/use-content"
 import { Button } from "@/components/ui/button"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import { ExperienceTimeline } from "./experience-timeline"
 import { ExperienceCard } from "./experience-card"
 
 export default function Experience() {
-  const { t } = useLanguage()
+  const { t, language } = useLanguage()
   const { content } = useContent()
   const [activeIndex, setActiveIndex] = useState(0)
   const [isDragging, setIsDragging] = useState(false)
@@ -35,7 +35,7 @@ export default function Experience() {
       pause: String(t("experience.pause")),
       autoplay: String(t("experience.autoplay"))
     })
-  }, [t])
+  }, [t, language])
 
   // Asegurarse de que la experiencia esté ordenada por fecha (más reciente primero)
   const sortedExperience = [...content.experience].sort((a, b) => {
