@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge"
 import { Building2, Calendar } from "lucide-react"
 import { useLanguage } from "@/hooks/use-language"
 import { Experience } from "@/contexts/content/types"
+import { useTranslation } from "react-i18next"
 
 interface ExperienceCardProps {
   sortedExperience: Experience[]
@@ -22,6 +23,7 @@ export function ExperienceCard({
   handleMouseUp
 }: ExperienceCardProps) {
   const { language } = useLanguage();
+  const { t } = useTranslation();
   
   // Función para obtener el texto traducido o el original si no hay traducción
   const getTranslatedField = (experience: Experience, field: 'position' | 'description' | 'location') => {
@@ -92,7 +94,7 @@ export function ExperienceCard({
 
                     {/* Viñetas de tecnologías */}
                     <div className="mt-6">
-                      <h4 className="text-sm uppercase tracking-wider text-slate-400 mb-3">Tecnologías</h4>
+                      <h4 className="text-sm uppercase tracking-wider text-slate-400 mb-3">{String(t('experience.technologies'))}</h4>
                       <motion.div
                         className="flex flex-wrap gap-2"
                         initial="hidden"
