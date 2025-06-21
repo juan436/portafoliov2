@@ -7,6 +7,7 @@ import { WhatsappIcon } from "@/components/icons/whatsapp-icon"
 import { Button } from "@/components/ui/button"
 import { useLanguage } from "@/hooks/use-language"
 import { useState, useEffect } from "react"
+import { openWhatsApp } from "@/utils/social-links"
 
 export default function Footer() {
   const { t } = useLanguage()
@@ -69,9 +70,12 @@ export default function Footer() {
             <Link href="#" className="text-slate-400 hover:text-blue-500 transition-colors duration-300">
               <Mail className="h-6 w-6" />
             </Link>
-            <Link href="#" className="text-slate-400 hover:text-green-500 transition-colors duration-300">
+            <button 
+              onClick={openWhatsApp} 
+              className="text-slate-400 hover:text-green-500 transition-colors duration-300"
+            >
               <WhatsappIcon className="h-6 w-6" />
-            </Link>
+            </button>
           </motion.div>
 
           <motion.div

@@ -68,6 +68,21 @@ export default function About() {
     console.log("About component content updated:", localContent)
   }, [localContent])
 
+  // Función para obtener la ruta del CV según el idioma actual
+  const getCvPath = () => {
+    switch (language.code) {
+      case 'en':
+        return '/documents/Juan_Villegas_CV_EN.pdf';
+      case 'it':
+        return '/documents/Juan_Villegas_CV_EN.pdf';
+      case 'fr':
+        return '/documents/Juan_Villegas_CV_EN.pdf';
+      case 'es':
+      default:
+        return '/documents/Juan_Villegas_CV_ES.pdf';
+    }
+  };
+
   return (
     <section id="about" className="py-20 bg-black/50 relative">
       <div className="absolute inset-0 z-0">
@@ -118,7 +133,11 @@ export default function About() {
               <p className="leading-relaxed">{translatedContent.about.paragraph3}</p>
 
               <div className="pt-4">
-                <a href="#" className="inline-flex items-center text-blue-500 hover:text-blue-400 transition-colors">
+                <a 
+                  href={getCvPath()} 
+                  download 
+                  className="inline-flex items-center text-blue-500 hover:text-blue-400 transition-colors"
+                >
                   <span className="mr-2">{translatedTexts.downloadCV}</span>
                   <svg
                     xmlns="http://www.w3.org/2000/svg"

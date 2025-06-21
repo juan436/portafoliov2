@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/button"
 import { Github, Linkedin, Mail } from "lucide-react"
 import { WhatsappIcon } from "@/components/icons/whatsapp-icon"
+import { openWhatsApp } from "@/utils/social-links"
 
 export function HeroSocialLinks() {
   return (
@@ -16,7 +17,12 @@ export function HeroSocialLinks() {
       <Button variant="ghost" size="icon" className="rounded-full hover:bg-blue-700/10 hover:text-blue-500">
         <Mail className="h-5 w-5" />
       </Button>
-      <Button variant="ghost" size="icon" className="rounded-full hover:bg-green-700/10 hover:text-green-500">
+      <Button 
+        variant="ghost" 
+        size="icon" 
+        className="rounded-full hover:bg-green-700/10 hover:text-green-500"
+        onClick={openWhatsApp}
+      >
         <WhatsappIcon className="h-5 w-5" />
       </Button>
     </div>
