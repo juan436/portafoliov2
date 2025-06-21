@@ -5,6 +5,7 @@ import i18next from "i18next"
 import { initReactI18next, useTranslation } from "react-i18next"
 import LanguageDetector from "i18next-browser-languagedetector"
 import Backend from "i18next-http-backend"
+export { useLanguage } from '@/hooks/use-language'
 
 // Definir los idiomas disponibles
 export type LanguageCode = "es" | "en" | "it" | "fr"
@@ -89,3 +90,4 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
     </LanguageContext.Provider>
   )
 }
+

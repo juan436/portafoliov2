@@ -15,7 +15,9 @@ RUN pnpm install
 # Copiar el resto de archivos
 COPY . .
 
-# Construir la aplicación
+# Aumentar el timeout y construir la aplicación sin generación estática
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV NODE_OPTIONS="--max_old_space_size=4096"
 RUN pnpm run build
 
 # Etapa de producción
@@ -28,6 +30,7 @@ WORKDIR /app
 
 # Establecer a producción
 ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
 
 # Copiar archivos necesarios desde la etapa de construcción
 COPY --from=builder /app/next.config.mjs ./
