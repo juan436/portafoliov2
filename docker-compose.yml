@@ -1,3 +1,4 @@
+version: '3.8'
 services:
   # Servicio de Next.js (Portfolio)
   portfolio:
@@ -30,14 +31,13 @@ services:
     container_name: portfolio_db
     restart: unless-stopped
     volumes:
-      - portfolio_db_data:/data/db
+      - mongodb_data:/data/db
     networks:
       - proxy
 
 volumes:
-  portfolio_db_data:
-    external: true
-    name: portfolio_db_data
+  mongodb_data:
+    driver: local
 
 networks:
   proxy:
