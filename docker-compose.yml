@@ -4,34 +4,41 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    restart: always
-    ports:
-      - "3000:3000"
+    container_name: portfolio_app
+    restart: unless-stopped
     environment:
       - NODE_ENV=production
       - MONGODB_URI=mongodb://mongodb:27017/portfolio
     depends_on:
       - mongodb
     networks:
-      - portfolio-network
+      - proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.portfolio.rule=Host(`jvillegas-portafolio.jvserver.com`)"
+      - "traefik.http.routers.portfolio.entrypoints=websecure"
+      - "traefik.http.routers.portfolio.tls=true"
+      - "traefik.http.routers.portfolio.tls.certresolver=myresolver"
+      - "traefik.http.routers.portfolio-http.rule=Host(`jvillegas-portafolio.jvserver.com`)"
+      - "traefik.http.routers.portfolio-http.entrypoints=web"
+      - "traefik.http.routers.portfolio-http.middlewares=redirect-to-https"
+      - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
 
   # Servicio de MongoDB
   mongodb:
     image: mongo:6
-    restart: always
-    ports:
-      - "27017:27017"
+    container_name: portfolio_db
+    restart: unless-stopped
     volumes:
-      - mongodb_data:/data/db
+      - portfolio_db_data:/data/db
     networks:
-      - portfolio-network
+      - proxy
 
-# Volúmenes persistentes
 volumes:
-  mongodb_data:
-    driver: local
+  portfolio_db_data:
+    external: true
+    name: portfolio_db_data
 
-# Redes
 networks:
-  portfolio-network:
-    driver: bridge
+  proxy:
+    external: true
