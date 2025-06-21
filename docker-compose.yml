@@ -9,7 +9,8 @@ services:
     restart: unless-stopped
     environment:
       - NODE_ENV=production
-      - MONGODB_URI=mongodb://mongodb:27017/portfolio
+      - MONGODB_URI=mongodb://portfolio_db:27017/portfolio
+      - NEXT_DISABLE_STATIC_GENERATION=true
     depends_on:
       - mongodb
     networks:

@@ -18,6 +18,11 @@ COPY . .
 # Aumentar el timeout y construir la aplicación sin generación estática
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_OPTIONS="--max_old_space_size=4096"
+ENV NEXT_STATIC_EXPORT=false
+ENV NEXT_EXPORT=false
+ENV NEXT_DISABLE_STATIC_GENERATION=true
+ENV NEXT_BUILD_STANDALONE=true
+ENV NEXT_STANDALONE=true
 RUN pnpm run build
 
 # Etapa de producción
@@ -31,6 +36,10 @@ WORKDIR /app
 # Establecer a producción
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
+ENV NEXT_STATIC_EXPORT=false
+ENV NEXT_EXPORT=false
+ENV NEXT_DISABLE_STATIC_GENERATION=true
+ENV NEXT_STANDALONE=true
 
 # Copiar archivos necesarios desde la etapa de construcción
 COPY --from=builder /app/next.config.mjs ./
