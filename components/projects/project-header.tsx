@@ -4,7 +4,7 @@ import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import LanguageSwitcher from "@/components/language-switcher";
-import { useLanguage } from "@/contexts/language-context";
+import { useLanguage } from "@/hooks/use-language";
 
 interface ProjectHeaderProps {
   title: string;
@@ -84,7 +84,7 @@ export function ProjectHeader({ title, description }: ProjectHeaderProps) {
           >
             <Link href="/">
               <ArrowLeft className="mr-2 h-4 w-4" />
-              {t("common.back")}
+              {String(t("common.back"))}
             </Link>
           </Button>
         </div>

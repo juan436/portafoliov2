@@ -3,7 +3,7 @@
 import Link from "next/link"
 import Footer from "@/components/footer"
 import { useState, useEffect } from "react"
-import { useLanguage } from "@/contexts/language-context"
+import { useLanguage } from "@/hooks/use-language"
 import { useContent } from "@/contexts/content"
 import { ProjectHeader } from "@/components/projects/project-header"
 import { FullStackProjectCard } from "@/components/projects/fullstack-project-card"

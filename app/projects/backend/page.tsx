@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import Footer from "@/components/footer"
-import { useLanguage } from "@/contexts/language-context"
+import { useLanguage } from "@/hooks/use-language"
 import { useContent } from "@/contexts/content"
 import { ProjectHeader } from "@/components/projects/project-header"
 import { BackendProjectCard } from "@/components/projects/backend-project-card"
@@ -32,14 +32,14 @@ export default function BackendProjects() {
 
         <div className="container mx-auto px-6 relative z-10">
           <ProjectHeader 
-            title={t("projects.backend.title")} 
-            description={t("projects.backend.description")} 
+            title={String(t("projects.backend.title"))} 
+            description={String(t("projects.backend.description"))} 
           />
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {backendProjects.length === 0 ? (
               <div className="col-span-3 text-center py-12">
-                <p className="text-slate-400">{t("projects.noProjects")}</p>
+                <p className="text-slate-400">{String(t("projects.noProjects"))}</p>
               </div>
             ) : (
               [...backendProjects]
