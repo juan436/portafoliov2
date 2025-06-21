@@ -2,7 +2,7 @@ services:
   # Servicio de Next.js (Portfolio)
   portfolio:
     build:
-      context: ./portfolio
+      context: .
       dockerfile: Dockerfile
     restart: always
     ports:
