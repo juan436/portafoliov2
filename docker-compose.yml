@@ -1,0 +1,37 @@
+services:
+  # Servicio de Next.js (Portfolio)
+  portfolio:
+    build:
+      context: ./portfolio
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - MONGODB_URI=mongodb://mongodb:27017/portfolio
+    depends_on:
+      - mongodb
+    networks:
+      - portfolio-network
+
+  # Servicio de MongoDB
+  mongodb:
+    image: mongo:6
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - portfolio-network
+
+# Volúmenes persistentes
+volumes:
+  mongodb_data:
+    driver: local
+
+# Redes
+networks:
+  portfolio-network:
+    driver: bridge
