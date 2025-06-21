@@ -14,9 +14,8 @@ const nextConfig = {
     parallelServerBuildTraces: true,
     parallelServerCompiles: true,
   },
-  // Configuración para modo standalone y evitar problemas de timeout
   output: 'standalone',
-  staticPageGenerationTimeout: 600, // 10 minutos
+  staticPageGenerationTimeout: 600,
 }
 
 export default nextConfig
