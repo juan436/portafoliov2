@@ -1,7 +1,8 @@
-// Servicio de autenticación para el cliente
+import { API_URL } from './index';
+
 export async function authenticateUser(username: string, password: string) {
   try {
-    const response = await fetch('/api/auth/login', {
+    const response = await fetch(`${API_URL}/auth/login`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

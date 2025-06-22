@@ -11,8 +11,6 @@ import LanguageSwitcher from "@/components/language-switcher"
 import Footer from "@/components/footer"
 import { FullStackProjectCard } from "@/components/projects/fullstack-project-card"
 import { BackendProjectCard } from "@/components/projects/backend-project-card"
-export const dynamic = 'force-dynamic';
-
 export default function ProjectsPage() {
   const { t } = useLanguage()
   const { content } = useContent()
