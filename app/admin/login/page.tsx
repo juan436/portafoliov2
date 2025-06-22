@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label"
 import { AlertCircle, Lock, LogIn, User } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import Link from "next/link"
+import { authenticateUser } from "@/services/api/auth"
 
 export default function LoginPage() {
   const [credentials, setCredentials] = useState({
@@ -33,22 +34,24 @@ export default function LoginPage() {
     setError("")
 
     try {
-      // En un entorno real, aquí harías una llamada a tu API de autenticación
-      // Por ahora, simulamos una autenticación simple
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-
-      // Credenciales de prueba (en producción usarías un sistema de autenticación real)
-      if (credentials.username === "admin" && credentials.password === "password") {
-        // Simular almacenamiento de sesión
-        localStorage.setItem("isLoggedIn", "true")
-        router.push("/admin/dashboard")
+      // Usar el servicio de autenticación del cliente
+      const result = await authenticateUser(credentials.username, credentials.password);
+      
+      if (result.success) {
+        // Guardar información de sesión
+        if (typeof window !== 'undefined') {
+          sessionStorage.setItem("isLoggedIn", "true");
+          sessionStorage.setItem("adminUser", credentials.username);
+          sessionStorage.setItem("token", result.token);
+        }
+        router.push("/admin/dashboard");
       } else {
-        setError("Credenciales incorrectas. Inténtalo de nuevo.")
+        setError(result.message || "Credenciales incorrectas. Inténtalo de nuevo.");
       }
     } catch (err) {
-      setError("Error al iniciar sesión. Por favor, inténtalo de nuevo más tarde.")
+      setError("Error al iniciar sesión. Por favor, inténtalo de nuevo más tarde.");
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
   }
 

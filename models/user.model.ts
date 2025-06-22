@@ -2,6 +2,7 @@ import mongoose, { Document, Model } from 'mongoose';
 import bcrypt from 'bcryptjs';
 
 export interface IUser extends Document {
+  _id: mongoose.Types.ObjectId;
   username: string;
   password: string;
   comparePassword(candidatePassword: string): Promise<boolean>;
