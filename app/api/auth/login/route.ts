@@ -3,15 +3,20 @@ import dbConnect from '@/lib/db/conection'
 import User from '@/models/user.model'
 import jwt from 'jsonwebtoken'
 
-// POST - Autenticar usuario y devolver JWT
 export async function POST(request: Request) {
-  // 1. Conectar a MongoDB
+  console.log('⏳ [auth] Login attempt')
+  console.log('⏳ [auth] SECRET_KEY:', process.env.SECRET_KEY)
+
+  // 1) Conectar a Mongo
   await dbConnect()
+  console.log('✅ [auth] MongoDB conectada')
 
   try {
+    // 2) Leer payload
     const { username, password } = await request.json()
+    console.log('⬇️ [auth] Payload:', { username, password })
 
-    // 2. Validar payload
+    // 3) Validar
     if (!username || !password) {
       return NextResponse.json(
         { success: false, message: 'Usuario y contraseña son requeridos' },
@@ -19,7 +24,7 @@ export async function POST(request: Request) {
       )
     }
 
-    // 3. Buscar usuario en la colección
+    // 4) Buscar usuario
     const user = await User.findOne({ username })
     if (!user) {
       return NextResponse.json(
@@ -28,7 +33,7 @@ export async function POST(request: Request) {
       )
     }
 
-    // 4. Comparar contraseña (el método comparePassword ya está en el schema)
+    // 5) Comparar contraseña
     const isValid = await user.comparePassword(password)
     if (!isValid) {
       return NextResponse.json(
@@ -37,14 +42,15 @@ export async function POST(request: Request) {
       )
     }
 
-    // 5. Firmar JWT con tu SECRET_KEY
+    // 6) Firmar JWT
     const token = jwt.sign(
       { sub: user._id.toString(), username: user.username },
       process.env.SECRET_KEY!,
       { expiresIn: '2h' }
     )
+    console.log('✅ [auth] JWT generado')
 
-    // 6. Responder con éxito
+    // 7) Responder
     return NextResponse.json(
       {
         success: true,
@@ -54,8 +60,8 @@ export async function POST(request: Request) {
       },
       { status: 200 }
     )
-  } catch (error) {
-    console.error('Error en la autenticación:', error)
+  } catch (err) {
+    console.error('❌ [auth] Error en autenticación:', err)
     return NextResponse.json(
       { success: false, message: 'Error interno del servidor' },
       { status: 500 }
