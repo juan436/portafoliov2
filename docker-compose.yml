@@ -1,23 +1,27 @@
-version: '3'
-
 services:
   portfolio:
     build:
       context: .
       dockerfile: Dockerfile
     container_name: portfolio
-    env_file:
-      - ./.env
     restart: unless-stopped
+    env_file:
+      - ./.env                # aquí defines MONGODB_URI
+    networks:
+      - proxy                 # conéctate a la red donde ya vive Mongo
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.portfolio.rule=Host(`jvillegas-portafolio.jvserver.com`)"
       - "traefik.http.routers.portfolio.entrypoints=websecure"
       - "traefik.http.routers.portfolio.tls=true"
-      - "traefik.http.services.portfolio.loadbalancer.server.port=3000"
-    networks:
-      - web
+      - "traefik.http.routers.portfolio.tls.certresolver=myresolver"
+      - "traefik.http.routers.portfolio-http.rule=Host(`jvillegas-portafolio.jvserver.com`)"
+      - "traefik.http.routers.portfolio-http.entrypoints=web"
+      - "traefik.http.routers.portfolio-http.middlewares=redirect-to-https"
+      - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
+    expose:
+      - 3000
 
 networks:
-  web:
+  proxy:
     external: true
