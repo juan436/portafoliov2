@@ -1,14 +1,6 @@
-// Función para determinar la URL base para las llamadas API
-const getBaseUrl = () => {
-  if (typeof window !== 'undefined') {
-    // En el navegador, usa la URL actual
-    return window.location.origin;
-  }
-  // En el servidor, usa la variable de entorno o un valor por defecto
-  return process.env.NEXT_PUBLIC_API_URL || 'https://jvillegas-portafolio.jvserver.com';
-};
+import { getApiUrl } from '@/utils/url';
 
-export const API_URL = `${getBaseUrl()}/api`;
+export const API_URL = getApiUrl();
 
 // Re-exportar todas las funciones de los módulos específicos
 export * from './projects';

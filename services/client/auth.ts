@@ -1,8 +1,8 @@
-import { API_URL } from '../api/index';
+import { getApiUrl } from '@/utils/url';
 
 export async function authenticateUser(username: string, password: string) {
   try {
-    const response = await fetch(`${API_URL}/auth/login`, {
+    const response = await fetch(`${getApiUrl()}/auth/login`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
