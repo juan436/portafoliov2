@@ -11,7 +11,6 @@ import type { Project } from "@/contexts/content/types"
 import { Button } from "@/components/ui/button"
 import { ArrowLeft } from "lucide-react"
 import LanguageSwitcher from "@/components/language-switcher"
-
 export default function FullStackProjects() {
   const { t } = useLanguage();
   const { content } = useContent();

@@ -7,7 +7,6 @@ import { useContent } from "@/contexts/content"
 import { ProjectHeader } from "@/components/projects/project-header"
 import { BackendProjectCard } from "@/components/projects/backend-project-card"
 import type { Project } from "@/contexts/content/types"
-
 export default function BackendProjects() {
   const { t } = useLanguage();
   const { content } = useContent();
