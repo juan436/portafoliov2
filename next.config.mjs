@@ -14,6 +14,8 @@ const nextConfig = {
     parallelServerBuildTraces: true,
     parallelServerCompiles: true,
   },
+  // Para Docker necesitamos output: 'standalone'
+  output: 'standalone',
 }
 
 export default nextConfig
