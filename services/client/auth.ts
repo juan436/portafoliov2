@@ -2,12 +2,7 @@ import { API_URL } from '../api/index';
 
 export async function authenticateUser(username: string, password: string) {
   try {
-    // Determinar la URL base para las llamadas API
-    const baseUrl = typeof window !== 'undefined' 
-      ? window.location.origin 
-      : process.env.NEXT_PUBLIC_API_URL || 'https://jvillegas-portafolio.jvserver.com';
-    
-    const response = await fetch(`${baseUrl}/api/auth/login`, {
+    const response = await fetch(`${API_URL}/auth/login`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
