@@ -1,6 +1,6 @@
 // portfolio/services/api/experience.ts
 import { API_URL } from './index';
-import { translateAndAddToObject } from '../translation';
+import { translateAndAddToObject } from '../client/translation';
 
 /**
  * Obtiene todas las experiencias

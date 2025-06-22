@@ -12,7 +12,7 @@ import { Label } from "@/components/ui/label"
 import { AlertCircle, Lock, LogIn, User } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import Link from "next/link"
-import { authenticateUser } from "@/services/api/auth"
+import { authenticateUser } from "@/services/client/auth"
 
 export default function LoginPage() {
   const [credentials, setCredentials] = useState({

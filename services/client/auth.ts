@@ -1,4 +1,4 @@
-import { API_URL } from './index';
+import { API_URL } from '../api/index';
 
 export async function authenticateUser(username: string, password: string) {
   try {

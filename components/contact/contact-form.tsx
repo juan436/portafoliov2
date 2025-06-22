@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
 import { Send, Loader2, CheckCircle, AlertCircle } from "lucide-react"
-import { sendContactForm } from "@/services/emailService"
+import { sendContactForm } from "@/services/client/emailService"
 import { useLanguage } from "@/hooks/use-language"
 
 interface ContactFormProps {

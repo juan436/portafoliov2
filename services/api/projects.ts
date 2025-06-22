@@ -1,6 +1,6 @@
 // portfolio/services/api/projects.ts
 import { API_URL } from './index';
-import { translateAndAddToObject } from '../translation';
+import { translateAndAddToObject } from '../client/translation';
 
 /**
  * Obtiene los proyectos, opcionalmente filtrados por categoría

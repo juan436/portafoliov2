@@ -1,6 +1,6 @@
 // portfolio/services/api/content.ts
 import { API_URL } from './index';
-import { translateAndAddToObject } from '../translation';
+import { translateAndAddToObject } from '../client/translation';
 
 /**
  * Obtiene todo el contenido del sitio

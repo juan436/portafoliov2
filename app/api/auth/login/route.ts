@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
-import dbConnect from '@/lib/db/conection'     // tu helper de conexión
-import User from '@/models/user.model'               // ajusta la ruta a tu modelo
+import dbConnect from '@/lib/db/conection'
+import User from '@/models/user.model'
 import jwt from 'jsonwebtoken'
 
 // POST - Autenticar usuario y devolver JWT
