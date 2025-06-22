@@ -6,14 +6,40 @@ import jwt from 'jsonwebtoken'
 export async function POST(request: Request) {
   console.log('⏳ [auth] Login attempt')
   console.log('⏳ [auth] SECRET_KEY:', process.env.SECRET_KEY)
+  console.log('⏳ [auth] Request headers:', Object.fromEntries(request.headers))
 
   // 1) Conectar a Mongo
   await dbConnect()
   console.log('✅ [auth] MongoDB conectada')
 
   try {
-    // 2) Leer payload
-    const { username, password } = await request.json()
+    // 2) Leer payload con manejo de errores mejorado
+    let username, password;
+    
+    try {
+      // Verificar si hay cuerpo en la solicitud
+      const text = await request.text();
+      console.log('⏳ [auth] Request body raw:', text);
+      
+      if (!text || text.trim() === '') {
+        return NextResponse.json(
+          { success: false, message: 'Cuerpo de solicitud vacío' },
+          { status: 400 }
+        );
+      }
+      
+      // Intentar parsear como JSON
+      const body = JSON.parse(text);
+      username = body.username;
+      password = body.password;
+    } catch (parseError) {
+      console.error('❌ [auth] Error parsing request body:', parseError);
+      return NextResponse.json(
+        { success: false, message: 'Formato de solicitud inválido' },
+        { status: 400 }
+      );
+    }
+    
     console.log('⬇️ [auth] Payload:', { username, password })
 
     // 3) Validar
