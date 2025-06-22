@@ -13,21 +13,13 @@ export const updateHero = async (
   setContent: Dispatch<SetStateAction<Content>>,
   setIsLoading: Dispatch<SetStateAction<boolean>>
 ) => {
-  console.log("ContentContext updateHero - inicio", { hero, isLoading: true });
-  
-  // Actualizar inmediatamente el estado local para evitar el parpadeo
   setContent(prev => ({ ...prev, hero: { ...hero } }));
   
-  // Luego actualizar en el servidor
   setIsLoading(true)
   try {
-    const response = await updateContent('hero', hero)
-    console.log("ContentContext updateHero - respuesta API", { response });
-    // No es necesario actualizar el estado de nuevo aquí, ya lo hicimos arriba
+    await updateContent('hero', hero)
   } catch (error) {
     console.error("Error actualizando hero:", error)
-    // En caso de error, podríamos revertir al estado anterior
   }
-  console.log("ContentContext updateHero - fin", { hero, isLoading: false });
   setIsLoading(false)
 }

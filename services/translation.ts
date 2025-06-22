@@ -8,7 +8,6 @@ export type SupportedLanguage = 'es' | 'en' | 'fr' | 'it';
 
 // URL base de la API local
 const LIBRETRANSLATE_API_URL = 'https://api-translate.jvserver.com/translate';
-console.log("Servicio de traducción configurado con URL:", LIBRETRANSLATE_API_URL);
 
 /**
  * Traduce un texto de un idioma a otro
@@ -23,8 +22,6 @@ export async function translateText(
   target: SupportedLanguage
 ): Promise<string> {
   try {
-    console.log(`Traduciendo texto de ${source} a ${target}:`, text.substring(0, 50) + (text.length > 50 ? '...' : ''));
-    
     const response = await fetch(LIBRETRANSLATE_API_URL, {
       method: 'POST',
       body: JSON.stringify({
@@ -43,11 +40,9 @@ export async function translateText(
     }
 
     const data = await response.json();
-    console.log(`Texto traducido de ${source} a ${target}:`, data.translatedText.substring(0, 50) + (data.translatedText.length > 50 ? '...' : ''));
     return data.translatedText;
   } catch (error) {
     console.error('Error detallado al traducir texto:', error);
-    // En caso de error, devolvemos el texto original
     return text;
   }
 }
@@ -68,17 +63,13 @@ export async function translateObject<T extends Record<string, any>>(
 ): Promise<{ [key in SupportedLanguage]?: Partial<T> }> {
   const translations: { [key in SupportedLanguage]?: Partial<T> } = {};
 
-  // Para cada idioma destino
   for (const targetLang of targetLanguages) {
-    // Si el idioma destino es igual al origen, saltamos
     if (targetLang === sourceLanguage) continue;
 
     const translatedObj: Partial<T> = {};
 
-    // Para cada campo a traducir
     for (const field of fieldsToTranslate) {
       if (obj[field] && typeof obj[field] === 'string') {
-        // Traducir el campo
         const translatedText = await translateText(
           obj[field] as string,
           sourceLanguage,
@@ -86,7 +77,6 @@ export async function translateObject<T extends Record<string, any>>(
         );
         translatedObj[field] = translatedText as any;
       } else if (Array.isArray(obj[field])) {
-        // Si es un array (como tags o achievements), traducimos cada elemento
         const translatedArray = await Promise.all(
           obj[field].map((item: string) =>
             typeof item === 'string'
@@ -118,26 +108,17 @@ export async function translateAndAddToObject<T extends Record<string, any>>(
   targetLanguages: SupportedLanguage[] = ['en', 'fr', 'it'],
   fieldsToTranslate: (keyof T)[]
 ): Promise<T & { translations: { [key in SupportedLanguage]?: Partial<T> } }> {
-  console.log(`Iniciando traducción de objeto desde ${sourceLanguage} a [${targetLanguages.join(', ')}]`);
-  console.log(`Campos a traducir:`, fieldsToTranslate);
-  console.log(`Objeto original:`, obj);
-  
-  // Obtener traducciones
   const translations = await translateObject(
     obj,
     sourceLanguage,
     targetLanguages,
     fieldsToTranslate
   );
-  
-  console.log(`Traducciones generadas:`, translations);
 
-  // Devolver objeto con traducciones
   const result = {
     ...obj,
     translations: translations as any
   };
   
-  console.log(`Objeto final con traducciones:`, result);
   return result;
 }

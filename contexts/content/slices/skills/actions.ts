@@ -50,13 +50,9 @@ export const createSkillItem = async (
         colored: response.data.colored
       }
 
-      console.log("Skill creada:", newSkill);
-
-      // Actualizar el estado local según la categoría
       setContent(prev => {
         const updatedSkills = { ...prev.skills };
 
-        // Añadir la nueva skill a la categoría correspondiente
         if (newSkill.category === 'frontend') {
           updatedSkills.frontend = [...updatedSkills.frontend, newSkill];
         } else if (newSkill.category === 'backend') {
@@ -97,35 +93,30 @@ export const updateSkillItem = async (
 ): Promise<boolean> => {
   setIsLoading(true)
   try {
-    // Asegurarnos que estamos pasando el objeto correcto a la API
-    // No necesitamos hacer ajustes al objeto skill, ya que ya contiene la categoría
     const response = await updateSkillApi(id, skill)
 
     if (response.success) {
-      // Actualizar el estado local según la categoría
       setContent(prev => {
         const updatedSkills = { ...prev.skills };
         const category = skill.category;
-
-        // Actualizar la skill en la categoría correspondiente
         if (category === 'frontend') {
           updatedSkills.frontend = updatedSkills.frontend.map(s => {
-            const skillId = s._id || s.id;
+            const skillId = s._id || '';
             return (skillId?.toString() || '') === id ? skill : s;
           });
         } else if (category === 'backend') {
           updatedSkills.backend = updatedSkills.backend.map(s => {
-            const skillId = s._id || s.id;
+            const skillId = s._id || '';
             return (skillId?.toString() || '') === id ? skill : s;
           });
         } else if (category === 'database') {
           updatedSkills.database = updatedSkills.database.map(s => {
-            const skillId = s._id || s.id;
+            const skillId = s._id || '';
             return (skillId?.toString() || '') === id ? skill : s;
           });
         } else if (category === 'devops') {
           updatedSkills.devops = updatedSkills.devops.map(s => {
-            const skillId = s._id || s.id;
+            const skillId = s._id || '';
             return (skillId?.toString() || '') === id ? skill : s;
           });
         }
@@ -166,13 +157,10 @@ export const deleteSkillItem = async (
 
   setIsLoading(true)
   try {
-    // Primero necesitamos encontrar la skill para saber su categoría
     let skillCategory = '';
     let skillFound = false;
 
-    // Buscar en todas las categorías
     for (const category of ['frontend', 'backend', 'database', 'devops'] as const) {
-      // Buscar por _id
       const found = content.skills[category].find(s => s._id === id);
       if (found) {
         skillCategory = category;
@@ -187,15 +175,12 @@ export const deleteSkillItem = async (
       return false;
     }
 
-    // Llamar a la API para eliminar la skill
     const response = await deleteSkillApi(id);
 
     if (response.success) {
-      // Actualizar el estado local
       setContent(prev => {
         const updatedSkills = { ...prev.skills };
 
-        // Eliminar la skill de la categoría correspondiente
         if (skillCategory === 'frontend') {
           updatedSkills.frontend = updatedSkills.frontend.filter(s => s._id !== id);
         } else if (skillCategory === 'backend') {

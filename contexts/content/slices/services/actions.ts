@@ -13,23 +13,13 @@ export const updateServices = async (
   setContent: Dispatch<SetStateAction<Content>>,
   setIsLoading: Dispatch<SetStateAction<boolean>>
 ) => {
-  console.log("ContentContext updateServices - inicio", { services });
-  
-  // Primero actualizamos el estado global inmediatamente para evitar parpadeos
   setContent((prev) => ({ ...prev, services }))
   
-  // Luego hacemos la operación asíncrona
   setIsLoading(true)
   try {
-    const response = await updateContent('services', services)
-    if (!response.success) {
-      console.error("Error en la respuesta al actualizar services:", response)
-      // En caso de error, podríamos revertir al estado anterior
-    }
+    await updateContent('services', services)
   } catch (error) {
     console.error("Error actualizando services:", error)
-    // En caso de error, podríamos revertir al estado anterior
   }
-  console.log("ContentContext updateServices - fin", { services, isLoading: false });
   setIsLoading(false)
 }

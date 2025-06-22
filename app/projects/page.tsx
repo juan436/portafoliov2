@@ -24,7 +24,6 @@ export default function ProjectsPage() {
 
   // Cargar proyectos desde el contexto
   useEffect(() => {
-    console.log("Cargando proyectos desde el contexto:", content.projects)
     setProjects({
       fullstack: content.projects.fullstack || [],
       backend: content.projects.backend || [],

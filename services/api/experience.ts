@@ -22,19 +22,13 @@ export const fetchExperiences = async () => {
  */
 export const createExperience = async (experience: any) => {
   try {
-    // Campos a traducir para experiencias
     const fieldsToTranslate = ['position', 'location', 'description'];
-    
-    // Generar traducciones automáticamente
     const experienceWithTranslations = await translateAndAddToObject(
       experience,
       'es',
       ['en', 'fr', 'it'],
       fieldsToTranslate
     );
-    
-    console.log("Experiencia con traducciones:", experienceWithTranslations);
-    
     const response = await fetch(`${API_URL}/experience`, {
       method: 'POST',
       headers: {
@@ -62,19 +56,13 @@ export const createExperience = async (experience: any) => {
  */
 export const updateExperience = async (id: string, experience: any) => {
   try {
-    // Campos a traducir para experiencias
     const fieldsToTranslate = ['position', 'location', 'description'];
-    
-    // Generar traducciones automáticamente
     const experienceWithTranslations = await translateAndAddToObject(
       experience,
       'es',
       ['en', 'fr', 'it'],
       fieldsToTranslate
     );
-    
-    console.log("Experiencia actualizada con traducciones:", experienceWithTranslations);
-    
     const response = await fetch(`${API_URL}/experience/${id}`, {
       method: 'PATCH',
       headers: {

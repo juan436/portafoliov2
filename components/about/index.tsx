@@ -45,7 +45,6 @@ export default function About() {
     const handleContentUpdate = (event: Event) => {
       const customEvent = event as CustomEvent
       if (customEvent.detail) {
-        console.log("Content updated event received:", customEvent.detail)
         // Actualizar todo el contenido local con los datos del evento
         setLocalContent((prev) => ({
           ...prev,
@@ -62,12 +61,6 @@ export default function About() {
       window.removeEventListener("contentUpdated", handleContentUpdate)
     }
   }, [])
-
-  // Forzar la actualización del componente cuando cambia el contenido
-  useEffect(() => {
-    console.log("About component content updated:", localContent)
-  }, [localContent])
-
   // Función para obtener la ruta del CV según el idioma actual
   const getCvPath = () => {
     switch (language.code) {

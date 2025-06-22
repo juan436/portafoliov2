@@ -30,8 +30,6 @@ export const createOtherSkill = async (skill: any) => {
       fieldsToTranslate
     );
     
-    console.log("Otra habilidad con traducciones:", skillWithTranslations);
-    
     const response = await fetch(`${API_URL}/other-skills`, {
       method: 'POST',
       headers: {
@@ -70,8 +68,6 @@ export const updateOtherSkill = async (id: string, skill: any) => {
       ['en', 'fr', 'it'],
       fieldsToTranslate
     );
-    
-    console.log("Otra habilidad actualizada con traducciones:", skillWithTranslations);
     
     const response = await fetch(`${API_URL}/other-skills/${id}`, {
       method: 'PATCH',

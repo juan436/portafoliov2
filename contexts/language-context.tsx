@@ -43,9 +43,6 @@ i18next
       caches: ["localStorage"],
     },
   }).then(() => {
-    console.log('i18next initialized successfully');
-    console.log('Current language:', i18next.language);
-    console.log('Available languages:', i18next.languages);
   });
 
 // Crear el contexto

@@ -15,7 +15,6 @@ export async function GET() {
         username: 'admin',
         password: 'admin123'
       });
-      console.log('Usuario admin creado');
     }
     
     // Crear contenido inicial
@@ -52,7 +51,6 @@ export async function GET() {
           location: "Venezuela"
         }
       });
-      console.log('Contenido inicial creado');
     }
     
     return NextResponse.json({ 

@@ -2,14 +2,11 @@
 
 import { useState, useEffect, type ReactNode } from "react"
 import ContentContext, { ContentContextType } from "./content-context"
-import { Content, OtherSkill, Project, Skill, Experience } from "./types"
+import { Content } from "./types"
 
-// Importar servicios API para carga inicial de datos
 import {
   fetchContent, fetchProjects, fetchExperiences, fetchSkills, fetchOtherSkills
 } from "@/services/api"
-
-// Importar acciones de cada slice
 import { updateHero } from "./slices/hero/actions"
 import { updateAbout } from "./slices/about/actions"
 import { updateServices } from "./slices/services/actions"
@@ -39,7 +36,6 @@ import {
   deleteExperienceItem as deleteExperienceItem
 } from "./slices/experience/actions"
 
-// Crear estructura mínima para evitar errores durante la carga
 const emptyContent: Content = {
   hero: { title: "", subtitle: "", description: "", profileImage: "", translations: {} },
   about: { paragraph1: "", paragraph2: "", paragraph3: "", translations: {} },
@@ -51,32 +47,27 @@ const emptyContent: Content = {
   experience: []
 }
 
-// Crear el proveedor
 export const ContentProvider = ({ children }: { children: ReactNode }) => {
   const [content, setContent] = useState<Content>(emptyContent)
   const [isLoading, setIsLoading] = useState(true)
 
-  // Cargar todos los datos desde la API
   useEffect(() => {
+    if (typeof window === 'undefined') {
+      setIsLoading(false);
+      return;
+    }
+    
     const loadData = async () => {
       setIsLoading(true)
 
       try {
-        // Cargar contenido general
         const contentData = await fetchContent()
-
-        // Cargar proyectos por categoría
         const fullstackProjects = await fetchProjects('fullstack')
         const backendProjects = await fetchProjects('backend')
-
-        // Cargar experiencias
         const experienceData = await fetchExperiences()
-        // Cargar skills
         const skillsData = await fetchSkills()
-        // Cargar otras habilidades
         const otherSkillsData = await fetchOtherSkills()
 
-        // Construir modelo de datos completo desde las APIs
         if (contentData) {
           const projectsData = {
             fullstack: fullstackProjects.map((p: any) => ({
@@ -88,7 +79,7 @@ export const ContentProvider = ({ children }: { children: ReactNode }) => {
               github: p.github || "#",
               demo: p.demo || "#",
               createdAt: p.createdAt,
-              translations: p.translations || {} // Preservar traducciones
+              translations: p.translations || {}
             })),
             backend: backendProjects.map((p: any) => ({
               id: p._id,
@@ -99,11 +90,10 @@ export const ContentProvider = ({ children }: { children: ReactNode }) => {
               github: p.github || "#",
               demo: p.demo || "#",
               createdAt: p.createdAt,
-              translations: p.translations || {} // Preservar traducciones
+              translations: p.translations || {}
             }))
           }
 
-          // Asegurarse de preservar las traducciones en todas las entidades
           setContent({
             hero: contentData.hero ? {
               ...contentData.hero,
@@ -160,10 +150,8 @@ export const ContentProvider = ({ children }: { children: ReactNode }) => {
     loadData()
   }, [])
 
-  // Función para guardar todo el contenido
   const saveAllContent = (): boolean => {
     try {
-      // Disparar un evento para notificar a otros componentes sobre la actualización
       if (typeof window !== "undefined") {
         const event = new CustomEvent("contentUpdated", { detail: content })
         window.dispatchEvent(event)
@@ -175,11 +163,9 @@ export const ContentProvider = ({ children }: { children: ReactNode }) => {
     }
   }
 
-  // Crear el objeto de contexto con todas las acciones
   const contextValue: ContentContextType = {
     content,
     isLoading,
-    // Métodos para secciones principales
     updateHero: (hero) => updateHero(hero, setContent, setIsLoading),
     updateAbout: (about) => updateAbout(about, setContent, setIsLoading),
     updateServices: (services) => updateServices(services, setContent, setIsLoading),
@@ -190,22 +176,17 @@ export const ContentProvider = ({ children }: { children: ReactNode }) => {
     updateExperience: (experience) => updateExperience(experience, setContent, setIsLoading),
     saveAllContent,
 
-    // OtherSkills
     addOtherSkill: (skill) => addOtherSkill(skill, setContent, setIsLoading),
     editOtherSkill: (id, skill) => editOtherSkill(id, skill, setContent, setIsLoading),
     removeOtherSkill: (id) => removeOtherSkill(id, content, setContent, setIsLoading),
-
-    // Proyectos
     createProjectItem: (project, category) => createProject(project, category, setContent, setIsLoading),
     updateProjectItem: (id, project, category) => updateProject(id, project, category, content, setContent, setIsLoading),
     deleteProjectItem: (id, category) => deleteProject(id, category, content, setContent, setIsLoading),
 
-    // Skills
     createSkillItem: (skill) => createSkill(skill, setContent, setIsLoading),
     updateSkillItem: (id, skill) => updateSkill(id, skill, setContent, setIsLoading),
     deleteSkillItem: (id) => deleteSkill(id, content, setContent, setIsLoading),
 
-    // Experience
     createExperienceItem: (experience) => createExperience(experience, setContent, setIsLoading),
     updateExperienceItem: (id, experience) => updateExperienceItem(id, experience, setContent, setIsLoading),
     deleteExperienceItem: (id) => deleteExperienceItem(id, setContent, setIsLoading)

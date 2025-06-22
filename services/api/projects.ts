@@ -30,19 +30,13 @@ export const fetchProjects = async (category?: string) => {
  */
 export const createProject = async (project: any) => {
   try {
-    // Campos a traducir para proyectos (quitamos tags)
     const fieldsToTranslate = ['title', 'description'];
-    
-    // Generar traducciones automáticamente
     const projectWithTranslations = await translateAndAddToObject(
       project,
       'es',
       ['en', 'fr', 'it'],
       fieldsToTranslate
     );
-    
-    console.log("Proyecto con traducciones:", projectWithTranslations);
-    
     const response = await fetch(`${API_URL}/projects`, {
       method: 'POST',
       headers: {
@@ -70,18 +64,13 @@ export const createProject = async (project: any) => {
  */
 export const updateProject = async (id: string, project: any) => {
   try {
-    // Campos a traducir para proyectos (quitamos tags)
     const fieldsToTranslate = ['title', 'description'];
-    
-    // Generar traducciones automáticamente
     const projectWithTranslations = await translateAndAddToObject(
       project,
       'es',
       ['en', 'fr', 'it'],
       fieldsToTranslate
     );
-    
-    console.log("Proyecto actualizado con traducciones:", projectWithTranslations);
     
     const response = await fetch(`${API_URL}/projects/${id}`, {
       method: 'PATCH',

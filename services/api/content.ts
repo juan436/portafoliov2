@@ -41,11 +41,7 @@ export const updateContent = async (section: string, data: any) => {
 
     // Si la sección tiene campos definidos para traducir
     if (fieldsToTranslate[section]) {
-      console.log(`Traduciendo contenido para la sección: ${section}`);
-
-      // Si es un array (como services, projects, etc.)
       if (Array.isArray(data)) {
-        // Traducir cada elemento del array
         const translatedItems = await Promise.all(
           data.map(async (item) => {
             return await translateAndAddToObject(
@@ -58,7 +54,6 @@ export const updateContent = async (section: string, data: any) => {
         );
         data = translatedItems;
       } else {
-        // Traducir un objeto individual
         data = await translateAndAddToObject(
           data,
           'es',
@@ -66,13 +61,8 @@ export const updateContent = async (section: string, data: any) => {
           fieldsToTranslate[section] as (keyof typeof data)[]
         );
       }
-
-      console.log(`Contenido traducido para la sección: ${section}`, data);
     }
-
-    // Crear un objeto con la sección como clave
     const payload = { [section]: data };
-
     const response = await fetch(`${API_URL}/content`, {
       method: 'PATCH',
       headers: {

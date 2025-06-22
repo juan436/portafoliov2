@@ -26,10 +26,6 @@ const EMAIL_API_URL = process.env.NEXT_PUBLIC_EMAIL_API_URL || 'http://localhost
  */
 export const sendContactForm = async (formData: ContactFormData): Promise<EmailResponse> => {
   try {
-    console.log('Enviando formulario al servidor:', EMAIL_API_URL);
-    console.log('API Key configurada:', API_KEY ? 'Sí (no se muestra por seguridad)' : 'No');
-    console.log('Datos del formulario:', formData);
-    
     const response = await fetch(`${EMAIL_API_URL}/send`, {
       method: 'POST',
       headers: {

@@ -13,21 +13,13 @@ export const updateContact = async (
   setContent: Dispatch<SetStateAction<Content>>,
   setIsLoading: Dispatch<SetStateAction<boolean>>
 ) => {
-  console.log("ContentContext updateContact - inicio", { contact, isLoading: true });
-  
-  // Actualizar inmediatamente el estado local para evitar el parpadeo
   setContent((prev) => ({ ...prev, contact: { ...contact } }));
   
-  // Luego actualizar en el servidor
   setIsLoading(true)
   try {
-    const response = await updateContent('contact', contact)
-    console.log("ContentContext updateContact - respuesta API", { response });
-    // No es necesario actualizar el estado de nuevo aquí, ya lo hicimos arriba
+    await updateContent('contact', contact)
   } catch (error) {
     console.error("Error actualizando contact:", error)
-    // En caso de error, podríamos revertir al estado anterior
   }
-  console.log("ContentContext updateContact - fin", { contact, isLoading: false });
   setIsLoading(false)
 }

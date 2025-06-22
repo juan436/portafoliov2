@@ -13,21 +13,15 @@ export const updateAbout = async (
   setContent: Dispatch<SetStateAction<Content>>,
   setIsLoading: Dispatch<SetStateAction<boolean>>
 ) => {
-  console.log("ContentContext updateAbout - inicio", { about, isLoading: true });
-  
   // Actualizar inmediatamente el estado local para evitar el parpadeo
   setContent((prev) => ({ ...prev, about: { ...about } }));
   
   // Luego actualizar en el servidor
   setIsLoading(true)
   try {
-    const response = await updateContent('about', about)
-    console.log("ContentContext updateAbout - respuesta API", { response });
-    // No es necesario actualizar el estado de nuevo aquí, ya lo hicimos arriba
+    await updateContent('about', about)
   } catch (error) {
     console.error("Error actualizando about:", error)
-    // En caso de error, podríamos revertir al estado anterior
   }
-  console.log("ContentContext updateAbout - fin", { about, isLoading: false });
   setIsLoading(false)
 }
