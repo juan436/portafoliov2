@@ -14,8 +14,13 @@ const nextConfig = {
     parallelServerBuildTraces: true,
     parallelServerCompiles: true,
   },
-  output: 'standalone',
-  staticPageGenerationTimeout: 600,
+  output: 'server',
+  staticPageGenerationTimeout: 1200,
+  unstable_excludeFiles: [
+    '**/app/admin/**/*.js',
+    '**/app/admin/**/*.ts',
+    '**/app/admin/**/*.tsx',
+  ],
 }
 
 export default nextConfig
