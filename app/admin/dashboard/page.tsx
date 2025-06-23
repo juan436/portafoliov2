@@ -23,33 +23,46 @@ export default function DashboardPage() {
   useEffect(() => {
     const checkAuth = () => {
       try {
-        // Función para leer una cookie por su nombre
+        // Función para obtener valor de una cookie
         const getCookie = (name: string): string | null => {
           if (typeof document === 'undefined') return null;
           const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
           return match ? match[2] : null;
         };
         
-        // Verificar autenticación en cookies (donde se está guardando en login)
-        const isLoggedInCookie = getCookie('isLoggedIn');
-        const tokenCookie = getCookie('authToken');
+        // VERIFICAR EN TODOS LOS MECANISMOS POSIBLES
         
-        // Verificar si está autenticado
-        const isAuthenticated = isLoggedInCookie === 'true';
-        const hasToken = !!tokenCookie;
+        // Verificar en localStorage (persistente)
+        const isLoggedInLocal = localStorage.getItem("isLoggedIn") === "true";
+        const tokenLocal = localStorage.getItem("token");
+        
+        // Verificar en sessionStorage (sesión actual)
+        const isLoggedInSession = sessionStorage.getItem("isLoggedIn") === "true";
+        const tokenSession = sessionStorage.getItem("token");
+        
+        // Verificar en cookies (envío automático con peticiones)
+        const isLoggedInCookie = getCookie("isLoggedIn") === "true";
+        const tokenCookie = getCookie("authToken");
+        
+        // Autenticado si existe en CUALQUIERA de los mecanismos
+        const isAuthenticated = isLoggedInLocal || isLoggedInSession || isLoggedInCookie;
+        const hasToken = !!tokenLocal || !!tokenSession || !!tokenCookie;
         
         if (!isAuthenticated || !hasToken) {
-          router.push("/admin/login");
+          // No autenticado, redirigir al login de manera directa
+          window.location.href = "/admin/login";
         } else {
+          // Autenticado, mostrar dashboard
           setIsLoading(false);
         }
       } catch (error) {
-        router.push("/admin/login");
+        // Error en la verificación, redirigir al login
+        window.location.href = "/admin/login";
       }
     };
 
     checkAuth();
-  }, [router])
+  }, [])
 
   useEffect(() => {
     const tab = searchParams.get("tab")

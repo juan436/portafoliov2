@@ -38,21 +38,31 @@ export default function LoginPage() {
       const result = await authenticateUser(credentials.username, credentials.password);
       
       if (result.success) {
-        // Guardar información SOLO en cookies (más confiable en Docker)
-        if (typeof window !== 'undefined') {
-          // Establecer cookies con expiración de 2 horas (similar al token JWT)
-          document.cookie = `isLoggedIn=true; path=/; max-age=${60*60*2}`;
-          document.cookie = `adminUser=${credentials.username}; path=/; max-age=${60*60*2}`;
-          document.cookie = `authToken=${result.token}; path=/; max-age=${60*60*2}`;
-        }
+        // GUARDAR EN TODOS LOS MECANISMOS POSIBLES para garantizar máxima compatibilidad
         
-        // Usar window.location directamente (más confiable que router.push)
-        window.location.href = "/admin/dashboard";
+        // 1. localStorage - persistente entre sesiones
+        localStorage.setItem("isLoggedIn", "true");
+        localStorage.setItem("adminUser", credentials.username);
+        localStorage.setItem("token", result.token);
+        
+        // 2. sessionStorage - solo para la sesión actual
+        sessionStorage.setItem("isLoggedIn", "true");
+        sessionStorage.setItem("adminUser", credentials.username);
+        sessionStorage.setItem("token", result.token);
+        
+        // 3. cookies - sin opciones complejas que puedan causar problemas con Traefik
+        document.cookie = "isLoggedIn=true; path=/";
+        document.cookie = `adminUser=${credentials.username}; path=/`;
+        document.cookie = `authToken=${result.token}; path=/`;
+        
+        // Redirección directa con retardo para permitir que se guarden los datos
+        setTimeout(() => {
+          window.location.href = "/admin/dashboard";
+        }, 300);
       } else {
         setError(result.message || "Credenciales incorrectas. Inténtalo de nuevo.");
       }
     } catch (err) {
-      console.error("Error en el proceso de login:", err);
       setError("Error al iniciar sesión. Por favor, inténtalo de nuevo más tarde.");
     } finally {
       setIsLoading(false);
