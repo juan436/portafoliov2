@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Home, LogOut } from "lucide-react"
+import { logout, redirectToLogin } from "@/lib/auth"
 
 interface AdminLayoutProps {
   children: React.ReactNode
@@ -15,21 +16,10 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
 
   const handleLogout = async () => {
     try {
-      const response = await fetch('/api/auth/logout', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (response.ok) {
-        console.log('Sesión cerrada correctamente');
-        window.location.href = '/admin/login';
-      } else {
-        console.error('Error al cerrar sesión');
-      }
+      await logout();
+      redirectToLogin();
     } catch (error) {
-      console.error('Error al cerrar sesión:', error);
+      redirectToLogin();
     }
   }
 
@@ -51,7 +41,12 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
               </Link>
             </Button>
 
-            <Button variant="ghost" size="sm" onClick={handleLogout} className="text-slate-300 hover:text-red-500">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={handleLogout} 
+              className="text-slate-300 hover:text-red-500"
+            >
               <LogOut className="mr-2 h-4 w-4" />
               <span className="hidden sm:inline">Cerrar Sesión</span>
             </Button>

@@ -13,6 +13,7 @@ export async function logout(): Promise<boolean> {
       headers: {
         'Content-Type': 'application/json',
       },
+      credentials: 'include'
     });
 
     return response.ok;
