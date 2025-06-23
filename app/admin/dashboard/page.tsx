@@ -25,15 +25,34 @@ export default function DashboardPage() {
       console.log("Dashboard: Verificando autenticación...");
       
       try {
-        const isLoggedIn = sessionStorage.getItem("isLoggedIn");
-        console.log("Dashboard: Estado de isLoggedIn:", isLoggedIn);
-        const adminUser = sessionStorage.getItem("adminUser");
-        console.log("Dashboard: Usuario admin:", adminUser);
-        const token = sessionStorage.getItem("token");
-        console.log("Dashboard: Token existe:", !!token);
+        // Función auxiliar para obtener valor de una cookie por su nombre
+        const getCookie = (name: string): string | null => {
+          if (typeof document === 'undefined') return null;
+          const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+          return match ? match[2] : null;
+        };
         
-        if (!isLoggedIn) {
-          console.log("Dashboard: No hay sesión, redirigiendo a login...");
+        // Verificar autenticación tanto en cookies como en sessionStorage
+        const isLoggedInCookie = getCookie('isLoggedIn');
+        const isLoggedInSession = sessionStorage.getItem("isLoggedIn");
+        const adminUserCookie = getCookie('adminUser');
+        const adminUserSession = sessionStorage.getItem("adminUser");
+        const tokenCookie = getCookie('authToken');
+        const tokenSession = sessionStorage.getItem("token");
+        
+        console.log("Dashboard: Estado de sesión:");
+        console.log("- Cookie isLoggedIn:", isLoggedInCookie);
+        console.log("- Session isLoggedIn:", isLoggedInSession);
+        console.log("- Cookie adminUser:", adminUserCookie);
+        console.log("- Session adminUser:", adminUserSession);
+        console.log("- Token en cookie:", !!tokenCookie);
+        console.log("- Token en session:", !!tokenSession);
+        
+        // Considerar autenticado si está en cookies O en sessionStorage
+        const isAuthenticated = isLoggedInCookie === 'true' || isLoggedInSession === 'true';
+        
+        if (!isAuthenticated) {
+          console.log("Dashboard: No hay sesión válida, redirigiendo a login...");
           router.push("/admin/login");
         } else {
           console.log("Dashboard: Sesión válida, mostrando dashboard...");
@@ -41,7 +60,7 @@ export default function DashboardPage() {
         }
       } catch (error) {
         console.error("Dashboard: Error al verificar autenticación:", error);
-        // Si hay un error al acceder a sessionStorage, tratemos de mostrar el dashboard de todos modos
+        // Si hay un error al acceder a cookies/sessionStorage, intentamos mostrar el dashboard
         setIsLoading(false);
       }
     };

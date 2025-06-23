@@ -34,21 +34,48 @@ export default function LoginPage() {
     setError("")
 
     try {
+      console.log("Iniciando proceso de autenticación...")
       // Usar el servicio de autenticación del cliente
-      const result = await authenticateUser(credentials.username, credentials.password);
+      const result = await authenticateUser(credentials.username, credentials.password)
+      
+      console.log("Resultado de autenticación:", result)
       
       if (result.success) {
-        // Guardar información de sesión
+        console.log("Autenticación exitosa, configurando cookies...")
+        
+        // Guardar información tanto en cookies como en sessionStorage para mayor compatibilidad
         if (typeof window !== 'undefined') {
+          // Establecer cookies con expiración de 2 horas (similar al token JWT)
+          document.cookie = `isLoggedIn=true; path=/; max-age=${60*60*2}; SameSite=Strict`;
+          document.cookie = `adminUser=${credentials.username}; path=/; max-age=${60*60*2}; SameSite=Strict`;
+          document.cookie = `authToken=${result.token}; path=/; max-age=${60*60*2}; SameSite=Strict`;
+          
+          // También guardarlo en sessionStorage como respaldo
           sessionStorage.setItem("isLoggedIn", "true");
           sessionStorage.setItem("adminUser", credentials.username);
           sessionStorage.setItem("token", result.token);
+          
+          console.log("Cookies y sessionStorage configurados")
         }
-        router.push("/admin/dashboard");
+        
+        console.log("Intentando redireccionar al dashboard...")
+        
+        // Intentar varios métodos de redirección para mayor compatibilidad
+        try {
+          // Usar setTimeout para dar tiempo a que se establezcan las cookies
+          setTimeout(() => {
+            window.location.href = "/admin/dashboard";
+          }, 300);
+          
+          console.log("Redirección iniciada con window.location después de un pequeño retraso");
+        } catch (redirectError) {
+          console.error("Error en la redirección:", redirectError);
+        }
       } else {
         setError(result.message || "Credenciales incorrectas. Inténtalo de nuevo.");
       }
     } catch (err) {
+      console.error("Error en el proceso de login:", err);
       setError("Error al iniciar sesión. Por favor, inténtalo de nuevo más tarde.");
     } finally {
       setIsLoading(false);
