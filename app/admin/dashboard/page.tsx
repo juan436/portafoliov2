@@ -19,50 +19,10 @@ export default function DashboardPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
 
-  // Verificar autenticación al cargar la página
+  // Eliminar la verificación de autenticación, ya que el middleware se encarga de eso
   useEffect(() => {
-    const checkAuth = () => {
-      try {
-        // Función para obtener valor de una cookie
-        const getCookie = (name: string): string | null => {
-          if (typeof document === 'undefined') return null;
-          const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
-          return match ? match[2] : null;
-        };
-        
-        // VERIFICAR EN TODOS LOS MECANISMOS POSIBLES
-        
-        // Verificar en localStorage (persistente)
-        const isLoggedInLocal = localStorage.getItem("isLoggedIn") === "true";
-        const tokenLocal = localStorage.getItem("token");
-        
-        // Verificar en sessionStorage (sesión actual)
-        const isLoggedInSession = sessionStorage.getItem("isLoggedIn") === "true";
-        const tokenSession = sessionStorage.getItem("token");
-        
-        // Verificar en cookies (envío automático con peticiones)
-        const isLoggedInCookie = getCookie("isLoggedIn") === "true";
-        const tokenCookie = getCookie("authToken");
-        
-        // Autenticado si existe en CUALQUIERA de los mecanismos
-        const isAuthenticated = isLoggedInLocal || isLoggedInSession || isLoggedInCookie;
-        const hasToken = !!tokenLocal || !!tokenSession || !!tokenCookie;
-        
-        if (!isAuthenticated || !hasToken) {
-          // No autenticado, redirigir al login de manera directa
-          window.location.href = "/admin/login";
-        } else {
-          // Autenticado, mostrar dashboard
-          setIsLoading(false);
-        }
-      } catch (error) {
-        // Error en la verificación, redirigir al login
-        window.location.href = "/admin/login";
-      }
-    };
-
-    checkAuth();
-  }, [])
+    setIsLoading(false);
+  }, []);
 
   useEffect(() => {
     const tab = searchParams.get("tab")

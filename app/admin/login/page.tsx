@@ -38,27 +38,8 @@ export default function LoginPage() {
       const result = await authenticateUser(credentials.username, credentials.password);
       
       if (result.success) {
-        // GUARDAR EN TODOS LOS MECANISMOS POSIBLES para garantizar máxima compatibilidad
-        
-        // 1. localStorage - persistente entre sesiones
-        localStorage.setItem("isLoggedIn", "true");
-        localStorage.setItem("adminUser", credentials.username);
-        localStorage.setItem("token", result.token);
-        
-        // 2. sessionStorage - solo para la sesión actual
-        sessionStorage.setItem("isLoggedIn", "true");
-        sessionStorage.setItem("adminUser", credentials.username);
-        sessionStorage.setItem("token", result.token);
-        
-        // 3. cookies - sin opciones complejas que puedan causar problemas con Traefik
-        document.cookie = "isLoggedIn=true; path=/";
-        document.cookie = `adminUser=${credentials.username}; path=/`;
-        document.cookie = `authToken=${result.token}; path=/`;
-        
-        // Redirección directa con retardo para permitir que se guarden los datos
-        setTimeout(() => {
-          window.location.href = "/admin/dashboard";
-        }, 300);
+        // Redirección al dashboard
+        window.location.href = "/admin/dashboard";
       } else {
         setError(result.message || "Credenciales incorrectas. Inténtalo de nuevo.");
       }

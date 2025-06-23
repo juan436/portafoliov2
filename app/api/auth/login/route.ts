@@ -67,8 +67,8 @@ export async function POST(request: Request) {
       { expiresIn: '2h' }
     )
 
-    // 7) Responder
-    return NextResponse.json(
+    // 7) Crear respuesta con cookies HTTP
+    const response = NextResponse.json(
       {
         success: true,
         message: 'Autenticación exitosa',
@@ -76,7 +76,28 @@ export async function POST(request: Request) {
         user: { id: user._id, username: user.username }
       },
       { status: 200 }
-    )
+    );
+    
+    // Establecer cookies seguras desde el servidor para que el middleware las lea
+    response.cookies.set('authToken', token, {
+      path: '/',
+      maxAge: 60 * 60 * 2, // 2 horas
+      httpOnly: true, // No accesible desde JS (seguridad)
+    });
+    
+    response.cookies.set('isLoggedIn', 'true', {
+      path: '/',
+      maxAge: 60 * 60 * 2,
+      httpOnly: false, // Accesible desde JS
+    });
+    
+    response.cookies.set('adminUser', username, {
+      path: '/',
+      maxAge: 60 * 60 * 2,
+      httpOnly: false, // Accesible desde JS
+    });
+    
+    return response;
   } catch (err) {
     console.error('❌ [auth] Error en autenticación:', err)
     return NextResponse.json(
