@@ -22,15 +22,31 @@ export default function DashboardPage() {
   // Verificar autenticación al cargar la página
   useEffect(() => {
     const checkAuth = () => {
-      const isLoggedIn = sessionStorage.getItem("isLoggedIn")
-      if (!isLoggedIn) {
-        router.push("/admin/login")
-      } else {
-        setIsLoading(false)
+      console.log("Dashboard: Verificando autenticación...");
+      
+      try {
+        const isLoggedIn = sessionStorage.getItem("isLoggedIn");
+        console.log("Dashboard: Estado de isLoggedIn:", isLoggedIn);
+        const adminUser = sessionStorage.getItem("adminUser");
+        console.log("Dashboard: Usuario admin:", adminUser);
+        const token = sessionStorage.getItem("token");
+        console.log("Dashboard: Token existe:", !!token);
+        
+        if (!isLoggedIn) {
+          console.log("Dashboard: No hay sesión, redirigiendo a login...");
+          router.push("/admin/login");
+        } else {
+          console.log("Dashboard: Sesión válida, mostrando dashboard...");
+          setIsLoading(false);
+        }
+      } catch (error) {
+        console.error("Dashboard: Error al verificar autenticación:", error);
+        // Si hay un error al acceder a sessionStorage, tratemos de mostrar el dashboard de todos modos
+        setIsLoading(false);
       }
-    }
+    };
 
-    checkAuth()
+    checkAuth();
   }, [router])
 
   useEffect(() => {
