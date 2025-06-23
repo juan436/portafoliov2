@@ -34,43 +34,20 @@ export default function LoginPage() {
     setError("")
 
     try {
-      console.log("Iniciando proceso de autenticación...")
       // Usar el servicio de autenticación del cliente
-      const result = await authenticateUser(credentials.username, credentials.password)
-      
-      console.log("Resultado de autenticación:", result)
+      const result = await authenticateUser(credentials.username, credentials.password);
       
       if (result.success) {
-        console.log("Autenticación exitosa, configurando cookies...")
-        
-        // Guardar información tanto en cookies como en sessionStorage para mayor compatibilidad
+        // Guardar información SOLO en cookies (más confiable en Docker)
         if (typeof window !== 'undefined') {
           // Establecer cookies con expiración de 2 horas (similar al token JWT)
-          document.cookie = `isLoggedIn=true; path=/; max-age=${60*60*2}; SameSite=Strict`;
-          document.cookie = `adminUser=${credentials.username}; path=/; max-age=${60*60*2}; SameSite=Strict`;
-          document.cookie = `authToken=${result.token}; path=/; max-age=${60*60*2}; SameSite=Strict`;
-          
-          // También guardarlo en sessionStorage como respaldo
-          sessionStorage.setItem("isLoggedIn", "true");
-          sessionStorage.setItem("adminUser", credentials.username);
-          sessionStorage.setItem("token", result.token);
-          
-          console.log("Cookies y sessionStorage configurados")
+          document.cookie = `isLoggedIn=true; path=/; max-age=${60*60*2}`;
+          document.cookie = `adminUser=${credentials.username}; path=/; max-age=${60*60*2}`;
+          document.cookie = `authToken=${result.token}; path=/; max-age=${60*60*2}`;
         }
         
-        console.log("Intentando redireccionar al dashboard...")
-        
-        // Intentar varios métodos de redirección para mayor compatibilidad
-        try {
-          // Usar setTimeout para dar tiempo a que se establezcan las cookies
-          setTimeout(() => {
-            window.location.href = "/admin/dashboard";
-          }, 300);
-          
-          console.log("Redirección iniciada con window.location después de un pequeño retraso");
-        } catch (redirectError) {
-          console.error("Error en la redirección:", redirectError);
-        }
+        // Usar window.location directamente (más confiable que router.push)
+        window.location.href = "/admin/dashboard";
       } else {
         setError(result.message || "Credenciales incorrectas. Inténtalo de nuevo.");
       }
