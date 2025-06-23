@@ -4,13 +4,8 @@ import User from '@/models/user.model'
 import jwt from 'jsonwebtoken'
 
 export async function POST(request: Request) {
-  console.log('⏳ [auth] Login attempt')
-  console.log('⏳ [auth] SECRET_KEY:', process.env.SECRET_KEY)
-  console.log('⏳ [auth] Request headers:', Object.fromEntries(request.headers))
-
   // 1) Conectar a Mongo
   await dbConnect()
-  console.log('✅ [auth] MongoDB conectada')
 
   try {
     // 2) Leer payload con manejo de errores mejorado
@@ -19,7 +14,6 @@ export async function POST(request: Request) {
     try {
       // Verificar si hay cuerpo en la solicitud
       const text = await request.text();
-      console.log('⏳ [auth] Request body raw:', text);
       
       if (!text || text.trim() === '') {
         return NextResponse.json(
@@ -40,8 +34,6 @@ export async function POST(request: Request) {
       );
     }
     
-    console.log('⬇️ [auth] Payload:', { username, password })
-
     // 3) Validar
     if (!username || !password) {
       return NextResponse.json(
@@ -74,7 +66,6 @@ export async function POST(request: Request) {
       process.env.SECRET_KEY!,
       { expiresIn: '2h' }
     )
-    console.log('✅ [auth] JWT generado')
 
     // 7) Responder
     return NextResponse.json(

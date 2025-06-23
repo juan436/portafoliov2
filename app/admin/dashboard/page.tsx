@@ -22,7 +22,7 @@ export default function DashboardPage() {
   // Verificar autenticación al cargar la página
   useEffect(() => {
     const checkAuth = () => {
-      const isLoggedIn = localStorage.getItem("isLoggedIn")
+      const isLoggedIn = sessionStorage.getItem("isLoggedIn")
       if (!isLoggedIn) {
         router.push("/admin/login")
       } else {
