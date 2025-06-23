@@ -3,12 +3,6 @@ import { useContent } from "@/contexts/content";
 import type { OtherSkill } from "@/contexts/content/types";
 import { useToastNotifications } from "../../use-toast-notifications";
 
-// Definir la interfaz para otras habilidades
-export interface OtherSkill {
-  _id?: string;
-  name: string;
-}
-
 /**
  * Hook para gestionar las otras habilidades en el panel de administración
  * Encapsula toda la lógica de gestión de otras habilidades

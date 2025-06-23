@@ -9,11 +9,9 @@ import { useLanguage } from "@/hooks/use-language"
 import { useTranslatedContent } from "@/hooks/use-translated-content"
 import { HeroSocialLinks } from "./hero-social-links"
 import { HeroAnimation } from "./hero-animation"
-import { useContent } from "@/contexts/content/use-content"
 
 export default function Hero() {
   const { t, language } = useLanguage()
-  const { content } = useContent()
   const { translatedContent } = useTranslatedContent()
   const [showAnimation, setShowAnimation] = useState(false)
   const [translatedTexts, setTranslatedTexts] = useState<{

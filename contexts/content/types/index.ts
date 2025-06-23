@@ -103,7 +103,7 @@ export type Contact = {
 
 // OtherSkill
 export type OtherSkill = {
-  _id?: string;  // Opcional porque será asignado por MongoDB al crear
+  _id?: string;
   name: string;
   translations?: {
     [key in TranslationLanguages]?: {

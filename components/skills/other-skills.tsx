@@ -2,17 +2,10 @@
 
 import { motion } from "framer-motion"
 import { useLanguage } from "@/hooks/use-language"
+import type { OtherSkill } from "@/contexts/content/types"
 
 interface OtherSkillsProps {
-  otherSkills: Array<{
-    _id?: string
-    name: string
-    translations?: {
-      [key: string]: {
-        name: string
-      }
-    }
-  }>
+  otherSkills: OtherSkill[]
   translatedTexts: {
     other: string
     [key: string]: string
@@ -23,7 +16,7 @@ export function OtherSkills({ otherSkills, translatedTexts }: OtherSkillsProps) 
   const { language } = useLanguage();
   
   // Función para obtener el nombre traducido de la habilidad
-  const getTranslatedName = (skill: any) => {
+  const getTranslatedName = (skill: OtherSkill) => {
     // Si es español o no hay traducciones disponibles, devolver el nombre original
     if (language.code === 'es' || !skill.translations || !skill.translations[language.code]) {
       return skill.name;
