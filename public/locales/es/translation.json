@@ -83,5 +83,8 @@
     "contact_short": "¡Contáctame!",
     "experience": "¡Echa un vistazo a mi trayectoria profesional! Aquí encontrarás mi experiencia y los roles que he desempeñado a lo largo de mi carrera.",
     "experience_short": "¡Mi experiencia!"
+  },
+  "social": {
+    "whatsapp_message": "Hola Ingeniero Villegas, quiero hacerle una consulta sobre sus servicios."
   }
 }
