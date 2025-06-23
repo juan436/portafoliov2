@@ -22,46 +22,29 @@ export default function DashboardPage() {
   // Verificar autenticación al cargar la página
   useEffect(() => {
     const checkAuth = () => {
-      console.log("Dashboard: Verificando autenticación...");
-      
       try {
-        // Función auxiliar para obtener valor de una cookie por su nombre
+        // Función para leer una cookie por su nombre
         const getCookie = (name: string): string | null => {
           if (typeof document === 'undefined') return null;
           const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
           return match ? match[2] : null;
         };
         
-        // Verificar autenticación tanto en cookies como en sessionStorage
+        // Verificar autenticación en cookies (donde se está guardando en login)
         const isLoggedInCookie = getCookie('isLoggedIn');
-        const isLoggedInSession = sessionStorage.getItem("isLoggedIn");
-        const adminUserCookie = getCookie('adminUser');
-        const adminUserSession = sessionStorage.getItem("adminUser");
         const tokenCookie = getCookie('authToken');
-        const tokenSession = sessionStorage.getItem("token");
         
-        console.log("Dashboard: Estado de sesión:");
-        console.log("- Cookie isLoggedIn:", isLoggedInCookie);
-        console.log("- Session isLoggedIn:", isLoggedInSession);
-        console.log("- Cookie adminUser:", adminUserCookie);
-        console.log("- Session adminUser:", adminUserSession);
-        console.log("- Token en cookie:", !!tokenCookie);
-        console.log("- Token en session:", !!tokenSession);
+        // Verificar si está autenticado
+        const isAuthenticated = isLoggedInCookie === 'true';
+        const hasToken = !!tokenCookie;
         
-        // Considerar autenticado si está en cookies O en sessionStorage
-        const isAuthenticated = isLoggedInCookie === 'true' || isLoggedInSession === 'true';
-        
-        if (!isAuthenticated) {
-          console.log("Dashboard: No hay sesión válida, redirigiendo a login...");
+        if (!isAuthenticated || !hasToken) {
           router.push("/admin/login");
         } else {
-          console.log("Dashboard: Sesión válida, mostrando dashboard...");
           setIsLoading(false);
         }
       } catch (error) {
-        console.error("Dashboard: Error al verificar autenticación:", error);
-        // Si hay un error al acceder a cookies/sessionStorage, intentamos mostrar el dashboard
-        setIsLoading(false);
+        router.push("/admin/login");
       }
     };
 
