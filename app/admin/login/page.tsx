@@ -3,7 +3,6 @@
 import type React from "react"
 
 import { useState } from "react"
-import { useRouter } from "next/navigation"
 import { motion } from "framer-motion"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -21,7 +20,6 @@ export default function LoginPage() {
   })
   const [error, setError] = useState("")
   const [isLoading, setIsLoading] = useState(false)
-  const router = useRouter()
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
@@ -37,14 +35,9 @@ export default function LoginPage() {
       const result = await authenticateUser(credentials.username, credentials.password);
       
       if (result.success) {
-        // Establecer cookies client-side como respaldo
-        // aunque el API también las establece con httpOnly
         document.cookie = "isLoggedIn=true; path=/";
         document.cookie = `adminUser=${credentials.username}; path=/`;
         
-        // No establecemos la cookie de authToken aquí, ya que debe ser httpOnly y se establece desde el servidor
-        
-        // Redirección al dashboard
         window.location.href = "/admin/dashboard";
       } else {
         setError(result.message || "Credenciales incorrectas. Inténtalo de nuevo.");

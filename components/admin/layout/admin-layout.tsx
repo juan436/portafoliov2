@@ -13,14 +13,28 @@ interface AdminLayoutProps {
 export default function AdminLayout({ children }: AdminLayoutProps) {
   const router = useRouter()
 
-  const handleLogout = () => {
-    localStorage.removeItem("isLoggedIn")
-    router.push("/admin/login")
+  const handleLogout = async () => {
+    try {
+      const response = await fetch('/api/auth/logout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        console.log('Sesión cerrada correctamente');
+        window.location.href = '/admin/login';
+      } else {
+        console.error('Error al cerrar sesión');
+      }
+    } catch (error) {
+      console.error('Error al cerrar sesión:', error);
+    }
   }
 
   return (
     <div className="min-h-screen bg-black flex flex-col">
-      {/* Header */}
       <header className="bg-black/80 backdrop-blur-md border-b border-blue-700/20 sticky top-0 z-40">
         <div className="container mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center">
@@ -45,7 +59,6 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         </div>
       </header>
 
-      {/* Main Content */}
       <main className="flex-1 overflow-hidden">{children}</main>
     </div>
   )

@@ -4,15 +4,12 @@ import User from '@/models/user.model'
 import jwt from 'jsonwebtoken'
 
 export async function POST(request: Request) {
-  // 1) Conectar a Mongo
   await dbConnect()
 
   try {
-    // 2) Leer payload con manejo de errores mejorado
     let username, password;
     
     try {
-      // Verificar si hay cuerpo en la solicitud
       const text = await request.text();
       
       if (!text || text.trim() === '') {
@@ -21,8 +18,6 @@ export async function POST(request: Request) {
           { status: 400 }
         );
       }
-      
-      // Intentar parsear como JSON
       const body = JSON.parse(text);
       username = body.username;
       password = body.password;
@@ -34,7 +29,6 @@ export async function POST(request: Request) {
       );
     }
     
-    // 3) Validar
     if (!username || !password) {
       return NextResponse.json(
         { success: false, message: 'Usuario y contraseña son requeridos' },
@@ -42,7 +36,6 @@ export async function POST(request: Request) {
       )
     }
 
-    // 4) Buscar usuario
     const user = await User.findOne({ username })
     if (!user) {
       return NextResponse.json(
@@ -51,7 +44,6 @@ export async function POST(request: Request) {
       )
     }
 
-    // 5) Comparar contraseña
     const isValid = await user.comparePassword(password)
     if (!isValid) {
       return NextResponse.json(
@@ -60,14 +52,12 @@ export async function POST(request: Request) {
       )
     }
 
-    // 6) Firmar JWT
     const token = jwt.sign(
       { sub: user._id.toString(), username: user.username },
       process.env.SECRET_KEY!,
       { expiresIn: '2h' }
     )
 
-    // 7) Crear respuesta con cookies HTTP
     const response = NextResponse.json(
       {
         success: true,
@@ -78,29 +68,28 @@ export async function POST(request: Request) {
       { status: 200 }
     );
     
-    // Establecer cookies seguras desde el servidor para que el middleware las lea
     response.cookies.set('authToken', token, {
       path: '/',
-      maxAge: 60 * 60 * 2, // 2 horas
-      httpOnly: true, // No accesible desde JS (seguridad)
-      secure: process.env.NODE_ENV === 'production', // Solo HTTPS en producción
-      sameSite: 'lax', // Permitir envío de cookies en navegación
+      maxAge: 60 * 60 * 2, 
+      httpOnly: true, 
+      secure: process.env.NODE_ENV === 'production', 
+      sameSite: 'lax', 
     });
     
     response.cookies.set('isLoggedIn', 'true', {
       path: '/',
       maxAge: 60 * 60 * 2,
-      httpOnly: false, // Accesible desde JS
-      secure: process.env.NODE_ENV === 'production', // Solo HTTPS en producción
-      sameSite: 'lax', // Permitir envío de cookies en navegación
+      httpOnly: false, 
+      secure: process.env.NODE_ENV === 'production', 
+      sameSite: 'lax', 
     });
     
     response.cookies.set('adminUser', username, {
       path: '/',
       maxAge: 60 * 60 * 2,
-      httpOnly: false, // Accesible desde JS
-      secure: process.env.NODE_ENV === 'production', // Solo HTTPS en producción
-      sameSite: 'lax', // Permitir envío de cookies en navegación
+      httpOnly: false, 
+      secure: process.env.NODE_ENV === 'production', 
+      sameSite: 'lax', 
     });
     
     return response;
