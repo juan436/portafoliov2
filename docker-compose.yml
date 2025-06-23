@@ -7,22 +7,26 @@ services:
     restart: unless-stopped
     env_file:
       - ./.env
-    networks:
-      - proxy
     environment:
       - PORT=3000
       - NODE_ENV=production
+    networks:
+      - proxy
     labels:
       - "traefik.enable=true"
+      # Configuración para HTTPS
       - "traefik.http.routers.portfolio.rule=Host(`jvillegas-portafolio.jvserver.com`)"
       - "traefik.http.routers.portfolio.entrypoints=websecure"
       - "traefik.http.routers.portfolio.tls=true"
       - "traefik.http.routers.portfolio.tls.certresolver=myresolver"
+      # Puerto explícito para Next.js (crucial)
       - "traefik.http.services.portfolio.loadbalancer.server.port=3000"
+      # Configuración para HTTP con redirección a HTTPS
       - "traefik.http.routers.portfolio-http.rule=Host(`jvillegas-portafolio.jvserver.com`)"
       - "traefik.http.routers.portfolio-http.entrypoints=web"
       - "traefik.http.routers.portfolio-http.middlewares=redirect-to-https"
       - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
+      # Headers para CORS y cookies
       - "traefik.http.middlewares.portfolio-headers.headers.accesscontrolallowmethods=GET,OPTIONS,PUT,POST,DELETE"
       - "traefik.http.middlewares.portfolio-headers.headers.accesscontrolalloworigin=*"
       - "traefik.http.middlewares.portfolio-headers.headers.accesscontrolmaxage=100"
