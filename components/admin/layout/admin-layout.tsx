@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Home, LogOut } from "lucide-react"
-import { logout, redirectToLogin } from "@/lib/auth"
+import { logout, redirectToLogin } from "@/services/client/logout"
 
 interface AdminLayoutProps {
   children: React.ReactNode
