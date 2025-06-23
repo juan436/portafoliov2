@@ -83,18 +83,24 @@ export async function POST(request: Request) {
       path: '/',
       maxAge: 60 * 60 * 2, // 2 horas
       httpOnly: true, // No accesible desde JS (seguridad)
+      secure: process.env.NODE_ENV === 'production', // Solo HTTPS en producción
+      sameSite: 'lax', // Permitir envío de cookies en navegación
     });
     
     response.cookies.set('isLoggedIn', 'true', {
       path: '/',
       maxAge: 60 * 60 * 2,
       httpOnly: false, // Accesible desde JS
+      secure: process.env.NODE_ENV === 'production', // Solo HTTPS en producción
+      sameSite: 'lax', // Permitir envío de cookies en navegación
     });
     
     response.cookies.set('adminUser', username, {
       path: '/',
       maxAge: 60 * 60 * 2,
       httpOnly: false, // Accesible desde JS
+      secure: process.env.NODE_ENV === 'production', // Solo HTTPS en producción
+      sameSite: 'lax', // Permitir envío de cookies en navegación
     });
     
     return response;

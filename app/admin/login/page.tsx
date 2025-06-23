@@ -34,10 +34,16 @@ export default function LoginPage() {
     setError("")
 
     try {
-      // Usar el servicio de autenticación del cliente
       const result = await authenticateUser(credentials.username, credentials.password);
       
       if (result.success) {
+        // Establecer cookies client-side como respaldo
+        // aunque el API también las establece con httpOnly
+        document.cookie = "isLoggedIn=true; path=/";
+        document.cookie = `adminUser=${credentials.username}; path=/`;
+        
+        // No establecemos la cookie de authToken aquí, ya que debe ser httpOnly y se establece desde el servidor
+        
         // Redirección al dashboard
         window.location.href = "/admin/dashboard";
       } else {

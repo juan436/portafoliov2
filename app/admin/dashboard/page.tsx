@@ -1,10 +1,9 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { useRouter, useSearchParams } from "next/navigation"
+import { useSearchParams } from "next/navigation"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
-// Actualizar rutas de importación a la nueva estructura de carpetas
 import AdminLayout from "@/components/admin/layout/admin-layout"
 import ProjectsManager from "@/components/admin/managers/projects-manager"
 import ContentEditor from "@/components/admin/managers/content-editor"
@@ -14,12 +13,10 @@ import ExperienceManager from "@/components/admin/managers/experience-manager"
 import { Code, FileText, FileImage, Settings, User, Briefcase } from "lucide-react"
 
 export default function DashboardPage() {
-  const [isLoading, setIsLoading] = useState(true)
+  const [isLoading, setIsLoading] = useState(false)
   const [activeTab, setActiveTab] = useState("projects")
-  const router = useRouter()
   const searchParams = useSearchParams()
 
-  // Eliminar la verificación de autenticación, ya que el middleware se encarga de eso
   useEffect(() => {
     setIsLoading(false);
   }, []);
@@ -62,7 +59,6 @@ export default function DashboardPage() {
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-6">Panel de Administración</h1>
 
-          {/* Navegación principal */}
           <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
             <TabsList className="bg-black/40 border border-blue-700/20 w-full justify-start flex-wrap">
               <TabsTrigger
@@ -104,7 +100,6 @@ export default function DashboardPage() {
           </Tabs>
         </div>
 
-        {/* Contenido principal */}
         <div className="bg-black/20 border border-blue-700/20 rounded-lg p-6">
           {activeTab === "projects" && <ProjectsManager />}
           {activeTab === "skills" && <SkillsManager />}

@@ -19,6 +19,13 @@ services:
       - "traefik.http.routers.portfolio-http.entrypoints=web"
       - "traefik.http.routers.portfolio-http.middlewares=redirect-to-https"
       - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
+      # Configuración para preservar cookies y cabeceras
+      - "traefik.http.middlewares.portfolio-headers.headers.accesscontrolallowmethods=GET,OPTIONS,PUT,POST,DELETE"
+      - "traefik.http.middlewares.portfolio-headers.headers.accesscontrolalloworigin=*"
+      - "traefik.http.middlewares.portfolio-headers.headers.accesscontrolmaxage=100"
+      - "traefik.http.middlewares.portfolio-headers.headers.addvaryheader=true"
+      # Aplicar middleware de cabeceras a rutas
+      - "traefik.http.routers.portfolio.middlewares=portfolio-headers"
     expose:
       - 3000
 
