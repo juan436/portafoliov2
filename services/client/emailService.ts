@@ -34,27 +34,18 @@ export const sendContactForm = async (formData: ContactFormData): Promise<EmailR
   try {
     console.log('Enviando formulario a:', `${EMAIL_API_URL}/send`);
     
-    // Primero verificamos si el servidor acepta solicitudes CORS con una solicitud OPTIONS
-    try {
-      const checkResponse = await fetch(`${EMAIL_API_URL}/send`, {
-        method: 'OPTIONS',
-        headers: {
-          'Origin': window.location.origin,
-          'Access-Control-Request-Method': 'POST',
-          'Access-Control-Request-Headers': 'Content-Type, X-API-KEY'
-        }
-      });
-      
-      if (!checkResponse.ok) {
-        console.warn('La verificación CORS falló, pero intentaremos enviar la solicitud de todos modos');
-      } else {
-        console.log('Verificación CORS exitosa');
-      }
-    } catch (error) {
-      console.warn('Error al verificar CORS, continuando con la solicitud principal:', error);
-    }
+    // Preparamos los datos para enviar
+    const requestData = {
+      clientName: formData.name,
+      clientEmail: formData.email,
+      subject: formData.subject,
+      message: formData.message,
+      language: formData.language || 'es'
+    };
     
-    // Ahora enviamos la solicitud real
+    console.log('Datos a enviar:', requestData);
+    
+    // Enviamos la solicitud POST
     const response = await fetch(`${EMAIL_API_URL}/send`, {
       method: 'POST',
       headers: {
@@ -63,16 +54,12 @@ export const sendContactForm = async (formData: ContactFormData): Promise<EmailR
         'Accept': 'application/json',
         'Origin': window.location.origin
       },
-      body: JSON.stringify({
-        clientName: formData.name,
-        clientEmail: formData.email,
-        subject: formData.subject,
-        message: formData.message,
-        language: formData.language || 'es'
-      }),
+      body: JSON.stringify(requestData),
       mode: 'cors',
-      credentials: 'omit' // Cambiado a 'omit' para evitar problemas de CORS
+      credentials: 'omit' // Mantener 'omit' para evitar problemas de CORS
     });
+    
+    console.log('Respuesta recibida:', response.status, response.statusText);
     
     // Si la respuesta no es JSON, manejar como texto
     const contentType = response.headers.get('content-type');
@@ -80,9 +67,10 @@ export const sendContactForm = async (formData: ContactFormData): Promise<EmailR
     
     if (contentType && contentType.includes('application/json')) {
       data = await response.json();
+      console.log('Datos JSON recibidos:', data);
     } else {
       const text = await response.text();
-      console.error('Respuesta no JSON:', text);
+      console.log('Respuesta texto recibida:', text);
       data = { message: text };
     }
     
@@ -94,7 +82,7 @@ export const sendContactForm = async (formData: ContactFormData): Promise<EmailR
         return {
           status: 'error',
           message: 'El servidor no permite este tipo de solicitud. Por favor, contacta al administrador del sitio.',
-          errors: ['Método no permitido']
+          errors: ['Método no permitido (405). Asegúrate de que el servidor acepta solicitudes POST.']
         };
       }
       
@@ -111,9 +99,11 @@ export const sendContactForm = async (formData: ContactFormData): Promise<EmailR
     };
   } catch (error) {
     console.error('Error al enviar el formulario:', error);
+    
+    const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
     return {
       status: 'error',
-      message: error instanceof Error ? error.message : 'Error desconocido al enviar el mensaje'
+      message: errorMessage
     };
   }
 };
@@ -130,16 +120,20 @@ export const checkEmailServiceHealth = async (): Promise<boolean> => {
       method: 'GET',
       headers: {
         'Accept': 'application/json',
-        'X-API-KEY': API_KEY
+        'X-API-KEY': API_KEY,
+        'Origin': window.location.origin
       },
-      mode: 'cors'
+      mode: 'cors',
+      credentials: 'omit'
     });
+    
+    console.log('Respuesta de health check:', response.status, response.statusText);
     
     // Manejar respuesta no JSON
     const contentType = response.headers.get('content-type');
     if (contentType && contentType.includes('application/json')) {
       const data = await response.json();
-      return data.status === 'OK';
+      return data.status === 'OK' || data.status === 'WARNING';
     }
     
     return response.ok;
