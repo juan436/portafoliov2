@@ -16,8 +16,9 @@ interface EmailResponse {
   errors?: string[];
 }
 
+// Valores por defecto para desarrollo y producción
 const API_KEY = process.env.NEXT_PUBLIC_EMAIL_API_KEY || '';
-const EMAIL_API_URL = process.env.NEXT_PUBLIC_EMAIL_API_URL || 'http://localhost:8080';
+const EMAIL_API_URL = process.env.NEXT_PUBLIC_EMAIL_API_URL || 'https://mail-api.jvserver.com';
 
 /**
  * Envía los datos del formulario de contacto al servidor de correo
@@ -26,11 +27,14 @@ const EMAIL_API_URL = process.env.NEXT_PUBLIC_EMAIL_API_URL || 'http://localhost
  */
 export const sendContactForm = async (formData: ContactFormData): Promise<EmailResponse> => {
   try {
+    console.log('Enviando formulario a:', `${EMAIL_API_URL}/send`);
+    
     const response = await fetch(`${EMAIL_API_URL}/send`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'X-API-KEY': API_KEY
+        'X-API-KEY': API_KEY,
+        'Accept': 'application/json'
       },
       body: JSON.stringify({
         clientName: formData.name,
@@ -38,16 +42,28 @@ export const sendContactForm = async (formData: ContactFormData): Promise<EmailR
         subject: formData.subject,
         message: formData.message,
         language: formData.language || 'es'
-      })
+      }),
+      mode: 'cors',
+      credentials: 'same-origin'
     });
     
-    const data = await response.json();
+    // Si la respuesta no es JSON, manejar como texto
+    const contentType = response.headers.get('content-type');
+    let data;
+    
+    if (contentType && contentType.includes('application/json')) {
+      data = await response.json();
+    } else {
+      const text = await response.text();
+      console.error('Respuesta no JSON:', text);
+      data = { message: text };
+    }
     
     if (!response.ok) {
-      console.error('Error al enviar el formulario:', data);
+      console.error(`Error al enviar el formulario: ${response.status} ${response.statusText}`, data);
       return {
         status: 'error',
-        message: data.message || 'Error al enviar el mensaje',
+        message: data.message || `Error ${response.status}: ${response.statusText}`,
         errors: data.errors || []
       };
     }
@@ -78,12 +94,19 @@ export const checkEmailServiceStatus = async (): Promise<boolean> => {
     const response = await fetch(`${EMAIL_API_URL}/health`, {
       method: 'GET',
       headers: {
-        'Content-Type': 'application/json'
-      }
+        'Accept': 'application/json'
+      },
+      mode: 'cors'
     });
     
-    const data = await response.json();
-    return data.status === 'OK';
+    // Manejar respuesta no JSON
+    const contentType = response.headers.get('content-type');
+    if (contentType && contentType.includes('application/json')) {
+      const data = await response.json();
+      return data.status === 'OK';
+    }
+    
+    return response.ok;
   } catch (error) {
     console.error('Error al verificar el estado del servicio de correo:', error);
     return false;
