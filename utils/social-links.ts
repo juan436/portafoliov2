@@ -9,7 +9,7 @@ const WHATSAPP_NUMBER = "584125086548";
 export const SOCIAL_LINKS = {
   GITHUB: "https://github.com/juan436",
   LINKEDIN: "https://www.linkedin.com/in/juan-villegas-aaa05b20a/",
-  EMAIL: "mailto:juancvillefer@gmail.com"
+  TWITTER: "https://x.com/juanVillegas80",
 };
 
 // Clave para las traducciones de mensajes de WhatsApp

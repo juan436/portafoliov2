@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
@@ -36,10 +36,22 @@ export function ContactForm({ translatedTexts }: ContactFormProps) {
     setFormData((prev) => ({ ...prev, [name]: value }))
   }
 
+  useEffect(() => {
+    if (status === "success" || status === "error") {
+      const timer = setTimeout(() => {
+        setStatus("idle");
+        setResponseMessage("");
+      }, 4000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [status]);
+
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setStatus('loading')
-    
+
     try {
       const response = await sendContactForm({
         name: formData.name,
@@ -48,7 +60,7 @@ export function ContactForm({ translatedTexts }: ContactFormProps) {
         message: formData.message,
         language: language.code
       })
-      
+
       if (response.status === 'success') {
         setStatus('success')
         setResponseMessage(response.message)
@@ -62,7 +74,7 @@ export function ContactForm({ translatedTexts }: ContactFormProps) {
       setStatus('error')
       setResponseMessage("Error al conectar con el servidor. Por favor, inténtalo de nuevo más tarde.")
     }
-    
+
     // Resetear el estado después de 5 segundos
     setTimeout(() => {
       if (status === 'success' || status === 'error') {
@@ -156,8 +168,8 @@ export function ContactForm({ translatedTexts }: ContactFormProps) {
             </div>
           )}
 
-          <Button 
-            type="submit" 
+          <Button
+            type="submit"
             disabled={status === 'loading'}
             className="w-full bg-blue-700 hover:bg-blue-800 disabled:bg-blue-700/50"
           >

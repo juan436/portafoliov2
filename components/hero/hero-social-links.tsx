@@ -1,7 +1,7 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import { Github, Linkedin, Mail } from "lucide-react"
+import { Github, Linkedin, X } from "lucide-react"
 import { WhatsappIcon } from "@/components/icons/whatsapp-icon"
 import { openWhatsAppWithMessage, SOCIAL_LINKS } from "@/utils/social-links"
 import { useLanguage } from "@/hooks/use-language"
@@ -18,9 +18,9 @@ export function HeroSocialLinks() {
 
   return (
     <div className="flex gap-4 mt-8">
-      <Button 
-        variant="ghost" 
-        size="icon" 
+      <Button
+        variant="ghost"
+        size="icon"
         className="rounded-full hover:bg-blue-700/10 hover:text-blue-500"
         asChild
       >
@@ -28,10 +28,10 @@ export function HeroSocialLinks() {
           <Github className="h-5 w-5" />
         </Link>
       </Button>
-      
-      <Button 
-        variant="ghost" 
-        size="icon" 
+
+      <Button
+        variant="ghost"
+        size="icon"
         className="rounded-full hover:bg-blue-700/10 hover:text-blue-500"
         asChild
       >
@@ -39,25 +39,23 @@ export function HeroSocialLinks() {
           <Linkedin className="h-5 w-5" />
         </Link>
       </Button>
-      
-      <Button 
-        variant="ghost" 
-        size="icon" 
-        className="rounded-full hover:bg-blue-700/10 hover:text-blue-500"
-        asChild
-      >
-        <Link href={SOCIAL_LINKS.EMAIL}>
-          <Mail className="h-5 w-5" />
-        </Link>
-      </Button>
-      
-      <Button 
-        variant="ghost" 
-        size="icon" 
+      <Button
+        variant="ghost"
+        size="icon"
         className="rounded-full hover:bg-green-700/10 hover:text-green-500"
         onClick={handleWhatsAppClick}
       >
         <WhatsappIcon className="h-5 w-5" />
+      </Button>
+      <Button
+        variant="ghost"
+        size="icon"
+        className="rounded-full hover:bg-blue-700/10 hover:text-blue-500"
+        asChild
+      >
+        <Link href={SOCIAL_LINKS.TWITTER} target="_blank" rel="noopener noreferrer">
+          <X className="h-5 w-5 scale-110" />
+        </Link>
       </Button>
     </div>
   )

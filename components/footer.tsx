@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion"
 import Link from "next/link"
-import { Github, Linkedin, Mail, ArrowUp } from "lucide-react"
+import { Github, Linkedin, ArrowUp, X } from "lucide-react"
 import { WhatsappIcon } from "@/components/icons/whatsapp-icon"
 import { Button } from "@/components/ui/button"
 import { useLanguage } from "@/hooks/use-language"
@@ -73,8 +73,8 @@ export default function Footer() {
             <Link href={SOCIAL_LINKS.LINKEDIN} target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:text-blue-500 transition-colors duration-300">
               <Linkedin className="h-6 w-6" />
             </Link>
-            <Link href={SOCIAL_LINKS.EMAIL} className="text-slate-400 hover:text-blue-500 transition-colors duration-300">
-              <Mail className="h-6 w-6" />
+            <Link href={SOCIAL_LINKS.TWITTER} target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:text-blue-500 transition-colors duration-300">
+              <X className="h-6 w-6 scale-110" />
             </Link>
             <button 
               onClick={handleWhatsAppClick} 
