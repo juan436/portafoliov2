@@ -2,7 +2,10 @@
  * Servicio para manejar la comunicación con el servidor de correo
  */
 
-interface ContactFormData {
+/**
+ * Datos del formulario de contacto
+ */
+export interface ContactFormData {
   name: string;
   email: string;
   subject: string;
@@ -10,7 +13,10 @@ interface ContactFormData {
   language?: string;
 }
 
-interface EmailResponse {
+/**
+ * Respuesta del servicio de correo electrónico
+ */
+export interface EmailResponse {
   status: 'success' | 'error';
   message: string;
   errors?: string[];
@@ -23,18 +29,39 @@ const EMAIL_API_URL = process.env.NEXT_PUBLIC_EMAIL_API_URL || 'https://mail-api
 /**
  * Envía los datos del formulario de contacto al servidor de correo
  * @param formData Datos del formulario de contacto
- * @returns Respuesta del servidor
  */
 export const sendContactForm = async (formData: ContactFormData): Promise<EmailResponse> => {
   try {
     console.log('Enviando formulario a:', `${EMAIL_API_URL}/send`);
     
+    // Primero verificamos si el servidor acepta solicitudes CORS con una solicitud OPTIONS
+    try {
+      const checkResponse = await fetch(`${EMAIL_API_URL}/send`, {
+        method: 'OPTIONS',
+        headers: {
+          'Origin': window.location.origin,
+          'Access-Control-Request-Method': 'POST',
+          'Access-Control-Request-Headers': 'Content-Type, X-API-KEY'
+        }
+      });
+      
+      if (!checkResponse.ok) {
+        console.warn('La verificación CORS falló, pero intentaremos enviar la solicitud de todos modos');
+      } else {
+        console.log('Verificación CORS exitosa');
+      }
+    } catch (error) {
+      console.warn('Error al verificar CORS, continuando con la solicitud principal:', error);
+    }
+    
+    // Ahora enviamos la solicitud real
     const response = await fetch(`${EMAIL_API_URL}/send`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'X-API-KEY': API_KEY,
-        'Accept': 'application/json'
+        'Accept': 'application/json',
+        'Origin': window.location.origin
       },
       body: JSON.stringify({
         clientName: formData.name,
@@ -44,7 +71,7 @@ export const sendContactForm = async (formData: ContactFormData): Promise<EmailR
         language: formData.language || 'es'
       }),
       mode: 'cors',
-      credentials: 'same-origin'
+      credentials: 'omit' // Cambiado a 'omit' para evitar problemas de CORS
     });
     
     // Si la respuesta no es JSON, manejar como texto
@@ -61,6 +88,16 @@ export const sendContactForm = async (formData: ContactFormData): Promise<EmailR
     
     if (!response.ok) {
       console.error(`Error al enviar el formulario: ${response.status} ${response.statusText}`, data);
+      
+      // Si es un error de método no permitido, proporcionar información más específica
+      if (response.status === 405) {
+        return {
+          status: 'error',
+          message: 'El servidor no permite este tipo de solicitud. Por favor, contacta al administrador del sitio.',
+          errors: ['Método no permitido']
+        };
+      }
+      
       return {
         status: 'error',
         message: data.message || `Error ${response.status}: ${response.statusText}`,
@@ -73,28 +110,27 @@ export const sendContactForm = async (formData: ContactFormData): Promise<EmailR
       message: data.message || 'Mensaje enviado correctamente'
     };
   } catch (error) {
-    console.error('Error de conexión al servicio de correo:', error);
-    // Mostrar más detalles sobre el error para depuración
-    if (error instanceof Error) {
-      console.error('Detalles del error:', error.message);
-    }
+    console.error('Error al enviar el formulario:', error);
     return {
       status: 'error',
-      message: 'Error de conexión al servicio de correo. Por favor, inténtalo de nuevo más tarde.'
+      message: error instanceof Error ? error.message : 'Error desconocido al enviar el mensaje'
     };
   }
 };
 
 /**
- * Verifica si el servicio de correo está funcionando
- * @returns Estado del servicio
+ * Verifica el estado del servicio de correo
+ * @returns true si el servicio está funcionando, false en caso contrario
  */
-export const checkEmailServiceStatus = async (): Promise<boolean> => {
+export const checkEmailServiceHealth = async (): Promise<boolean> => {
   try {
+    console.log('Verificando estado del servicio de correo:', `${EMAIL_API_URL}/health`);
+    
     const response = await fetch(`${EMAIL_API_URL}/health`, {
       method: 'GET',
       headers: {
-        'Accept': 'application/json'
+        'Accept': 'application/json',
+        'X-API-KEY': API_KEY
       },
       mode: 'cors'
     });
