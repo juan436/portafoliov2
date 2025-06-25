@@ -17,6 +17,7 @@ export default function ExperienceManager() {
     editMode,
     isCreatingNewExperience,
     isDeleteDialogOpen,
+    isLoading,
     setSelectedExperience,
     setEditMode,
     addNewExperience,
@@ -74,6 +75,7 @@ export default function ExperienceManager() {
                   onSave={handleSaveEdit}
                   onCancel={handleCancelEdit}
                   isNewExperience={isCreatingNewExperience}
+                  isLoading={isLoading}
                 />
               ) : isCreatingNewExperience ? (
                 <ExperienceForm
@@ -89,6 +91,7 @@ export default function ExperienceManager() {
                   onSave={handleSaveEdit}
                   onCancel={handleCancelEdit}
                   isNewExperience={true}
+                  isLoading={isLoading}
                 />
               ) : (
                 <div className="bg-black/20 border border-blue-700/10 rounded-md p-8 flex flex-col items-center justify-center h-full">

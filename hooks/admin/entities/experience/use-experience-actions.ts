@@ -22,6 +22,7 @@ export function useExperienceActions() {
   const [selectedExperience, setSelectedExperience] = useState<Experience | null>(null);
   const [editMode, setEditMode] = useState(false);
   const [isCreatingNewExperience, setIsCreatingNewExperience] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   // Estado para el diálogo de confirmación de eliminación
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -79,6 +80,7 @@ export function useExperienceActions() {
    * Crea una nueva experiencia
    */
   const handleCreateExperience = useCallback(async (experience: Omit<Experience, "_id">) => {
+    setIsLoading(true);
     try {
       const result = await createExperienceItem(experience);
       
@@ -109,6 +111,8 @@ export function useExperienceActions() {
       console.error("Error al crear experiencia:", error);
       toastNotifications.showErrorToast("Error", "Ocurrió un error al crear la experiencia.");
       return false;
+    } finally {
+      setIsLoading(false);
     }
   }, [createExperienceItem, experienceContent, toastNotifications]);
 
@@ -116,13 +120,14 @@ export function useExperienceActions() {
    * Guarda los cambios en la experiencia actual
    */
   const handleSaveEdit = useCallback(async (updatedExperience: Experience) => {
-    if (isCreatingNewExperience) {
-      // Si es una nueva experiencia, la creamos
-      const { isNew, _modifiedFields, ...experienceData } = updatedExperience;
-      return handleCreateExperience(experienceData);
-    } else if (updatedExperience._id) {
-      // Si es una experiencia existente, la actualizamos
-      try {
+    setIsLoading(true);
+    try {
+      if (isCreatingNewExperience) {
+        // Si es una nueva experiencia, la creamos
+        const { isNew, _modifiedFields, ...experienceData } = updatedExperience;
+        return await handleCreateExperience(experienceData);
+      } else if (updatedExperience._id) {
+        // Si es una experiencia existente, la actualizamos
         // Extraer la lista de campos modificados y eliminarla del objeto
         const { _modifiedFields = [], ...experienceData } = updatedExperience;
         
@@ -149,12 +154,7 @@ export function useExperienceActions() {
         const success = await updateExperienceItem(updatedExperience._id, dataToUpdate as Experience);
         
         if (success) {
-          // Actualizar el estado local
-          const updatedExperiences = experienceContent.map(exp => 
-            exp._id === updatedExperience._id ? updatedExperience : exp
-          );
-          
-          setExperienceContent(updatedExperiences);
+          // Actualizar el estado local para reflejar la actualización exitosa
           setSelectedExperience(updatedExperience);
           setEditMode(false);
           toastNotifications.showUpdatedToast("Experiencia");
@@ -163,14 +163,16 @@ export function useExperienceActions() {
           toastNotifications.showErrorUpdatingToast("experiencia");
           return false;
         }
-      } catch (error) {
-        console.error("Error al actualizar experiencia:", error);
-        toastNotifications.showErrorToast("Error", "Ocurrió un error al actualizar la experiencia.");
-        return false;
       }
+      return false;
+    } catch (error) {
+      console.error("Error al guardar experiencia:", error);
+      toastNotifications.showErrorToast("Error", "Ocurrió un error al guardar la experiencia.");
+      return false;
+    } finally {
+      setIsLoading(false);
     }
-    return false;
-  }, [isCreatingNewExperience, handleCreateExperience, updateExperienceItem, experienceContent, toastNotifications]);
+  }, [handleCreateExperience, isCreatingNewExperience, toastNotifications, updateExperienceItem]);
 
   /**
    * Elimina una experiencia
@@ -230,16 +232,12 @@ export function useExperienceActions() {
   }, [experienceToDelete, handleDeleteExperience, handleCloseDeleteDialog]);
 
   return {
-    // Estado
     experienceContent,
     selectedExperience,
     editMode,
     isCreatingNewExperience,
     isDeleteDialogOpen,
-    experienceToDelete,
-    
-    // Acciones
-    setExperienceContent: handleExperienceChange,
+    isLoading,
     setSelectedExperience,
     setEditMode,
     addNewExperience,
