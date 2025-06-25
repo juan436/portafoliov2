@@ -71,7 +71,33 @@ export function renderDevIcon(
       ></i>
     );
   }
-
+  // Caso especial para Vercel
+  else if (iconName === "vercel") {
+    return (
+      <i
+        className={`devicon-vercel-${colored ? "original" : "line"} ${className}`}
+        style={baseStyle}
+      ></i>
+    );
+  }
+  // Caso especial para WordPress
+  else if (iconName === "wordpress") {
+    return (
+      <i
+        className={`devicon-wordpress-${colored ? "plain-wordmark" : "plain"} ${className}`}
+        style={baseStyle}
+      ></i>
+    );
+  }
+  // Caso especial para Prisma
+  else if (iconName === "prisma") {
+    return (
+      <i
+        className={`devicon-prisma-original${colored ? "-wordmark" : ""} ${className}`}
+        style={baseStyle}
+      ></i>
+    );
+  }
   // Casos especiales que usan sufijos diferentes
   const specialIcons: Record<string, string> = {
     nestjs: "plain-wordmark",
