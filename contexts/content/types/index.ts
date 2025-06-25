@@ -55,6 +55,7 @@ export type Project = {
   demo: string
   tags?: string[]
   createdAt?: string
+  _modifiedFields?: string[]
   translations?: {
     [key in TranslationLanguages]?: {
       title?: string

@@ -128,7 +128,15 @@ export function useProjectsActions(initialCategory: ProjectCategory = 'fullstack
     } 
     // Si estamos editando un proyecto existente
     else {
-      const success = await updateProjectItem(updatedProject.id.toString(), updatedProject, activeCategory);
+      console.log("Enviando proyecto para actualizar:", updatedProject);
+      console.log("Campos modificados:", updatedProject._modifiedFields);
+      
+      // Enviar el objeto completo con _modifiedFields
+      const success = await updateProjectItem(
+        updatedProject.id.toString(), 
+        updatedProject, // Enviamos el objeto completo con _modifiedFields
+        activeCategory
+      );
 
       if (success) {
         setSelectedProject(updatedProject);

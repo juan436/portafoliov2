@@ -97,7 +97,7 @@ export const createProjectItem = async (
  */
 export const updateProjectItem = async (
   id: string, 
-  project: Project, 
+  project: Partial<Project>, 
   category: 'fullstack' | 'backend',
   content: Content,
   setContent: Dispatch<SetStateAction<Content>>,
@@ -105,20 +105,34 @@ export const updateProjectItem = async (
 ): Promise<boolean> => {
   setIsLoading(true)
   try {
-    // Preparar proyecto para la API
+    // Extraer _modifiedFields del objeto
+    const { _modifiedFields = [], ...allData } = project;
+    
+    // Crear un objeto que solo contenga los campos modificados
+    const dataToUpdate: Partial<Project> = {};
+    
+    // Solo incluir los campos que han sido modificados
+    if (_modifiedFields && _modifiedFields.length > 0) {
+      _modifiedFields.forEach(field => {
+        if (field in allData && field !== '_modifiedFields') {
+          (dataToUpdate as any)[field] = allData[field as keyof typeof allData];
+        }
+      });
+    } else {
+      Object.assign(dataToUpdate, allData);
+    }
+    
     const projectToUpdate = {
-      ...project,
+      ...dataToUpdate,
       category
     }
 
-    // Llamar a la API para actualizar el proyecto
     const response = await updateProjectApi(id, projectToUpdate)
 
     if (response.success) {
-      // Actualizar el estado local
       if (category === 'fullstack') {
         const updatedProjects = content.projects.fullstack.map(p =>
-          p.id.toString() === id ? project : p
+          p.id.toString() === id ? { ...p, ...dataToUpdate } : p
         )
 
         setContent(prev => ({
@@ -130,7 +144,7 @@ export const updateProjectItem = async (
         }))
       } else {
         const updatedProjects = content.projects.backend.map(p =>
-          p.id.toString() === id ? project : p
+          p.id.toString() === id ? { ...p, ...dataToUpdate } : p
         )
 
         setContent(prev => ({
@@ -167,11 +181,9 @@ export const deleteProjectItem = async (
 ): Promise<boolean> => {
   setIsLoading(true)
   try {
-    // Llamar a la API para eliminar el proyecto
     const response = await deleteProjectApi(id)
 
     if (response.success) {
-      // Actualizar el estado local
       if (category === 'fullstack') {
         const filteredProjects = content.projects.fullstack.filter(
           p => p.id.toString() !== id

@@ -31,6 +31,7 @@ export default function ProjectForm({
   const [formData, setFormData] = useState<Project | null>(project)
   const [emptyFields, setEmptyFields] = useState<Record<string, boolean>>({})
   const [newTag, setNewTag] = useState("")
+  const [modifiedFields, setModifiedFields] = useState<string[]>([])
   const toastNotifications = useToastNotifications()
 
   // Actualizar el formData cuando cambia el proyecto seleccionado
@@ -47,8 +48,8 @@ export default function ProjectForm({
       setFormData(project);
     }
     
-    // Resetear los campos vacíos cuando cambia el proyecto
     setEmptyFields({});
+    setModifiedFields([]);
   }, [project, isNewProject]);
 
   // Manejar cambios en los inputs
@@ -60,6 +61,10 @@ export default function ProjectForm({
       [name]: value.trim() === ''
     }))
     
+    if (!modifiedFields.includes(name)) {
+      setModifiedFields(prev => [...prev, name]);
+    }
+    
     setFormData((prev) => prev ? { ...prev, [name]: value } : null)
   }
 
@@ -68,13 +73,17 @@ export default function ProjectForm({
     if (!newTag.trim() || !formData) return;
     const currentTags = Array.isArray(formData.tags) ? formData.tags : [];
     
-    // Verificar si la etiqueta ya existe
     if (currentTags.includes(newTag.trim())) {
       toastNotifications.showErrorToast(
         "Etiqueta duplicada",
         "Esta etiqueta ya está en la lista."
       );
       return;
+    }
+
+    // Marcar tags como modificado si no está ya en la lista
+    if (!modifiedFields.includes('tags')) {
+      setModifiedFields(prev => [...prev, 'tags']);
     }
 
     setFormData({
@@ -89,6 +98,11 @@ export default function ProjectForm({
     if (!formData) return;
     const currentTags = Array.isArray(formData.tags) ? formData.tags : [];
     
+    // Marcar tags como modificado si no está ya en la lista
+    if (!modifiedFields.includes('tags')) {
+      setModifiedFields(prev => [...prev, 'tags']);
+    }
+    
     setFormData({
       ...formData,
       tags: currentTags.filter((t) => t !== tag),
@@ -100,7 +114,6 @@ export default function ProjectForm({
     if (formData) {
       const processedData = { ...formData };
       
-      // Asegurarse de que tags sea un array
       if (!Array.isArray(processedData.tags)) {
         processedData.tags = [];
       }
@@ -129,6 +142,8 @@ export default function ProjectForm({
         if (!processedData.image) {
           processedData.image = project?.image;
         }
+      } else {
+        processedData._modifiedFields = modifiedFields;
       }
       
       onSave(processedData);
