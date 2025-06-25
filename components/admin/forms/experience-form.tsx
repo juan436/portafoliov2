@@ -157,17 +157,20 @@ export default function ExperienceForm({ experience, editMode, setEditMode, onSa
               : formData.company || "Sin empresa"}
           </CardDescription>
         </div>
-        {!editMode && (
-          <Button 
-            onClick={() => setEditMode(true)} 
-            className="bg-blue-700 hover:bg-blue-800 mt-2 w-24"
-          >
-            Editar
-          </Button>
-        )}
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
+          {!editMode && !isNewExperience && (
+            <div className="flex justify-end">
+              <Button
+                onClick={() => setEditMode(true)}
+                variant="outline"
+                className="border-blue-700/50 text-blue-500 hover:bg-blue-700/10"
+              >
+                Editar
+              </Button>
+            </div>
+          )}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="position">Cargo</Label>
@@ -234,33 +237,6 @@ export default function ExperienceForm({ experience, editMode, setEditMode, onSa
               disabled={!editMode}
             />
           </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="companyLogo">Logo de la empresa (URL)</Label>
-            <Input
-              id="companyLogo"
-              name="companyLogo"
-              value={formData.companyLogo || ""}
-              onChange={handleInputChange}
-              placeholder="https://example.com/logo.png"
-              className="bg-black/40"
-              disabled={!editMode}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="url">URL del proyecto o empresa</Label>
-            <Input
-              id="url"
-              name="url"
-              value={formData.url || ""}
-              onChange={handleInputChange}
-              placeholder="https://example.com"
-              className="bg-black/40"
-              disabled={!editMode}
-            />
-          </div>
-
           <div className="space-y-2">
             <Label className="flex items-center">
               <Tag className="mr-2 h-4 w-4" />
