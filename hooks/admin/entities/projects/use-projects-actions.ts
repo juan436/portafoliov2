@@ -26,6 +26,7 @@ export function useProjectsActions(initialCategory: ProjectCategory = 'fullstack
   const [lastSelectedBackend, setLastSelectedBackend] = useState<Project | null>(null);
   const [isTabChanging, setIsTabChanging] = useState(false);
   const [isCreatingNewProject, setIsCreatingNewProject] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   
   // Estado para el diálogo de confirmación de eliminación
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -108,42 +109,58 @@ export function useProjectsActions(initialCategory: ProjectCategory = 'fullstack
   const handleSaveEdit = useCallback(async (updatedProject: Project) => {
     // Si estamos creando un nuevo proyecto
     if (isCreatingNewProject) {
-      const newProject = await createProjectItem(updatedProject, activeCategory);
-      
-      if (newProject) {
-        setSelectedProject(newProject);
-        setEditMode(false);
-        setIsCreatingNewProject(false);
-        toastNotifications.showCreatedToast("Proyecto");
+      setIsLoading(true);
+      try {
+        const newProject = await createProjectItem(updatedProject, activeCategory);
         
-        // Actualizar la lista de proyectos correspondiente
-        if (activeCategory === "fullstack") {
-          setFullstackProjects(prev => [...prev, newProject]);
+        if (newProject) {
+          setSelectedProject(newProject);
+          setEditMode(false);
+          setIsCreatingNewProject(false);
+          toastNotifications.showCreatedToast("Proyecto");
+          
+          // Actualizar la lista de proyectos correspondiente
+          if (activeCategory === "fullstack") {
+            setFullstackProjects(prev => [...prev, newProject]);
+          } else {
+            setBackendProjects(prev => [...prev, newProject]);
+          }
         } else {
-          setBackendProjects(prev => [...prev, newProject]);
+          toastNotifications.showErrorCreatingToast("proyecto");
         }
-      } else {
-        toastNotifications.showErrorCreatingToast("proyecto");
+      } catch (error) {
+        console.error("Error al crear proyecto:", error);
+        toastNotifications.showErrorToast("Error", "Ocurrió un error al crear el proyecto.");
+      } finally {
+        setIsLoading(false);
       }
     } 
     // Si estamos editando un proyecto existente
     else {
-      console.log("Enviando proyecto para actualizar:", updatedProject);
-      console.log("Campos modificados:", updatedProject._modifiedFields);
-      
-      // Enviar el objeto completo con _modifiedFields
-      const success = await updateProjectItem(
-        updatedProject.id.toString(), 
-        updatedProject, // Enviamos el objeto completo con _modifiedFields
-        activeCategory
-      );
+      setIsLoading(true);
+      try {
+        console.log("Enviando proyecto para actualizar:", updatedProject);
+        console.log("Campos modificados:", updatedProject._modifiedFields);
+        
+        // Enviar el objeto completo con _modifiedFields
+        const success = await updateProjectItem(
+          updatedProject.id.toString(), 
+          updatedProject, // Enviamos el objeto completo con _modifiedFields
+          activeCategory
+        );
 
-      if (success) {
-        setSelectedProject(updatedProject);
-        setEditMode(false);
-        toastNotifications.showUpdatedToast("Proyecto");
-      } else {
-        toastNotifications.showErrorUpdatingToast("proyecto");
+        if (success) {
+          setSelectedProject(updatedProject);
+          setEditMode(false);
+          toastNotifications.showUpdatedToast("Proyecto");
+        } else {
+          toastNotifications.showErrorUpdatingToast("proyecto");
+        }
+      } catch (error) {
+        console.error("Error al actualizar proyecto:", error);
+        toastNotifications.showErrorToast("Error", "Ocurrió un error al actualizar el proyecto.");
+      } finally {
+        setIsLoading(false);
       }
     }
   }, [activeCategory, createProjectItem, updateProjectItem, isCreatingNewProject, toastNotifications]);
@@ -209,6 +226,7 @@ export function useProjectsActions(initialCategory: ProjectCategory = 'fullstack
     editMode,
     isCreatingNewProject,
     isDeleteDialogOpen,
+    isLoading,
     
     // Acciones
     setActiveCategory: handleTabChange,

@@ -20,6 +20,7 @@ export default function ProjectsManager() {
     editMode,
     isCreatingNewProject,
     isDeleteDialogOpen,
+    isLoading,
     setActiveCategory,
     setSelectedProject,
     setEditMode,
@@ -53,6 +54,8 @@ export default function ProjectsManager() {
           onSave={handleSaveEdit}
           onCancel={handleCancelEdit}
           isNewProject={isCreatingNewProject}
+          isLoading={isLoading}
+          category={activeCategory as 'fullstack' | 'backend'}
         />
       </div>
     </div>
