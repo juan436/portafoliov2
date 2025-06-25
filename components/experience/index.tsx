@@ -55,7 +55,7 @@ export default function Experience() {
   // Extraer años para la línea de tiempo
   const timelineYears = sortedExperience.map((exp) => {
     const match = exp.period.match(/\d{4}/g)
-    return match ? match[0] : ""
+    return match ? match[match.length - 1] : ""
   })
 
   // Navegación
@@ -162,7 +162,7 @@ export default function Experience() {
         </motion.div>
 
         {/* Línea de tiempo horizontal con animación */}
-        <ExperienceTimeline 
+        <ExperienceTimeline
           timelineRef={timelineRef}
           activeIndex={activeIndex}
           timelineYears={timelineYears}
@@ -198,7 +198,7 @@ export default function Experience() {
           </div>
 
           {/* Tarjetas de experiencia */}
-          <ExperienceCard 
+          <ExperienceCard
             sortedExperience={sortedExperience}
             activeIndex={activeIndex}
             handleMouseDown={handleMouseDown}
@@ -218,9 +218,8 @@ export default function Experience() {
             <button
               key={index}
               onClick={() => handleDotClick(index)}
-              className={`h-2 rounded-full transition-all duration-300 ${
-                index === activeIndex ? "bg-blue-500 w-8" : "bg-slate-700 w-2 hover:bg-slate-600"
-              }`}
+              className={`h-2 rounded-full transition-all duration-300 ${index === activeIndex ? "bg-blue-500 w-8" : "bg-slate-700 w-2 hover:bg-slate-600"
+                }`}
               aria-label={`${translatedTexts.viewExperience} ${index + 1}`}
             />
           ))}
@@ -237,9 +236,8 @@ export default function Experience() {
             variant="outline"
             size="sm"
             onClick={toggleAutoPlay}
-            className={`text-xs border-blue-700/50 ${
-              isAutoPlaying ? "bg-blue-900/30 text-blue-300" : "bg-black/50 text-blue-500"
-            } hover:bg-blue-900/30 hover:border-blue-500 transition-all`}
+            className={`text-xs border-blue-700/50 ${isAutoPlaying ? "bg-blue-900/30 text-blue-300" : "bg-black/50 text-blue-500"
+              } hover:bg-blue-900/30 hover:border-blue-500 transition-all`}
           >
             {isAutoPlaying ? translatedTexts.pause : translatedTexts.autoplay}
           </Button>
