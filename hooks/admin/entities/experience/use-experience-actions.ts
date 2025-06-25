@@ -118,12 +118,35 @@ export function useExperienceActions() {
   const handleSaveEdit = useCallback(async (updatedExperience: Experience) => {
     if (isCreatingNewExperience) {
       // Si es una nueva experiencia, la creamos
-      const { isNew, ...experienceData } = updatedExperience;
+      const { isNew, _modifiedFields, ...experienceData } = updatedExperience;
       return handleCreateExperience(experienceData);
     } else if (updatedExperience._id) {
       // Si es una experiencia existente, la actualizamos
       try {
-        const success = await updateExperienceItem(updatedExperience._id, updatedExperience);
+        // Extraer la lista de campos modificados y eliminarla del objeto
+        const { _modifiedFields = [], ...experienceData } = updatedExperience;
+        
+        // Si hay campos modificados, crear un objeto que solo contenga esos campos
+        let dataToUpdate: Partial<Experience> = { ...experienceData };
+        
+        // Si hay campos modificados especificados, solo enviar esos campos
+        if (_modifiedFields.length > 0) {
+          console.log("Campos modificados:", _modifiedFields);
+          dataToUpdate = { _id: updatedExperience._id };
+          
+          // Solo incluir los campos que fueron modificados
+          _modifiedFields.forEach(field => {
+            if (field === 'skills') {
+              dataToUpdate.skills = updatedExperience.skills;
+            } else if (field in updatedExperience) {
+              // Usar type assertion para acceder dinámicamente a las propiedades
+              (dataToUpdate as any)[field] = (updatedExperience as any)[field];
+            }
+          });
+        }
+        
+        // Usar type assertion para satisfacer el tipo esperado por la función
+        const success = await updateExperienceItem(updatedExperience._id, dataToUpdate as Experience);
         
         if (success) {
           // Actualizar el estado local

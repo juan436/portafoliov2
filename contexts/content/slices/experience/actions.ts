@@ -1,5 +1,5 @@
 import { Dispatch, SetStateAction } from "react"
-import { 
+import {
   updateContent,
   createExperience as createExperienceApi,
   updateExperience as updateExperienceApi,
@@ -77,23 +77,32 @@ export const createExperienceItem = async (
  * Actualiza una experiencia laboral existente
  */
 export const updateExperienceItem = async (
-  id: string, 
-  experience: Experience,
+  id: string,
+  experience: Partial<Experience>,
   setContent: Dispatch<SetStateAction<Content>>,
   setIsLoading: Dispatch<SetStateAction<boolean>>
 ): Promise<boolean> => {
   setIsLoading(true)
   try {
-    // Llamar a la API para actualizar la experiencia
-    const response = await updateExperienceApi(id, experience)
+    console.log("Actualizando experiencia con ID:", id);
+    console.log("Datos a actualizar:", experience);
+
+    // Extraer y eliminar _modifiedFields del objeto que enviaremos a la API
+    const { _modifiedFields, ...dataToUpdate } = experience;
+
+    // Llamar a la API para actualizar solo los campos necesarios
+    const response = await updateExperienceApi(id, dataToUpdate);
 
     if (response.success) {
       // Actualizar el estado local
       setContent(prev => ({
         ...prev,
-        experience: prev.experience.map(e => e._id === id ? experience : e)
+        experience: prev.experience.map(e => e._id === id ? {
+          ...e,
+          ...dataToUpdate,
+          _id: id // Asegurar que el ID se mantiene
+        } : e)
       }))
-
       setIsLoading(false)
       return true
     }
@@ -101,7 +110,7 @@ export const updateExperienceItem = async (
     setIsLoading(false)
     return false
   } catch (error) {
-    console.error("Error actualizando experiencia:", error)
+    console.error("Error updating experience:", error)
     setIsLoading(false)
     return false
   }

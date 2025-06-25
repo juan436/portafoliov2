@@ -21,6 +21,7 @@ export interface Experience {
   location?: string
   url?: string
   isNew?: boolean
+  _modifiedFields?: string[]
 }
 
 interface ExperienceFormProps {
@@ -37,6 +38,7 @@ export default function ExperienceForm({ experience, editMode, setEditMode, onSa
   const [formData, setFormData] = useState<Experience | null>(experience)
   const [newTechnology, setNewTechnology] = useState("")
   const [emptyFields, setEmptyFields] = useState<Record<string, boolean>>({})
+  const [modifiedFields, setModifiedFields] = useState<Record<string, boolean>>({})
 
   // Actualizar el formData cuando cambia la experiencia seleccionada
   useEffect(() => {
@@ -52,8 +54,9 @@ export default function ExperienceForm({ experience, editMode, setEditMode, onSa
       setFormData(experience);
     }
     
-    // Resetear los campos vacíos cuando cambia la experiencia
+    // Resetear los campos vacíos y modificados cuando cambia la experiencia
     setEmptyFields({});
+    setModifiedFields({});
   }, [experience, isNewExperience]);
 
   // Manejar cambios en los inputs
@@ -63,6 +66,12 @@ export default function ExperienceForm({ experience, editMode, setEditMode, onSa
     setEmptyFields(prev => ({
       ...prev,
       [name]: value.trim() === ''
+    }))
+    
+    // Marcar el campo como modificado
+    setModifiedFields(prev => ({
+      ...prev,
+      [name]: true
     }))
     
     setFormData((prev) => prev ? { ...prev, [name]: value } : null)
@@ -76,6 +85,12 @@ export default function ExperienceForm({ experience, editMode, setEditMode, onSa
         // Asegurar que skills siempre sea un array
         skills: formData.skills || []
       };
+      
+      // Si estamos editando (no es nueva experiencia), añadir información sobre campos modificados
+      if (!isNewExperience) {
+        processedData._modifiedFields = Object.keys(modifiedFields).filter(field => modifiedFields[field]);
+      }
+      
       // Validar datos mínimos
       if (!processedData.position.trim() || !processedData.company.trim() || !processedData.period.trim()) {
         toastNotifications.showErrorToast(

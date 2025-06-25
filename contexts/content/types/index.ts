@@ -123,6 +123,7 @@ export type Experience = {
   companyLogo?: string
   location?: string
   url?: string
+  _modifiedFields?: string[]
   translations?: {
     [key in TranslationLanguages]?: {
       position?: string
