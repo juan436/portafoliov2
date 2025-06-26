@@ -6,9 +6,9 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { Plus, Trash2, Code, Server, Database, Cpu } from "lucide-react"
+import { Plus, Trash2, Code, Server, Database, Cpu, Globe, Smartphone, Monitor, Cloud, Shield, LineChart, Settings, Layers, Briefcase, PenTool, FileCode, Zap } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
-import IconSelector from "@/components/admin/common/icon-selector"
+import ServiceIconSelector from "@/components/admin/common/service-icon-selector"
 import { useContent } from "@/contexts/content/use-content"
 
 // Definir la interfaz para un servicio
@@ -171,7 +171,32 @@ export default function ServicesForm({ services, onChange }: ServicesFormProps) 
         return <Database className="h-6 w-6 mx-auto text-blue-500" />
       case "Cpu":
         return <Cpu className="h-6 w-6 mx-auto text-blue-500" />
+      case "Globe":
+        return <Globe className="h-6 w-6 mx-auto text-blue-500" />
+      case "Smartphone":
+        return <Smartphone className="h-6 w-6 mx-auto text-blue-500" />
+      case "Monitor":
+        return <Monitor className="h-6 w-6 mx-auto text-blue-500" />
+      case "Cloud":
+        return <Cloud className="h-6 w-6 mx-auto text-blue-500" />
+      case "Shield":
+        return <Shield className="h-6 w-6 mx-auto text-blue-500" />
+      case "LineChart":
+        return <LineChart className="h-6 w-6 mx-auto text-blue-500" />
+      case "Settings":
+        return <Settings className="h-6 w-6 mx-auto text-blue-500" />
+      case "Layers":
+        return <Layers className="h-6 w-6 mx-auto text-blue-500" />
+      case "Briefcase":
+        return <Briefcase className="h-6 w-6 mx-auto text-blue-500" />
+      case "PenTool":
+        return <PenTool className="h-6 w-6 mx-auto text-blue-500" />
+      case "FileCode":
+        return <FileCode className="h-6 w-6 mx-auto text-blue-500" />
+      case "Zap":
+        return <Zap className="h-6 w-6 mx-auto text-blue-500" />
       default:
+        console.log(`Icono no reconocido: ${iconName}`);
         return <Code className="h-6 w-6 mx-auto text-blue-500" />
     }
   }
@@ -224,11 +249,11 @@ export default function ServicesForm({ services, onChange }: ServicesFormProps) 
           <div className="space-y-4 border border-blue-700/20 rounded-lg p-4">
             {activeServiceIndex >= 0 && activeServiceIndex < services.length ? (
               <>
-                <h3 className="font-medium mb-2">Editando: {services[activeServiceIndex].title || "Nuevo Servicio"}</h3>
+                <h3 className="font-medium mb-2">Editando: {services[activeServiceIndex]?.title || "Nuevo Servicio"}</h3>
                 <div className="space-y-2">
                   <Label htmlFor="service-icon">Icono</Label>
-                  <IconSelector
-                    selectedIcon={services[activeServiceIndex].icon}
+                  <ServiceIconSelector
+                    selectedIcon={services[activeServiceIndex]?.icon || "Code"}
                     onSelectIcon={(icon) => handleServiceChange("icon", icon)}
                   />
                 </div>
@@ -236,7 +261,7 @@ export default function ServicesForm({ services, onChange }: ServicesFormProps) 
                   <Label htmlFor="service-title">Título del Servicio</Label>
                   <Input
                     id="service-title"
-                    value={services[activeServiceIndex].title}
+                    value={services[activeServiceIndex]?.title || ""}
                     onChange={(e) => handleServiceChange("title", e.target.value)}
                     className="bg-black/40 border-blue-700/20"
                     placeholder="Ingresa el título del servicio"
@@ -246,7 +271,7 @@ export default function ServicesForm({ services, onChange }: ServicesFormProps) 
                   <Label htmlFor="service-description">Descripción</Label>
                   <Textarea
                     id="service-description"
-                    value={services[activeServiceIndex].description}
+                    value={services[activeServiceIndex]?.description || ""}
                     onChange={(e) => handleServiceChange("description", e.target.value)}
                     className="min-h-[100px] bg-black/40 border-blue-700/20"
                     placeholder="Ingresa la descripción del servicio"

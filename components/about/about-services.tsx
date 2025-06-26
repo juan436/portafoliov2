@@ -2,7 +2,24 @@
 
 import { motion } from "framer-motion"
 import { Card, CardContent } from "@/components/ui/card"
-import { Code2, Database, Server, Cpu } from "lucide-react"
+import { 
+  Code2, 
+  Database, 
+  Server, 
+  Cpu, 
+  Globe, 
+  Smartphone, 
+  Monitor, 
+  Cloud, 
+  Shield, 
+  LineChart, 
+  Settings, 
+  Layers, 
+  Briefcase,
+  PenTool,
+  FileCode,
+  Zap
+} from "lucide-react"
 
 interface Service {
   title: string
@@ -35,7 +52,32 @@ export function AboutServices({ services }: AboutServicesProps) {
         return <Database className="h-10 w-10 text-blue-500" />
       case "Cpu":
         return <Cpu className="h-10 w-10 text-blue-500" />
+      case "Globe":
+        return <Globe className="h-10 w-10 text-blue-500" />
+      case "Smartphone":
+        return <Smartphone className="h-10 w-10 text-blue-500" />
+      case "Monitor":
+        return <Monitor className="h-10 w-10 text-blue-500" />
+      case "Cloud":
+        return <Cloud className="h-10 w-10 text-blue-500" />
+      case "Shield":
+        return <Shield className="h-10 w-10 text-blue-500" />
+      case "LineChart":
+        return <LineChart className="h-10 w-10 text-blue-500" />
+      case "Settings":
+        return <Settings className="h-10 w-10 text-blue-500" />
+      case "Layers":
+        return <Layers className="h-10 w-10 text-blue-500" />
+      case "Briefcase":
+        return <Briefcase className="h-10 w-10 text-blue-500" />
+      case "PenTool":
+        return <PenTool className="h-10 w-10 text-blue-500" />
+      case "FileCode":
+        return <FileCode className="h-10 w-10 text-blue-500" />
+      case "Zap":
+        return <Zap className="h-10 w-10 text-blue-500" />
       default:
+        console.log(`Icono no reconocido en AboutServices: ${iconName}`);
         return <Code2 className="h-10 w-10 text-blue-500" />
     }
   }
