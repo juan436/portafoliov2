@@ -40,7 +40,8 @@ export default function SkillsManager() {
     openEditOtherSkillDialog,
     closeOtherSkillDialog,
     saveOtherSkill,
-    deleteOtherSkill
+    deleteOtherSkill,
+    isLoading
   } = useOtherSkillsActions();
 
   // Estado para los diálogos de confirmación
@@ -245,6 +246,8 @@ export default function SkillsManager() {
         description={currentOtherSkill
           ? "Actualiza el nombre de la habilidad adicional."
           : "Añade una nueva habilidad adicional a tu perfil."}
+        isLoading={isLoading}
+        submitLabel={isLoading ? "Guardando..." : "Guardar"}
       >
         <div className="grid gap-2">
           <Input
@@ -252,6 +255,7 @@ export default function SkillsManager() {
             onChange={(e) => setNewOtherSkillName(e.target.value)}
             placeholder="Ej: Gestión de equipos, Comunicación efectiva"
             className="bg-black/40 border-blue-700/20"
+            disabled={isLoading}
           />
         </div>
       </FormDialog>

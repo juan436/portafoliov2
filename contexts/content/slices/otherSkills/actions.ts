@@ -46,16 +46,15 @@ export const addOtherSkill = async (
         otherSkills: [...prev.otherSkills, response.data]
       }))
       
-      setIsLoading(false)
       return response.data
     }
     
-    setIsLoading(false)
     return null
   } catch (error) {
     console.error("Error añadiendo habilidad:", error)
-    setIsLoading(false)
     return null
+  } finally {
+    setIsLoading(false)
   }
 }
 
@@ -80,16 +79,15 @@ export const editOtherSkill = async (
         )
       }))
       
-      setIsLoading(false)
       return true
     }
     
-    setIsLoading(false)
     return false
   } catch (error) {
     console.error("Error editando habilidad:", error)
-    setIsLoading(false)
     return false
+  } finally {
+    setIsLoading(false)
   }
 }
 

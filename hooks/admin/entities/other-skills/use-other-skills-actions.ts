@@ -13,7 +13,8 @@ export function useOtherSkillsActions() {
     content, 
     addOtherSkill,
     editOtherSkill,
-    removeOtherSkill
+    removeOtherSkill,
+    isLoading
   } = useContent();
   const toastNotifications = useToastNotifications();
   
@@ -149,6 +150,7 @@ export function useOtherSkillsActions() {
     openEditOtherSkillDialog,
     closeOtherSkillDialog,
     saveOtherSkill,
-    deleteOtherSkill
+    deleteOtherSkill,
+    isLoading
   };
 }

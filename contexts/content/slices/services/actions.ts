@@ -13,13 +13,11 @@ export const updateServices = async (
   setContent: Dispatch<SetStateAction<Content>>,
   setIsLoading: Dispatch<SetStateAction<boolean>>
 ) => {
-  console.log("Services - Datos completos recibidos:", services);
   
   // Procesar cada servicio para extraer _modifiedFields y crear objetos con solo campos modificados
   const processedServices = services.map((service, index) => {
     // Extraer _modifiedFields si existe
     const modifiedFields = service._modifiedFields || [];
-    console.log(`Services - Item ${index} - Campos modificados:`, modifiedFields);
     
     // Crear una copia sin _modifiedFields para el estado local
     const { _modifiedFields, ...serviceForState } = service;
@@ -29,7 +27,6 @@ export const updateServices = async (
     
     // Si es un servicio nuevo, enviarlo completo
     if (isNewService) {
-      console.log(`Services - Item ${index} - Es un servicio NUEVO, enviando completo:`, serviceForState);
       return { serviceForState, fieldsToUpdate: serviceForState, hasChanges: true };
     }
     
@@ -47,12 +44,10 @@ export const updateServices = async (
         fieldsToUpdate[field] = serviceForState[field as keyof typeof serviceForState];
       });
       
-      console.log(`Services - Item ${index} - Enviando solo estos campos:`, fieldsToUpdate);
       return { serviceForState, fieldsToUpdate, hasChanges: true };
     }
     
     // Si no hay campos modificados, no incluir en la actualización
-    console.log(`Services - Item ${index} - No hay campos modificados, no se enviará al API`);
     return { serviceForState, fieldsToUpdate: null, hasChanges: false };
   });
   
@@ -69,51 +64,65 @@ export const updateServices = async (
   
   // Si no hay servicios con cambios, no hacer nada más
   if (servicesWithChanges.length === 0) {
-    console.log("Services - No hay servicios con campos modificados, no se envía nada al API");
     return;
   }
   
   setIsLoading(true);
   try {
     // Enviar solo los campos modificados de cada servicio al API
-    console.log("Services - Enviando al API:", servicesWithChanges);
     const response = await updateContent('services', servicesWithChanges);
     
     // Si hay servicios nuevos, actualizar sus IDs desde la respuesta del servidor
     if (response && response.data && response.data.services) {
-      console.log("Services - Respuesta del servidor con servicios:", response.data.services);
-      console.log("Services - Estado actual de servicios antes de actualizar IDs:", 
-        JSON.stringify(services.map(s => ({ id: s._id, title: s.title }))));
       
       // Actualizar el estado con los IDs de los servicios nuevos
       setContent(prev => {
+        // Crear un mapa de IDs existentes para evitar duplicados
+        const existingIds = new Set(prev.services
+          .filter(service => service._id)
+          .map(service => service._id?.toString()));
+        
+        console.log(`[updateServices] IDs existentes antes de actualizar:`, [...existingIds]);
+        
+        // Crear una copia del array de servicios
         const updatedServices = [...prev.services];
-        console.log("Services - Servicios en estado local:", 
-          JSON.stringify(updatedServices.map(s => ({ id: s._id, title: s.title }))));
         
         // Encontrar servicios sin ID en el estado local
         const servicesWithoutId = updatedServices.filter(service => !service._id);
-        console.log(`Services - Encontrados ${servicesWithoutId.length} servicios sin ID en el estado local`);
+        console.log(`[updateServices] Encontrados ${servicesWithoutId.length} servicios sin ID`);
         
         // Si hay servicios nuevos en la respuesta, asignar IDs
         if (servicesWithoutId.length > 0 && response.data.services.length > 0) {
-          // Para cada servicio sin ID, buscar su correspondiente en la respuesta
+          // Obtener solo los servicios nuevos de la respuesta (los últimos N elementos)
+          const newServicesFromServer = response.data.services.slice(-servicesWithoutId.length);
+          console.log(`[updateServices] Servicios nuevos del servidor:`, newServicesFromServer.map((s: Service) => s._id));
+          
+          // Para cada servicio sin ID, asignar un ID único de la respuesta
           let serverIndex = 0;
           for (let i = 0; i < updatedServices.length; i++) {
-            if (!updatedServices[i]._id && serverIndex < response.data.services.length) {
-              const newId = response.data.services[serverIndex]._id;
-              console.log(`Services - Actualizando servicio en posición ${i} (${updatedServices[i].title}) con ID: ${newId}`);
+            if (!updatedServices[i]._id && serverIndex < newServicesFromServer.length) {
+              const newId = newServicesFromServer[serverIndex]._id;
               
-              updatedServices[i] = {
-                ...updatedServices[i],
-                _id: newId
-              };
-              serverIndex++;
+              // Verificar que el ID no esté duplicado
+              if (!existingIds.has(newId?.toString())) {
+                console.log(`[updateServices] Asignando ID ${newId} al servicio en posición ${i}`);
+                
+                updatedServices[i] = {
+                  ...updatedServices[i],
+                  _id: newId
+                };
+                
+                // Agregar el nuevo ID al conjunto de IDs existentes
+                existingIds.add(newId?.toString());
+                serverIndex++;
+              } else {
+                console.warn(`[updateServices] Evitando duplicar ID ${newId}`);
+              }
             }
           }
           
-          console.log("Services - Estado final después de actualizar IDs:", 
-            JSON.stringify(updatedServices.map(s => ({ id: s._id, title: s.title }))));
+          console.log(`[updateServices] IDs después de actualizar:`, 
+            updatedServices.map(s => s._id));
         }
         
         return {
@@ -142,55 +151,51 @@ export const deleteService = async (
   setContent: Dispatch<SetStateAction<Content>>,
   setIsLoading: Dispatch<SetStateAction<boolean>>
 ): Promise<boolean> => {
-  console.log(`[deleteService/slice] Iniciando eliminación del servicio con ID: ${id}`);
-  console.log(`[deleteService/slice] Estado actual de servicios:`, content.services);
-  
-  // Verificar que el ID sea válido
   if (!id || id.trim() === '') {
-    console.error('[deleteService/slice] ID de servicio inválido');
     return false;
   }
   
-  // Guardar una copia del estado actual para posible restauración
   const originalContent = { ...content };
   
   // Actualizar el estado local inmediatamente para mejor UX
   setContent(prev => {
-    const updatedServices = prev.services.filter(service => service._id !== id);
-    console.log(`[deleteService/slice] Servicios después de filtrar:`, updatedServices);
+    // Usar toString() para asegurar comparación correcta de IDs
+    const updatedServices = prev.services.filter(service => {
+      // Solo filtrar si el servicio tiene un _id y coincide con el id a eliminar
+      if (!service._id) return true; // Mantener servicios sin ID
+      return service._id.toString() !== id.toString(); // Comparar como strings
+    });
+    
+    console.log(`[deleteService/slice] Servicios antes: ${prev.services.length}, después: ${updatedServices.length}`);
+    console.log(`[deleteService/slice] ID a eliminar: ${id}`);
+    console.log(`[deleteService/slice] IDs de servicios actuales:`, prev.services.map(s => s._id));
+    console.log(`[deleteService/slice] IDs después de filtrar:`, updatedServices.map(s => s._id));
+    
     return {
       ...prev,
       services: updatedServices
     };
   });
   
-  console.log(`[deleteService/slice] Estableciendo isLoading a true`);
   setIsLoading(true);
   
   try {
-    // Llamar a la API para eliminar el servicio
-    console.log(`[deleteService/slice] Llamando a apiDeleteService con ID: ${id}`);
     const result = await apiDeleteService(id);
-    console.log(`[deleteService/slice] Respuesta de apiDeleteService:`, result);
     
     if (!result.success) {
       // Si hay un error, revertir el cambio local
       console.error(`[deleteService/slice] Error eliminando servicio:`, result.message);
-      console.log(`[deleteService/slice] Restaurando estado original`);
-      setContent(prev => ({ ...originalContent })); // Restaurar el estado anterior
+      setContent(prev => ({ ...originalContent }));
       return false;
     }
     
-    console.log(`[deleteService/slice] Servicio eliminado con éxito`);
     return true;
   } catch (error) {
     console.error(`[deleteService/slice] Error:`, error);
     // Revertir el cambio local en caso de error
-    console.log(`[deleteService/slice] Restaurando estado original debido al error`);
     setContent(prev => ({ ...originalContent }));
     return false;
   } finally {
-    console.log(`[deleteService/slice] Estableciendo isLoading a false`);
     setIsLoading(false);
   }
 };

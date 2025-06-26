@@ -23,6 +23,9 @@ export type ContentContextType = {
   updateExperience: (experience: Experience[]) => void
   saveAllContent: () => boolean
   
+  // Método para eliminar servicios
+  deleteService: (id: string) => Promise<boolean>
+  
   // Métodos para OtherSkills
   addOtherSkill: (skill: OtherSkill) => Promise<OtherSkill | null>
   editOtherSkill: (id: string, updatedSkill: OtherSkill) => Promise<boolean>

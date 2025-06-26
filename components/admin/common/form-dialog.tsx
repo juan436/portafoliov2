@@ -10,6 +10,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
+import { Loader2 } from "lucide-react"
 
 interface FormDialogProps {
   isOpen: boolean
@@ -20,6 +21,7 @@ interface FormDialogProps {
   children: ReactNode
   submitLabel?: string
   cancelLabel?: string
+  isLoading?: boolean
 }
 
 export function FormDialog({
@@ -30,10 +32,11 @@ export function FormDialog({
   description,
   children,
   submitLabel = "Guardar",
-  cancelLabel = "Cancelar"
+  cancelLabel = "Cancelar",
+  isLoading = false
 }: FormDialogProps) {
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={isOpen} onOpenChange={(open) => !isLoading && !open && onClose()}>
       <DialogContent className="bg-black border-blue-700/20">
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
@@ -43,10 +46,15 @@ export function FormDialog({
           {children}
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={onClose}>
+          <Button variant="outline" onClick={onClose} disabled={isLoading}>
             {cancelLabel}
           </Button>
-          <Button onClick={onSubmit} className="bg-blue-700 hover:bg-blue-800">
+          <Button 
+            onClick={onSubmit} 
+            className="bg-blue-700 hover:bg-blue-800"
+            disabled={isLoading}
+          >
+            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             {submitLabel}
           </Button>
         </DialogFooter>

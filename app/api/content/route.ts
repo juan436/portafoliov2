@@ -59,11 +59,9 @@ export async function PATCH(request: Request) {
   try {
     const body = await request.json();
     
-    // Buscar contenido existente (siempre trabajamos con un solo registro)
     const existingContent = await Content.findOne();
     
     if (!existingContent) {
-      // Si no existe, crear nuevo
       const newContent = new Content(body);
       await newContent.save();
       
@@ -131,7 +129,6 @@ export async function PATCH(request: Request) {
     updateNestedFields(body, existingContent);
     
     await existingContent.save();
-    
     return NextResponse.json({ 
       success: true, 
       data: existingContent 
