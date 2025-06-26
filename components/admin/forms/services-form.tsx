@@ -8,6 +8,8 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Plus, Trash2, Code, Server, Database, Cpu } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
+import IconSelector from "@/components/admin/common/icon-selector"
+import { useContent } from "@/contexts/content/use-content"
 
 // Definir la interfaz para un servicio
 export interface Service {
@@ -15,6 +17,7 @@ export interface Service {
   description: string
   icon: string
   _id?: string
+  _modifiedFields?: string[] // Campo para rastrear campos modificados
 }
 
 interface ServicesFormProps {
@@ -24,6 +27,7 @@ interface ServicesFormProps {
 
 export default function ServicesForm({ services, onChange }: ServicesFormProps) {
   const { toast } = useToast()
+  const { deleteService: deleteServiceFromDB } = useContent()
   const [activeServiceIndex, setActiveServiceIndex] = useState(0)
 
   // Verificar que el índice activo sea válido cuando cambian los servicios
@@ -38,63 +42,121 @@ export default function ServicesForm({ services, onChange }: ServicesFormProps) 
 
   // Agregar nuevo servicio
   const addNewService = () => {
-    // Crear un nuevo servicio con valores vacíos (funcionarán como placeholders)
+    // Crear un nuevo servicio con valores por defecto
     const newService: Service = {
-      title: "",
-      description: "",
+      title: "Nuevo Servicio",
+      description: "Descripción del servicio",
       icon: "Code",
+      _modifiedFields: ["title", "description", "icon"] // Marcar todos los campos como modificados
     }
+    
+    // Añadir el nuevo servicio y actualizar el estado
     const updatedServices = [...services, newService]
     onChange(updatedServices)
+    
+    // Seleccionar el nuevo servicio
     setActiveServiceIndex(updatedServices.length - 1)
-
+    
+    // Mostrar notificación
     toast({
       title: "Servicio añadido",
-      description: "Se ha añadido un nuevo servicio. Edítalo para personalizarlo.",
-      variant: "default",
+      description: "Se ha añadido un nuevo servicio. Edita sus detalles.",
     })
   }
 
   // Eliminar servicio
-  const deleteService = (index: number, e?: React.MouseEvent) => {
+  const deleteService = async (index: number, e?: React.MouseEvent) => {
     // Evitar la propagación del evento si existe
     if (e) {
       e.stopPropagation()
     }
 
+    const serviceToDelete = services[index];
+    console.log(`[ServicesForm] Iniciando eliminación del servicio:`, serviceToDelete);
+    
     // Crear una copia del array sin el servicio a eliminar
     const updatedServices = [...services];
     updatedServices.splice(index, 1);
     
-    // Actualizar el estado
-    onChange(updatedServices);
-    
     // Ajustar el índice activo si es necesario
     if (updatedServices.length === 0) {
       setActiveServiceIndex(-1);
+      console.log(`[ServicesForm] No hay más servicios, índice activo: -1`);
     } else if (index === activeServiceIndex) {
       // Si eliminamos el servicio activo, seleccionar el anterior o el primero
-      setActiveServiceIndex(index > 0 ? index - 1 : 0);
+      const newIndex = index > 0 ? index - 1 : 0;
+      setActiveServiceIndex(newIndex);
+      console.log(`[ServicesForm] Nuevo índice activo: ${newIndex}`);
     } else if (index < activeServiceIndex) {
       // Si eliminamos un servicio antes del activo, ajustar el índice
-      setActiveServiceIndex(activeServiceIndex - 1);
+      const newIndex = activeServiceIndex - 1;
+      setActiveServiceIndex(newIndex);
+      console.log(`[ServicesForm] Ajustando índice activo a: ${newIndex}`);
     }
 
-    toast({
-      title: "Servicio eliminado",
-      description: "El servicio ha sido eliminado correctamente.",
-      variant: "default",
-    })
+    // Actualizar el estado local primero (para todos los casos)
+    console.log(`[ServicesForm] Actualizando estado local con servicios:`, updatedServices);
+    onChange(updatedServices);
+
+    // Si el servicio tiene un ID válido (ya existe en la BD), eliminarlo del backend
+    if (serviceToDelete._id && serviceToDelete._id.trim() !== '') {
+      console.log(`[ServicesForm] Servicio tiene ID válido: ${serviceToDelete._id}, llamando a deleteServiceFromDB`);
+      try {
+        console.log(`[ServicesForm] Antes de llamar a deleteServiceFromDB`);
+        const success = await deleteServiceFromDB(serviceToDelete._id);
+        console.log(`[ServicesForm] Resultado de deleteServiceFromDB:`, success);
+        
+        if (success) {
+          toast({
+            title: "Servicio eliminado",
+            description: "El servicio ha sido eliminado correctamente.",
+            variant: "default",
+          });
+        } else {
+          console.error(`[ServicesForm] La función deleteServiceFromDB devolvió false`);
+          toast({
+            title: "Error al eliminar",
+            description: "No se pudo eliminar el servicio del servidor.",
+            variant: "destructive",
+          });
+        }
+      } catch (error) {
+        console.error("[ServicesForm] Error eliminando servicio:", error);
+        toast({
+          title: "Error al eliminar",
+          description: "Ocurrió un error al eliminar el servicio.",
+          variant: "destructive",
+        });
+      }
+    } else {
+      console.log(`[ServicesForm] Servicio sin ID válido, solo eliminación local`);
+      // Si el servicio no tiene ID, solo era local
+      toast({
+        title: "Servicio eliminado",
+        description: "El servicio ha sido eliminado localmente.",
+        variant: "default",
+      });
+    }
   }
 
   // Manejar cambios en el servicio activo
-  const handleServiceChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value } = e.target
-    const updatedServices = [...services]
-    updatedServices[activeServiceIndex] = {
-      ...updatedServices[activeServiceIndex],
-      [name]: value,
-    }
+  const handleServiceChange = (field: keyof Service, value: string) => {
+    const updatedServices = services.map((service, index) => {
+      if (index === activeServiceIndex) {
+        // Crear o actualizar el array _modifiedFields
+        const currentModifiedFields = service._modifiedFields || [];
+        const updatedModifiedFields = currentModifiedFields.includes(field) 
+          ? currentModifiedFields 
+          : [...currentModifiedFields, field];
+        
+        return {
+          ...service,
+          [field]: value,
+          _modifiedFields: updatedModifiedFields
+        };
+      }
+      return service;
+    });
     onChange(updatedServices)
   }
 
@@ -164,12 +226,18 @@ export default function ServicesForm({ services, onChange }: ServicesFormProps) 
               <>
                 <h3 className="font-medium mb-2">Editando: {services[activeServiceIndex].title || "Nuevo Servicio"}</h3>
                 <div className="space-y-2">
+                  <Label htmlFor="service-icon">Icono</Label>
+                  <IconSelector
+                    selectedIcon={services[activeServiceIndex].icon}
+                    onSelectIcon={(icon) => handleServiceChange("icon", icon)}
+                  />
+                </div>
+                <div className="space-y-2">
                   <Label htmlFor="service-title">Título del Servicio</Label>
                   <Input
                     id="service-title"
-                    name="title"
                     value={services[activeServiceIndex].title}
-                    onChange={handleServiceChange}
+                    onChange={(e) => handleServiceChange("title", e.target.value)}
                     className="bg-black/40 border-blue-700/20"
                     placeholder="Ingresa el título del servicio"
                   />
@@ -178,27 +246,11 @@ export default function ServicesForm({ services, onChange }: ServicesFormProps) 
                   <Label htmlFor="service-description">Descripción</Label>
                   <Textarea
                     id="service-description"
-                    name="description"
                     value={services[activeServiceIndex].description}
-                    onChange={handleServiceChange}
+                    onChange={(e) => handleServiceChange("description", e.target.value)}
                     className="min-h-[100px] bg-black/40 border-blue-700/20"
                     placeholder="Ingresa la descripción del servicio"
                   />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="service-icon">Icono</Label>
-                  <select
-                    id="service-icon"
-                    name="icon"
-                    value={services[activeServiceIndex].icon}
-                    onChange={handleServiceChange}
-                    className="w-full p-2 rounded-md bg-black/40 border border-blue-700/20 focus:border-blue-500 outline-none"
-                  >
-                    <option value="Code">Código</option>
-                    <option value="Server">Servidor</option>
-                    <option value="Database">Base de Datos</option>
-                    <option value="Cpu">CPU/Hardware</option>
-                  </select>
                 </div>
               </>
             ) : (

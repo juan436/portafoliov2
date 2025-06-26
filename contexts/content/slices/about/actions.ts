@@ -9,19 +9,44 @@ import { Content, About } from "../../types"
  * @param setIsLoading Función para actualizar el estado de carga
  */
 export const updateAbout = async (
-  about: About,
+  about: About & { _modifiedFields?: string[] },
   setContent: Dispatch<SetStateAction<Content>>,
   setIsLoading: Dispatch<SetStateAction<boolean>>
 ) => {
-  // Actualizar inmediatamente el estado local para evitar el parpadeo
-  setContent((prev) => ({ ...prev, about: { ...about } }));
+  console.log("About - Datos completos recibidos:", about);
   
-  // Luego actualizar en el servidor
-  setIsLoading(true)
-  try {
-    await updateContent('about', about)
-  } catch (error) {
-    console.error("Error actualizando about:", error)
+  // Extraer _modifiedFields para uso local
+  const modifiedFields = about._modifiedFields || [];
+  console.log("About - Campos modificados:", modifiedFields);
+  
+  // Crear una copia sin _modifiedFields para el estado local
+  const { _modifiedFields, ...aboutForState } = about;
+  
+  // Actualizar el estado local sin incluir _modifiedFields
+  setContent(prev => ({ ...prev, about: aboutForState }));
+  
+  // Si no hay campos modificados, no hacer nada más
+  if (modifiedFields.length === 0) {
+    console.log("About - No hay campos modificados, no se envía nada al API");
+    return;
   }
-  setIsLoading(false)
+  
+  setIsLoading(true);
+  try {
+    // Crear un objeto que solo contenga los campos modificados
+    const fieldsToUpdate: Record<string, any> = {};
+    
+    // Añadir solo los campos modificados
+    modifiedFields.forEach(field => {
+      fieldsToUpdate[field] = aboutForState[field as keyof typeof aboutForState];
+    });
+    
+    console.log("About - Enviando solo estos campos al API:", fieldsToUpdate);
+    
+    // Pasar solo los campos modificados al servicio de API
+    await updateContent('about', fieldsToUpdate);
+  } catch (error) {
+    console.error("Error actualizando about:", error);
+  }
+  setIsLoading(false);
 }

@@ -76,8 +76,48 @@ export async function PATCH(request: Request) {
     // Función recursiva para actualizar campos anidados
     const updateNestedFields = (source: any, target: any) => {
       Object.keys(source).forEach(key => {
+        // Caso especial para arrays (como services)
+        if (source[key] && Array.isArray(source[key])) {
+          console.log(`PATCH - Procesando array para campo ${key}:`, source[key]);
+          
+          // Si es la sección de servicios, manejar de forma especial
+          if (key === 'services') {
+            // Si no existe el array en el target, crearlo
+            if (!target[key]) target[key] = [];
+            
+            // Para cada elemento en el array fuente
+            source[key].forEach((item: any) => {
+              // Si el item tiene ID, buscar y actualizar
+              if (item._id) {
+                const existingIndex = target[key].findIndex(
+                  (existing: any) => existing._id?.toString() === item._id.toString()
+                );
+                
+                if (existingIndex >= 0) {
+                  // Actualizar el item existente
+                  console.log(`PATCH - Actualizando servicio existente con ID ${item._id}`);
+                  target[key][existingIndex] = {
+                    ...target[key][existingIndex],
+                    ...item
+                  };
+                } else {
+                  // Agregar como nuevo si no existe
+                  console.log(`PATCH - Agregando servicio con ID ${item._id} (no encontrado en existentes)`);
+                  target[key].push(item);
+                }
+              } else {
+                // Si no tiene ID, es un nuevo item
+                console.log(`PATCH - Agregando nuevo servicio sin ID`);
+                target[key].push(item);
+              }
+            });
+          } else {
+            // Para otros arrays, reemplazar directamente
+            target[key] = source[key];
+          }
+        } 
         // Si es un objeto y no un array, actualiza recursivamente
-        if (source[key] && typeof source[key] === 'object' && !Array.isArray(source[key])) {
+        else if (source[key] && typeof source[key] === 'object') {
           if (!target[key]) target[key] = {};
           updateNestedFields(source[key], target[key]);
         } else {

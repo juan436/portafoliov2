@@ -1,6 +1,6 @@
 "use client"
 
-import React from "react"
+import React, { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -12,6 +12,7 @@ export interface HeroContent {
   subtitle: string
   description: string
   profileImage: string
+  _modifiedFields?: string[] // Campo para rastrear campos modificados
 }
 
 interface HeroFormProps {
@@ -20,13 +21,40 @@ interface HeroFormProps {
 }
 
 export default function HeroForm({ content, onChange }: HeroFormProps) {
+  // Estado para rastrear los campos modificados
+  const [modifiedFields, setModifiedFields] = useState<string[]>([]);
+  
+  // Estado local para el contenido
+  const [localContent, setLocalContent] = useState<HeroContent>({...content});
+  
+  // Actualizar el estado local cuando cambia el contenido desde props
+  useEffect(() => {
+    setLocalContent({...content});
+    // Resetear los campos modificados cuando se recibe nuevo contenido desde props
+    setModifiedFields([]);
+  }, [content]);
+
   // Manejar cambios en los campos del formulario
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
-    onChange({
-      ...content,
+    
+    // Actualizar el estado local
+    setLocalContent(prev => ({
+      ...prev,
       [name]: value,
-    })
+    }));
+    
+    // Registrar el campo como modificado si no está ya en la lista
+    if (!modifiedFields.includes(name)) {
+      setModifiedFields(prev => [...prev, name]);
+    }
+    
+    // Enviar el contenido actualizado con la lista de campos modificados
+    onChange({
+      ...localContent,
+      [name]: value,
+      _modifiedFields: [...modifiedFields, name].filter((v, i, a) => a.indexOf(v) === i) // Eliminar duplicados
+    });
   }
 
   return (
@@ -43,7 +71,7 @@ export default function HeroForm({ content, onChange }: HeroFormProps) {
           <Input
             id="title"
             name="title"
-            value={content.title}
+            value={localContent.title}
             onChange={handleChange}
             className="bg-black/40 border-blue-700/20"
           />
@@ -53,7 +81,7 @@ export default function HeroForm({ content, onChange }: HeroFormProps) {
           <Input
             id="subtitle"
             name="subtitle"
-            value={content.subtitle}
+            value={localContent.subtitle}
             onChange={handleChange}
             className="bg-black/40 border-blue-700/20"
           />
@@ -63,7 +91,7 @@ export default function HeroForm({ content, onChange }: HeroFormProps) {
           <Textarea
             id="description"
             name="description"
-            value={content.description}
+            value={localContent.description}
             onChange={handleChange}
             className="min-h-[100px] bg-black/40 border-blue-700/20"
           />
@@ -73,7 +101,7 @@ export default function HeroForm({ content, onChange }: HeroFormProps) {
           <Input
             id="profileImage"
             name="profileImage"
-            value={content.profileImage}
+            value={localContent.profileImage}
             onChange={handleChange}
             className="bg-black/40 border-blue-700/20"
             placeholder="https://tu-dominio.com/images/profile/tu-imagen.jpg"

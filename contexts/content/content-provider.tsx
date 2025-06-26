@@ -9,7 +9,7 @@ import {
 } from "@/services/api"
 import { updateHero } from "./slices/hero/actions"
 import { updateAbout } from "./slices/about/actions"
-import { updateServices } from "./slices/services/actions"
+import { updateServices, deleteService as deleteServiceAction } from "./slices/services/actions"
 import {
   updateProjects,
   createProjectItem as createProject,
@@ -175,6 +175,9 @@ export const ContentProvider = ({ children }: { children: ReactNode }) => {
     updateContact: (contact) => updateContact(contact, setContent, setIsLoading),
     updateExperience: (experience) => updateExperience(experience, setContent, setIsLoading),
     saveAllContent,
+
+    // Método para eliminar servicios
+    deleteService: (id) => deleteServiceAction(id, content, setContent, setIsLoading),
 
     addOtherSkill: (skill) => addOtherSkill(skill, setContent, setIsLoading),
     editOtherSkill: (id, skill) => editOtherSkill(id, skill, setContent, setIsLoading),

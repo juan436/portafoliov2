@@ -9,17 +9,44 @@ import { Content, Hero } from "../../types"
  * @param setIsLoading Función para actualizar el estado de carga
  */
 export const updateHero = async (
-  hero: Hero,
+  hero: Hero & { _modifiedFields?: string[] },
   setContent: Dispatch<SetStateAction<Content>>,
   setIsLoading: Dispatch<SetStateAction<boolean>>
 ) => {
-  setContent(prev => ({ ...prev, hero: { ...hero } }));
+  console.log("Hero - Datos completos recibidos:", hero);
   
-  setIsLoading(true)
-  try {
-    await updateContent('hero', hero)
-  } catch (error) {
-    console.error("Error actualizando hero:", error)
+  // Extraer _modifiedFields para uso local
+  const modifiedFields = hero._modifiedFields || [];
+  console.log("Hero - Campos modificados:", modifiedFields);
+  
+  // Crear una copia sin _modifiedFields para el estado local
+  const { _modifiedFields, ...heroForState } = hero;
+  
+  // Actualizar el estado local sin incluir _modifiedFields
+  setContent(prev => ({ ...prev, hero: heroForState }));
+  
+  // Si no hay campos modificados, no hacer nada más
+  if (modifiedFields.length === 0) {
+    console.log("Hero - No hay campos modificados, no se envía nada al API");
+    return;
   }
-  setIsLoading(false)
+  
+  setIsLoading(true);
+  try {
+    // Crear un objeto que solo contenga los campos modificados
+    const fieldsToUpdate: Record<string, any> = {};
+    
+    // Añadir solo los campos modificados
+    modifiedFields.forEach(field => {
+      fieldsToUpdate[field] = heroForState[field as keyof typeof heroForState];
+    });
+    
+    console.log("Hero - Enviando solo estos campos al API:", fieldsToUpdate);
+    
+    // Pasar solo los campos modificados al servicio de API
+    await updateContent('hero', fieldsToUpdate);
+  } catch (error) {
+    console.error("Error actualizando hero:", error);
+  }
+  setIsLoading(false);
 }
