@@ -10,9 +10,7 @@ export interface ContactContent {
   email: string
   phone: string
   location: string
-  github: string
-  linkedin: string
-  _modifiedFields?: string[] // Campo para rastrear campos modificados
+  _modifiedFields?: string[]
 }
 
 interface ContactFormProps {
