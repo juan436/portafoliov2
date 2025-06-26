@@ -118,7 +118,7 @@ export default function ServiceIconSelector({
             <span className="opacity-50">▼</span>
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-full p-0 bg-black border-blue-700/20" align="start" sideOffset={4}>
+        <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0 bg-black border-blue-700/20" align="start" sideOffset={4}>
           <div className="grid grid-cols-4 gap-2 p-4">
             {serviceIcons.map((icon) => (
               <Button
