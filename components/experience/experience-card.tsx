@@ -201,12 +201,10 @@ export function ExperienceCard({
                           {expandedDescriptions[experience._id || ''] ? (
                             <>
                               <ChevronUp className="h-4 w-4 mr-1" />
-                              {t('common.seeLess') || "Ver menos"}
                             </>
                           ) : (
                             <>
                               <ChevronDown className="h-4 w-4 mr-1" />
-                              {t('common.seeMore') || "Ver más"}
                             </>
                           )}
                         </Button>
