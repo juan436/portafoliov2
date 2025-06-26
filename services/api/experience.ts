@@ -56,8 +56,6 @@ export const createExperience = async (experience: any) => {
  * Solo traduce los campos que realmente han sido modificados
  */
 export const updateExperience = async (id: string, experience: any) => {
-   console.log('Actualizando experiencia con ID:', id);
-   console.log('Datos de experiencia:', experience);
   try {
     // 1. Verificar qué campos modificados necesitan traducción
     const fieldsRequiringTranslation = ['position', 'location', 'description'];
@@ -67,7 +65,6 @@ export const updateExperience = async (id: string, experience: any) => {
     
     // 2. Si no hay campos que requieran traducción, actualizar sin traducir
     if (fieldsToTranslate.length === 0) {
-      console.log('No hay campos a traducir, actualizando sin traducciones');
       const response = await fetch(`${API_URL}/experience/${id}`, {
         method: 'PATCH',
         headers: {
@@ -84,7 +81,6 @@ export const updateExperience = async (id: string, experience: any) => {
     }
     
     // 3. Solo traducir los campos que están en la actualización y requieren traducción
-    console.log('Campos a traducir:', fieldsToTranslate);
     const experienceWithTranslations = await translateAndAddToObject(
       experience,
       'es',

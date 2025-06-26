@@ -2,29 +2,16 @@
 
 import { motion } from "framer-motion"
 import { Card, CardContent } from "@/components/ui/card"
-import { 
-  Code2, 
-  Database, 
-  Server, 
-  Cpu, 
-  Globe, 
-  Smartphone, 
-  Monitor, 
-  Cloud, 
-  Shield, 
-  LineChart, 
-  Settings, 
-  Layers, 
-  Briefcase,
-  PenTool,
-  FileCode,
-  Zap
+import {
+  Code2, Database, Server, Cpu, Globe, Smartphone, Monitor, Cloud, Shield,
+  LineChart, Settings, Layers, Briefcase, PenTool, FileCode, Zap
 } from "lucide-react"
 
 interface Service {
   title: string
   description: string
   icon: string
+  _id?: string
 }
 
 interface AboutServicesProps {
@@ -77,7 +64,6 @@ export function AboutServices({ services }: AboutServicesProps) {
       case "Zap":
         return <Zap className="h-10 w-10 text-blue-500" />
       default:
-        console.log(`Icono no reconocido en AboutServices: ${iconName}`);
         return <Code2 className="h-10 w-10 text-blue-500" />
     }
   }
@@ -86,7 +72,7 @@ export function AboutServices({ services }: AboutServicesProps) {
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
       {services.map((service, index) => (
         <motion.div
-          key={service.title}
+          key={service._id || `service-${index}-${service.title}`}
           custom={index}
           variants={fadeIn}
           initial="initial"

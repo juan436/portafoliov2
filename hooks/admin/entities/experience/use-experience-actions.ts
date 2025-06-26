@@ -130,15 +130,11 @@ export function useExperienceActions() {
         // Si es una experiencia existente, la actualizamos
         // Extraer la lista de campos modificados y eliminarla del objeto
         const { _modifiedFields = [], ...experienceData } = updatedExperience;
-        
         // Si hay campos modificados, crear un objeto que solo contenga esos campos
         let dataToUpdate: Partial<Experience> = { ...experienceData };
-        
         // Si hay campos modificados especificados, solo enviar esos campos
         if (_modifiedFields.length > 0) {
-          console.log("Campos modificados:", _modifiedFields);
           dataToUpdate = { _id: updatedExperience._id };
-          
           // Solo incluir los campos que fueron modificados
           _modifiedFields.forEach(field => {
             if (field === 'skills') {
@@ -152,7 +148,6 @@ export function useExperienceActions() {
         
         // Usar type assertion para satisfacer el tipo esperado por la función
         const success = await updateExperienceItem(updatedExperience._id, dataToUpdate as Experience);
-        
         if (success) {
           // Actualizar el estado local para reflejar la actualización exitosa
           setSelectedExperience(updatedExperience);
@@ -191,7 +186,6 @@ export function useExperienceActions() {
           setSelectedExperience(null);
           setEditMode(false);
         }
-        
         toastNotifications.showDeletedToast("Experiencia");
         return true;
       } else {

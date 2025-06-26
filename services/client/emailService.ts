@@ -32,8 +32,6 @@ const EMAIL_API_URL = process.env.NEXT_PUBLIC_EMAIL_API_URL || 'https://mail-api
  */
 export const sendContactForm = async (formData: ContactFormData): Promise<EmailResponse> => {
   try {
-    console.log('Enviando formulario a:', `${EMAIL_API_URL}/send`);
-    
     // Preparamos los datos para enviar
     const requestData = {
       clientName: formData.name,
@@ -42,8 +40,6 @@ export const sendContactForm = async (formData: ContactFormData): Promise<EmailR
       message: formData.message,
       language: formData.language || 'es'
     };
-    
-    console.log('Datos a enviar:', requestData);
     
     // Enviamos la solicitud POST
     const response = await fetch(`${EMAIL_API_URL}/send`, {
@@ -59,18 +55,14 @@ export const sendContactForm = async (formData: ContactFormData): Promise<EmailR
       credentials: 'omit' // Mantener 'omit' para evitar problemas de CORS
     });
     
-    console.log('Respuesta recibida:', response.status, response.statusText);
-    
     // Si la respuesta no es JSON, manejar como texto
     const contentType = response.headers.get('content-type');
     let data;
     
     if (contentType && contentType.includes('application/json')) {
       data = await response.json();
-      console.log('Datos JSON recibidos:', data);
     } else {
       const text = await response.text();
-      console.log('Respuesta texto recibida:', text);
       data = { message: text };
     }
     
@@ -114,8 +106,6 @@ export const sendContactForm = async (formData: ContactFormData): Promise<EmailR
  */
 export const checkEmailServiceHealth = async (): Promise<boolean> => {
   try {
-    console.log('Verificando estado del servicio de correo:', `${EMAIL_API_URL}/health`);
-    
     const response = await fetch(`${EMAIL_API_URL}/health`, {
       method: 'GET',
       headers: {
@@ -126,8 +116,6 @@ export const checkEmailServiceHealth = async (): Promise<boolean> => {
       mode: 'cors',
       credentials: 'omit'
     });
-    
-    console.log('Respuesta de health check:', response.status, response.statusText);
     
     // Manejar respuesta no JSON
     const contentType = response.headers.get('content-type');

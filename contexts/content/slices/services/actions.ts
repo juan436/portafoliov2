@@ -30,21 +30,10 @@ export const updateServices = async (
       return { serviceForState, fieldsToUpdate: serviceForState, hasChanges: true };
     }
     
-    // Si hay campos modificados, crear un objeto con solo esos campos
+    // Si hay campos modificados, enviar el objeto completo en lugar de solo los campos modificados
+    // Esto evita que se pierdan campos como "description" al actualizar solo "title"
     if (modifiedFields.length > 0) {
-      const fieldsToUpdate: Record<string, any> = {};
-      
-      // Siempre incluir el ID para identificar el servicio
-      if ('_id' in serviceForState) {
-        fieldsToUpdate._id = serviceForState._id;
-      }
-      
-      // Añadir solo los campos modificados
-      modifiedFields.forEach(field => {
-        fieldsToUpdate[field] = serviceForState[field as keyof typeof serviceForState];
-      });
-      
-      return { serviceForState, fieldsToUpdate, hasChanges: true };
+      return { serviceForState, fieldsToUpdate: serviceForState, hasChanges: true };
     }
     
     // Si no hay campos modificados, no incluir en la actualización
@@ -69,7 +58,7 @@ export const updateServices = async (
   
   setIsLoading(true);
   try {
-    // Enviar solo los campos modificados de cada servicio al API
+    // Enviar los servicios completos al API para cada servicio modificado
     const response = await updateContent('services', servicesWithChanges);
     
     // Si hay servicios nuevos, actualizar sus IDs desde la respuesta del servidor
@@ -82,20 +71,16 @@ export const updateServices = async (
           .filter(service => service._id)
           .map(service => service._id?.toString()));
         
-        console.log(`[updateServices] IDs existentes antes de actualizar:`, [...existingIds]);
-        
         // Crear una copia del array de servicios
         const updatedServices = [...prev.services];
         
         // Encontrar servicios sin ID en el estado local
         const servicesWithoutId = updatedServices.filter(service => !service._id);
-        console.log(`[updateServices] Encontrados ${servicesWithoutId.length} servicios sin ID`);
         
         // Si hay servicios nuevos en la respuesta, asignar IDs
         if (servicesWithoutId.length > 0 && response.data.services.length > 0) {
           // Obtener solo los servicios nuevos de la respuesta (los últimos N elementos)
           const newServicesFromServer = response.data.services.slice(-servicesWithoutId.length);
-          console.log(`[updateServices] Servicios nuevos del servidor:`, newServicesFromServer.map((s: Service) => s._id));
           
           // Para cada servicio sin ID, asignar un ID único de la respuesta
           let serverIndex = 0;
@@ -105,8 +90,6 @@ export const updateServices = async (
               
               // Verificar que el ID no esté duplicado
               if (!existingIds.has(newId?.toString())) {
-                console.log(`[updateServices] Asignando ID ${newId} al servicio en posición ${i}`);
-                
                 updatedServices[i] = {
                   ...updatedServices[i],
                   _id: newId
@@ -120,9 +103,6 @@ export const updateServices = async (
               }
             }
           }
-          
-          console.log(`[updateServices] IDs después de actualizar:`, 
-            updatedServices.map(s => s._id));
         }
         
         return {
@@ -165,11 +145,6 @@ export const deleteService = async (
       if (!service._id) return true; // Mantener servicios sin ID
       return service._id.toString() !== id.toString(); // Comparar como strings
     });
-    
-    console.log(`[deleteService/slice] Servicios antes: ${prev.services.length}, después: ${updatedServices.length}`);
-    console.log(`[deleteService/slice] ID a eliminar: ${id}`);
-    console.log(`[deleteService/slice] IDs de servicios actuales:`, prev.services.map(s => s._id));
-    console.log(`[deleteService/slice] IDs después de filtrar:`, updatedServices.map(s => s._id));
     
     return {
       ...prev,

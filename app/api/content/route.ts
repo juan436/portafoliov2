@@ -76,8 +76,6 @@ export async function PATCH(request: Request) {
       Object.keys(source).forEach(key => {
         // Caso especial para arrays (como services)
         if (source[key] && Array.isArray(source[key])) {
-          console.log(`PATCH - Procesando array para campo ${key}:`, source[key]);
-          
           // Si es la sección de servicios, manejar de forma especial
           if (key === 'services') {
             // Si no existe el array en el target, crearlo
@@ -93,19 +91,16 @@ export async function PATCH(request: Request) {
                 
                 if (existingIndex >= 0) {
                   // Actualizar el item existente
-                  console.log(`PATCH - Actualizando servicio existente con ID ${item._id}`);
                   target[key][existingIndex] = {
                     ...target[key][existingIndex],
                     ...item
                   };
                 } else {
                   // Agregar como nuevo si no existe
-                  console.log(`PATCH - Agregando servicio con ID ${item._id} (no encontrado en existentes)`);
                   target[key].push(item);
                 }
               } else {
                 // Si no tiene ID, es un nuevo item
-                console.log(`PATCH - Agregando nuevo servicio sin ID`);
                 target[key].push(item);
               }
             });

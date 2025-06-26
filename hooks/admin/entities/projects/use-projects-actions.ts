@@ -84,14 +84,13 @@ export function useProjectsActions(initialCategory: ProjectCategory = 'fullstack
     // Crear un objeto de proyecto temporal mínimo
     // Los valores predeterminados se manejan en el ProjectForm
     const newProjectTemplate: Project = {
-      id: -1, // ID temporal negativo para indicar que es un proyecto nuevo
-      title: "", // Valor vacío por defecto
-      description: "", // Valor vacío por defecto
-      tags: [], // Array vacío por defecto
-      github: "", // Valor vacío por defecto
-      demo: "", // Valor vacío por defecto
+      id: -1,
+      title: "",
+      description: "",
+      tags: [],
+      github: "",
+      demo: "",
       createdAt: currentDate,
-      // No definimos imagen por defecto, se manejará en el formulario con placeholders
       image: undefined
     };
 
@@ -139,13 +138,10 @@ export function useProjectsActions(initialCategory: ProjectCategory = 'fullstack
     else {
       setIsLoading(true);
       try {
-        console.log("Enviando proyecto para actualizar:", updatedProject);
-        console.log("Campos modificados:", updatedProject._modifiedFields);
-        
         // Enviar el objeto completo con _modifiedFields
         const success = await updateProjectItem(
           updatedProject.id.toString(), 
-          updatedProject, // Enviamos el objeto completo con _modifiedFields
+          updatedProject,
           activeCategory
         );
 

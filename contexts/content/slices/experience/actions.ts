@@ -84,15 +84,10 @@ export const updateExperienceItem = async (
 ): Promise<boolean> => {
   setIsLoading(true)
   try {
-    console.log("Actualizando experiencia con ID:", id);
-    console.log("Datos a actualizar:", experience);
-
     // Extraer y eliminar _modifiedFields del objeto que enviaremos a la API
     const { _modifiedFields, ...dataToUpdate } = experience;
-
     // Llamar a la API para actualizar solo los campos necesarios
     const response = await updateExperienceApi(id, dataToUpdate);
-
     if (response.success) {
       // Actualizar el estado local
       setContent(prev => ({
@@ -106,7 +101,6 @@ export const updateExperienceItem = async (
       setIsLoading(false)
       return true
     }
-
     setIsLoading(false)
     return false
   } catch (error) {
@@ -128,18 +122,15 @@ export const deleteExperienceItem = async (
   try {
     // Llamar a la API para eliminar la experiencia
     const response = await deleteExperienceApi(id)
-
     if (response.success) {
       // Actualizar el estado local
       setContent(prev => ({
         ...prev,
         experience: prev.experience.filter(e => e._id !== id)
       }))
-
       setIsLoading(false)
       return true
     }
-
     setIsLoading(false)
     return false
   } catch (error) {

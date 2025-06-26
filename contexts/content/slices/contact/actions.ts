@@ -13,36 +13,24 @@ export const updateContact = async (
   setContent: Dispatch<SetStateAction<Content>>,
   setIsLoading: Dispatch<SetStateAction<boolean>>
 ) => {
-  console.log("Contact - Datos completos recibidos:", contact);
-  
   // Extraer _modifiedFields para uso local
   const modifiedFields = contact._modifiedFields || [];
-  console.log("Contact - Campos modificados:", modifiedFields);
-  
   // Crear una copia sin _modifiedFields para el estado local
   const { _modifiedFields, ...contactForState } = contact;
-  
   // Actualizar el estado local sin incluir _modifiedFields
   setContent(prev => ({ ...prev, contact: contactForState }));
-  
   // Si no hay campos modificados, no hacer nada más
   if (modifiedFields.length === 0) {
-    console.log("Contact - No hay campos modificados, no se envía nada al API");
     return;
   }
-  
   setIsLoading(true);
   try {
     // Crear un objeto que solo contenga los campos modificados
     const fieldsToUpdate: Record<string, any> = {};
-    
     // Añadir solo los campos modificados
     modifiedFields.forEach(field => {
       fieldsToUpdate[field] = contactForState[field as keyof typeof contactForState];
     });
-    
-    console.log("Contact - Enviando solo estos campos al API:", fieldsToUpdate);
-    
     // Pasar solo los campos modificados al servicio de API
     await updateContent('contact', fieldsToUpdate);
   } catch (error) {

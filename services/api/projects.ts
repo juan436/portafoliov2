@@ -65,21 +65,13 @@ export const createProject = async (project: any) => {
  */
 export const updateProject = async (id: string, project: any) => {
   try {
-    console.log('API - Actualizando proyecto con ID:', id);
-    console.log('API - Datos recibidos:', project);
-    
     // 1. Verificar qué campos modificados necesitan traducción
     const fieldsRequiringTranslation = ['title', 'description'];
     const fieldsToTranslate = Object.keys(project).filter(field => 
       fieldsRequiringTranslation.includes(field)
     );
-    
-    console.log('API - Campos que requieren traducción:', fieldsRequiringTranslation);
-    console.log('API - Campos presentes que serán traducidos:', fieldsToTranslate);
-    
     // 2. Si no hay campos que requieran traducción, actualizar sin traducir
     if (fieldsToTranslate.length === 0) {
-      console.log('API - No hay campos a traducir, actualizando sin traducciones');
       const response = await fetch(`${API_URL}/projects/${id}`, {
         method: 'PATCH',
         headers: {
@@ -87,25 +79,18 @@ export const updateProject = async (id: string, project: any) => {
         },
         body: JSON.stringify(project),
       });
-
       if (!response.ok) {
         throw new Error('Error actualizando proyecto');
       }
-
       return await response.json();
     }
-    
     // 3. Solo traducir los campos que están en la actualización y requieren traducción
-    console.log('API - Campos a traducir:', fieldsToTranslate);
     const projectWithTranslations = await translateAndAddToObject(
       project,
       'es',
       ['en', 'fr', 'it'],
       fieldsToTranslate
     );
-    
-    console.log('API - Proyecto con traducciones:', projectWithTranslations);
-    
     // 4. Enviar al backend el objeto con traducciones
     const response = await fetch(`${API_URL}/projects/${id}`, {
       method: 'PATCH',

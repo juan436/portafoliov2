@@ -13,11 +13,8 @@ export const updateAbout = async (
   setContent: Dispatch<SetStateAction<Content>>,
   setIsLoading: Dispatch<SetStateAction<boolean>>
 ) => {
-  console.log("About - Datos completos recibidos:", about);
-  
   // Extraer _modifiedFields para uso local
   const modifiedFields = about._modifiedFields || [];
-  console.log("About - Campos modificados:", modifiedFields);
   
   // Crear una copia sin _modifiedFields para el estado local
   const { _modifiedFields, ...aboutForState } = about;
@@ -27,7 +24,6 @@ export const updateAbout = async (
   
   // Si no hay campos modificados, no hacer nada más
   if (modifiedFields.length === 0) {
-    console.log("About - No hay campos modificados, no se envía nada al API");
     return;
   }
   
@@ -40,8 +36,6 @@ export const updateAbout = async (
     modifiedFields.forEach(field => {
       fieldsToUpdate[field] = aboutForState[field as keyof typeof aboutForState];
     });
-    
-    console.log("About - Enviando solo estos campos al API:", fieldsToUpdate);
     
     // Pasar solo los campos modificados al servicio de API
     await updateContent('about', fieldsToUpdate);

@@ -90,7 +90,6 @@ export default function ServiceIconSelector({
       case "Zap":
         return <Zap className="h-5 w-5 text-blue-500" />
       default:
-        console.log(`Icono no reconocido: ${iconName}`);
         return <Code className="h-5 w-5 text-blue-500" />
     }
   }

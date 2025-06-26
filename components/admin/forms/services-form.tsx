@@ -72,7 +72,6 @@ export default function ServicesForm({ services, onChange }: ServicesFormProps) 
     }
 
     const serviceToDelete = services[index];
-    console.log(`[ServicesForm] Iniciando eliminación del servicio:`, serviceToDelete);
     
     // Crear una copia del array sin el servicio a eliminar
     const updatedServices = [...services];
@@ -81,30 +80,23 @@ export default function ServicesForm({ services, onChange }: ServicesFormProps) 
     // Ajustar el índice activo si es necesario
     if (updatedServices.length === 0) {
       setActiveServiceIndex(-1);
-      console.log(`[ServicesForm] No hay más servicios, índice activo: -1`);
     } else if (index === activeServiceIndex) {
       // Si eliminamos el servicio activo, seleccionar el anterior o el primero
       const newIndex = index > 0 ? index - 1 : 0;
       setActiveServiceIndex(newIndex);
-      console.log(`[ServicesForm] Nuevo índice activo: ${newIndex}`);
     } else if (index < activeServiceIndex) {
       // Si eliminamos un servicio antes del activo, ajustar el índice
       const newIndex = activeServiceIndex - 1;
       setActiveServiceIndex(newIndex);
-      console.log(`[ServicesForm] Ajustando índice activo a: ${newIndex}`);
     }
 
     // Actualizar el estado local primero (para todos los casos)
-    console.log(`[ServicesForm] Actualizando estado local con servicios:`, updatedServices);
     onChange(updatedServices);
 
     // Si el servicio tiene un ID válido (ya existe en la BD), eliminarlo del backend
     if (serviceToDelete._id && serviceToDelete._id.trim() !== '') {
-      console.log(`[ServicesForm] Servicio tiene ID válido: ${serviceToDelete._id}, llamando a deleteServiceFromDB`);
       try {
-        console.log(`[ServicesForm] Antes de llamar a deleteServiceFromDB`);
         const success = await deleteServiceFromDB(serviceToDelete._id);
-        console.log(`[ServicesForm] Resultado de deleteServiceFromDB:`, success);
         
         if (success) {
           toast({
@@ -129,8 +121,6 @@ export default function ServicesForm({ services, onChange }: ServicesFormProps) 
         });
       }
     } else {
-      console.log(`[ServicesForm] Servicio sin ID válido, solo eliminación local`);
-      // Si el servicio no tiene ID, solo era local
       toast({
         title: "Servicio eliminado",
         description: "El servicio ha sido eliminado localmente.",
@@ -196,7 +186,6 @@ export default function ServicesForm({ services, onChange }: ServicesFormProps) 
       case "Zap":
         return <Zap className="h-6 w-6 mx-auto text-blue-500" />
       default:
-        console.log(`Icono no reconocido: ${iconName}`);
         return <Code className="h-6 w-6 mx-auto text-blue-500" />
     }
   }
