@@ -146,7 +146,7 @@ export function ExperienceCard({
     const skillsToShow = skills || ["Git", "REST APIs", "GraphQL", "Testing", "Agile"];
     
     // Si está expandido o hay 11 o menos habilidades, mostrar todas
-    if (isExpanded || skillsToShow.length <= 11) {
+    if (isExpanded || skillsToShow.length <= 8) {
       return skillsToShow;
     }
     
