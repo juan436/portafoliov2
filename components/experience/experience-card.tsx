@@ -22,8 +22,8 @@ const MAX_DESCRIPTION_LENGTH = 350;
 
 // Altura base de la tarjeta (altura cuando está contraída)
 const BASE_CARD_HEIGHT = {
-  default: 450, 
-  md: 400      
+  default: 480, 
+  md: 420      
 };
 
 export function ExperienceCard({ 
@@ -38,56 +38,50 @@ export function ExperienceCard({
   const [expandedDescriptions, setExpandedDescriptions] = useState<Record<string, boolean>>({});
   const [cardHeight, setCardHeight] = useState<number>(BASE_CARD_HEIGHT.default);
   const contentRef = useRef<HTMLDivElement>(null);
+  const techContainerRef = useRef<HTMLDivElement>(null);
   const isMobileView = useRef<boolean>(typeof window !== 'undefined' ? window.innerWidth < 768 : false);
   
-  // Función para obtener el texto traducido o el original si no hay traducción
-  const getTranslatedField = (experience: Experience, field: 'position' | 'description' | 'location') => {
-    // Si es español o no hay traducciones disponibles, devolver el texto original
-    if (language.code === 'es' || !experience.translations || !experience.translations[language.code]) {
-      return experience[field] ?? '';
-    }
-    // Devolver la traducción o el texto original si no hay traducción
-    return experience.translations[language.code]?.[field] ?? experience[field] ?? '';
-  };
-
-  // Función para alternar la expansión de la descripción
-  const toggleDescription = (experienceId: string) => {
-    setExpandedDescriptions(prev => ({
-      ...prev,
-      [experienceId]: !prev[experienceId]
-    }));
-  };
-
-  // Función para determinar si una descripción debe ser truncada
-  const shouldTruncate = (description: string) => {
-    return description.length > MAX_DESCRIPTION_LENGTH;
-  };
-
-  // Función para obtener la descripción formateada (completa o truncada)
-  const getFormattedDescription = (experience: Experience) => {
-    const description = getTranslatedField(experience, 'description');
-    const isExpanded = expandedDescriptions[experience._id || ''];
-    
-    if (!shouldTruncate(description) || isExpanded) {
-      return description;
-    }
-    
-    return `${description.substring(0, MAX_DESCRIPTION_LENGTH)}...`;
-  };
-
   // Detectar cambios en el tamaño de la ventana para ajustar la altura base
   useEffect(() => {
     const handleResize = () => {
       isMobileView.current = window.innerWidth < 768;
+      // Actualizar la altura base al cambiar el tamaño de la ventana
+      const currentExperience = sortedExperience[activeIndex];
+      if (currentExperience) {
+        const experienceId = currentExperience._id || '';
+        const isExpanded = expandedDescriptions[experienceId];
+        if (!isExpanded) {
+          setCardHeight(isMobileView.current ? BASE_CARD_HEIGHT.default : BASE_CARD_HEIGHT.md);
+        }
+      }
     };
 
     if (typeof window !== 'undefined') {
       window.addEventListener('resize', handleResize);
       return () => window.removeEventListener('resize', handleResize);
     }
-  }, []);
+  }, [activeIndex, expandedDescriptions, sortedExperience]);
 
-  // Actualizar la altura del contenedor cuando cambia el contenido
+  // Establecer altura inicial correcta al montar el componente y cuando cambia la experiencia activa
+  useEffect(() => {
+    // Establecer la altura base según el tamaño de la pantalla
+    setCardHeight(isMobileView.current ? BASE_CARD_HEIGHT.default : BASE_CARD_HEIGHT.md);
+    
+    // Resetear el estado de expansión cuando cambia la experiencia activa
+    const currentExperience = sortedExperience[activeIndex];
+    if (currentExperience) {
+      const experienceId = currentExperience._id || '';
+      // Solo resetear si estaba expandido
+      if (expandedDescriptions[experienceId]) {
+        setExpandedDescriptions(prev => ({
+          ...prev,
+          [experienceId]: false
+        }));
+      }
+    }
+  }, [activeIndex]);
+
+  // Actualizar la altura del contenedor cuando cambia el contenido o se expande/contrae la descripción
   useEffect(() => {
     if (contentRef.current) {
       const currentExperience = sortedExperience[activeIndex];
@@ -108,30 +102,75 @@ export function ExperienceCard({
     }
   }, [expandedDescriptions, activeIndex, sortedExperience]);
 
-  // Calcular la altura inicial al cargar el componente
-  useEffect(() => {
-    // Pequeño timeout para asegurar que el contenido se ha renderizado
-    const timer = setTimeout(() => {
-      if (contentRef.current) {
-        // Medir la altura real del contenido
-        const contentHeight = contentRef.current.scrollHeight + 20;
-        
-        // Usar la mayor entre la altura base y la altura del contenido
-        const baseHeight = isMobileView.current ? BASE_CARD_HEIGHT.default : BASE_CARD_HEIGHT.md;
-        setCardHeight(Math.max(baseHeight, contentHeight));
-      }
-    }, 100);
+  // Función para obtener el texto traducido o el original si no hay traducción
+  const getTranslatedField = (experience: Experience, field: 'position' | 'description' | 'location') => {
+    // Si es español o no hay traducciones disponibles, devolver el texto original
+    if (language.code === 'es' || !experience.translations || !experience.translations[language.code]) {
+      return experience[field] ?? '';
+    }
+    // Devolver la traducción o el texto original si no hay traducción
+    return experience.translations[language.code]?.[field] ?? experience[field] ?? '';
+  };
+
+  // Función para alternar la expansión de la descripción
+  const toggleDescription = (experienceId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+    setExpandedDescriptions(prev => ({
+      ...prev,
+      [experienceId]: !prev[experienceId]
+    }));
+  };
+
+  // Función para verificar si la descripción debe truncarse
+  const shouldTruncate = (description: string) => {
+    return description.length > MAX_DESCRIPTION_LENGTH;
+  };
+
+  // Función para obtener la descripción formateada (completa o truncada)
+  const getFormattedDescription = (experience: Experience) => {
+    const description = getTranslatedField(experience, 'description');
+    const experienceId = experience._id || '';
+    const isExpanded = expandedDescriptions[experienceId];
+
+    if (!shouldTruncate(description) || isExpanded) {
+      return description;
+    }
+
+    return `${description.substring(0, MAX_DESCRIPTION_LENGTH)}...`;
+  };
+
+  // Función para obtener las habilidades a mostrar (todas o limitadas)
+  const getVisibleSkills = (skills: string[], experienceId: string) => {
+    const isExpanded = expandedDescriptions[experienceId] || false;
+    const skillsToShow = skills || ["Git", "REST APIs", "GraphQL", "Testing", "Agile"];
     
-    return () => clearTimeout(timer);
-  }, [activeIndex, sortedExperience]);
+    // Si está expandido o hay 11 o menos habilidades, mostrar todas
+    if (isExpanded || skillsToShow.length <= 11) {
+      return skillsToShow;
+    }
+    
+    // Si no está expandido y hay más de 11, mostrar solo las primeras 11
+    return skillsToShow.slice(0, 11);
+  };
+
+  // Función para verificar si hay habilidades ocultas
+  const hasHiddenSkills = (skills: string[], experienceId: string) => {
+    const skillsArray = skills || [];
+    return !expandedDescriptions[experienceId] && skillsArray.length > 11;
+  };
 
   return (
     <div
       className="overflow-hidden perspective-3d"
-      onMouseDown={handleMouseDown}
+      onMouseDown={(e) => {
+        // Solo activar el arrastre cuando se hace clic directamente en el contenedor
+        if (e.target === e.currentTarget && handleMouseDown) {
+          handleMouseDown(e);
+        }
+      }}
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
-      onMouseLeave={handleMouseUp}
     >
       <div 
         className="relative"
@@ -170,7 +209,8 @@ export function ExperienceCard({
                 >
                   <div 
                     ref={contentRef}
-                    className="bg-gray-900/60 rounded-lg p-8 border border-blue-900/30 shadow-xl h-full backdrop-blur-md"
+                    className="bg-gray-900/60 rounded-lg p-8 border border-blue-900/30 shadow-xl h-full backdrop-blur-md flex flex-col"
+                    style={{ paddingBottom: "100px" }} 
                   >
                     <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
                       <div>
@@ -186,7 +226,7 @@ export function ExperienceCard({
                       </div>
                     </div>
 
-                    <div className="mb-8">
+                    <div className="mb-4 flex-grow">
                       <p className="text-slate-300 text-lg leading-relaxed">
                         {getFormattedDescription(experience)}
                       </p>
@@ -196,7 +236,7 @@ export function ExperienceCard({
                           variant="ghost" 
                           size="sm" 
                           className="mt-2 text-blue-400 hover:text-blue-300 p-0 h-auto flex items-center"
-                          onClick={() => toggleDescription(experience._id || '')}
+                          onClick={(e) => toggleDescription(experience._id || '', e)}
                         >
                           {expandedDescriptions[experience._id || ''] ? (
                             <>
@@ -212,13 +252,16 @@ export function ExperienceCard({
                     </div>
 
                     {/* Línea divisoria antes de las tecnologías */}
-                    <div className="border-t border-blue-900/30 mb-4"></div>
+                    <div className="border-t border-blue-900/30 my-4"></div>
 
                     {/* Viñetas de tecnologías */}
-                    <div className="mt-2">
+                    <div 
+                      ref={techContainerRef}
+                      className="mt-auto"
+                    >
                       <h4 className="text-sm uppercase tracking-wider text-slate-400 mb-3">{String(t('experience.technologies') || "Tecnologías")}</h4>
                       <motion.div
-                        className="flex flex-wrap gap-2"
+                        className="flex flex-wrap gap-2 mb-2"
                         initial="hidden"
                         animate="visible"
                         variants={{
@@ -232,7 +275,7 @@ export function ExperienceCard({
                           },
                         }}
                       >
-                        {(experience.skills || ["Git", "REST APIs", "GraphQL", "Testing", "Agile"]).map(
+                        {getVisibleSkills(experience.skills || ["Git", "REST APIs", "GraphQL", "Testing", "Agile"], experience._id || '').map(
                           (skill, idx) => (
                             <motion.div
                               key={idx}
