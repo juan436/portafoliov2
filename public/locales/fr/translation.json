@@ -70,6 +70,10 @@
     "viewExperience": "Voir l'expérience",
     "technologies": "Technologies"
   },
+  "common": {
+    "seeMore": "Voir plus",
+    "seeLess": "Voir moins"
+  },
   "wolf": {
     "welcome": "Bonjour! Je suis Juan Villegas. Bienvenue dans mon espace virtuel où technologie et créativité se rencontrent.",
     "about": "Bonjour à nouveau! Je suis Juan, passionné par le développement et la technologie. Ici, vous découvrirez un peu de mon histoire.",
